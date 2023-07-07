@@ -1,0 +1,8 @@
+{
+  "parent": "block/orientable",
+  "textures": {
+    "top": "cc_mb:block/music_box_block_side",
+    "side": "cc_mb:block/music_box_block_side",
+    "front": "cc_mb:block/music_box_block_face"
+  }
+}
