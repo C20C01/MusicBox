@@ -82,10 +82,18 @@ public class MusicBoxBlock extends BaseEntityBlock {
         return true;
     }
 
+    /**
+     * @return 没有纸带为 0，有纸带但不发音为 1，发音时为 min(音符音高 + 2, 15)
+     */
     @Override
     @SuppressWarnings("deprecation")
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos) {
-        return blockState.getValue(EMPTY) ? 0 : 15;
+        if (blockState.getValue(EMPTY)) {
+            return 0;
+        } else {
+            BlockEntity blockentity = level.getBlockEntity(blockPos);
+            return blockentity instanceof MusicBoxBlockEntity ? ((MusicBoxBlockEntity) blockentity).getAnalogOutputSignal() : 0;
+        }
     }
 
     @Override

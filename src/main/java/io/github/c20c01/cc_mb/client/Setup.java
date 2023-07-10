@@ -1,7 +1,7 @@
-package io.github.c20c01.cc_mb.client.gui;
+package io.github.c20c01.cc_mb.client;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.client.gui.screen.PerforationTableScreen;
+import io.github.c20c01.cc_mb.client.gui.PerforationTableScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

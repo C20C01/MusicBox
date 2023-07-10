@@ -29,7 +29,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleItem {
     private byte delta = 0;
     private byte beat = 0;
-    private NoteGrid.Beat[] beats;
+    private byte page = 0;
+    private byte note = -1;
+    private byte lastNote = -2;
+    private NoteGrid.Page[] pages;
     private ItemStack noteGrid = ItemStack.EMPTY;
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -39,7 +42,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     public boolean setNoteGrid(ItemStack noteGrid) {
         if (this.noteGrid.isEmpty()) {
             this.noteGrid = noteGrid.copy();
-            beats = NoteGrid.readFromTag(this.noteGrid);
+            pages = NoteGrid.readFromTag(this.noteGrid);
             if (getLevel() != null)
                 MusicBoxBlock.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.FALSE);
             return true;
@@ -50,7 +53,10 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     private void reset() {
         delta = 0;
         beat = 0;
-        beats = null;
+        page = 0;
+        note = -1;
+        lastNote = -2;
+        pages = null;
         noteGrid = ItemStack.EMPTY;
     }
 
@@ -70,6 +76,10 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         return oldItemStack;
     }
 
+    public int getAnalogOutputSignal() {
+        return note > 13 ? 15 : note + 2;
+    }
+
     public static void playTick(Level level, BlockPos blockPos, BlockState blockState, MusicBoxBlockEntity blockEntity) {
         if (blockState.getValue(MusicBoxBlock.POWERED)) {
             blockEntity.playTick((ServerLevel) level, blockPos, blockState);
@@ -77,6 +87,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     }
 
     public void playTick(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+        if (pages == null) return;
         delta++;
         if (delta >= 10) {
             delta = 0;
@@ -85,16 +96,35 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     }
 
     public void playOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
-        if (beats == null) return;
-        if (this.beat > -1 && this.beat < beats.length) {
-            NoteGrid.Beat beat = beats[this.beat];
-            if (beat != null) {
-                byte note = beat.test(level, blockPos, blockState);
+        if (pages == null) return;
+
+        try {
+            NoteGrid.Page nowPage = pages[page];
+            NoteGrid.Beat oneBeat = nowPage.getBeat(beat);
+            if (oneBeat.notEmpty()) {
+                note = oneBeat.play(level, blockPos, blockState);
                 if (level.getBlockState(blockPos.above()).isAir()) spawnMusicParticles(level, blockPos, note);
+            } else {
+                note = -1;
             }
-            this.beat++;
-        } else {
+        } catch (ArrayIndexOutOfBoundsException e) {
             finishOneNoteGrid(level, blockPos, blockState);
+            return;
+        }
+
+        beat++;
+        if (beat >= NoteGrid.Page.SIZE) {
+            page++;
+            if (page >= pages.length) {
+                finishOneNoteGrid(level, blockPos, blockState);
+            } else {
+                beat = 0;
+            }
+        }
+
+        if (note != lastNote) {
+            lastNote = note;
+            level.updateNeighbourForOutputSignal(blockPos, blockState.getBlock());
         }
     }
 
@@ -123,6 +153,8 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         super.load(compoundTag);
         delta = compoundTag.getByte("Delta");
         beat = compoundTag.getByte("Beat");
+        page = compoundTag.getByte("Page");
+        note = compoundTag.getByte("Note");
         setNoteGrid(ItemStack.of(compoundTag.getCompound("NoteGrid")));
     }
 
@@ -130,7 +162,9 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     protected void saveAdditional(CompoundTag compoundTag) {
         super.saveAdditional(compoundTag);
         compoundTag.putByte("Delta", delta);
-        compoundTag.putByte("Beat", beat);
+        compoundTag.putShort("Beat", beat);
+        compoundTag.putByte("Page", page);
+        compoundTag.putByte("Note", note);
         compoundTag.put("NoteGrid", noteGrid.save(new CompoundTag()));
     }
 
@@ -172,7 +206,6 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
 
     @Override
     public boolean canTakeItem(Container container, int slot, ItemStack itemStack) {
-        CCMain.LOGGER.info(itemStack.toString());
         return false;
     }
 

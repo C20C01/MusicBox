@@ -5,14 +5,15 @@ import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.PerforationTableBlock;
-import io.github.c20c01.cc_mb.client.gui.menu.PerforationTableMenu;
+import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.item.Puncher;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.fml.common.Mod;
@@ -27,6 +28,10 @@ public class CCMain {
     public static final String ID = "cc_mb";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    // 网络相关
+    public static final String NETWORK_VERSION = "1";
+    public static final ResourceLocation CHANNEL_GRID_TO_S = new ResourceLocation(ID, "network_grid_to_s");
+
     // 注册器
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, ID);
@@ -38,6 +43,8 @@ public class CCMain {
     // 物品
     public static final String NOTE_GRID_ITEM_ID = "note_grid";
     public static final RegistryObject<NoteGrid> NOTE_GRID_ITEM;
+    public static final String PUNCHER_ITEM_ID = "puncher";
+    public static final RegistryObject<Puncher> PUNCHER_ITEM;
 
 
     // 方块
@@ -55,8 +62,10 @@ public class CCMain {
     public static final String PERFORATION_TABLE_MENU_ID = "perforation_table_menu";
     public static final RegistryObject<MenuType<PerforationTableMenu>> PERFORATION_TABLE_MENU;
 
+
     static {
         NOTE_GRID_ITEM = ITEMS.register(NOTE_GRID_ITEM_ID, NoteGrid::new);
+        PUNCHER_ITEM = ITEMS.register(PUNCHER_ITEM_ID, Puncher::new);
 
         MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, MusicBoxBlock::new);
         MUSIC_BOX_BLOCK_ITEM = ITEMS.register(MUSIC_BOX_BLOCK_ID, () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
@@ -67,6 +76,21 @@ public class CCMain {
 
 
         PERFORATION_TABLE_MENU = MENU_TYPES.register(PERFORATION_TABLE_MENU_ID, () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
+
+
+        CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
+                .icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance())
+                .displayItems((parameters, output) -> {
+                    output.accept(MUSIC_BOX_BLOCK_ITEM.get());
+                    output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
+                    output.accept(PUNCHER_ITEM.get());
+                    output.accept(Items.SLIME_BALL);
+                    output.accept(NOTE_GRID_ITEM.get());
+                    output.accept(NoteGrid.changeToTestingGrid(new ItemStack(NOTE_GRID_ITEM.get())));
+                })
+                .title(Component.literal("TODO"))
+                .build()
+        );
     }
 
     public CCMain() {
