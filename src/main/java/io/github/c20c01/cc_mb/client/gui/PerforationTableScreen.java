@@ -44,7 +44,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, Boolean.TRUE, (button) -> pageForward(), Boolean.TRUE));
         this.gridOnTableWidget = this.addRenderableWidget(new NoteGridOnTableWidget(this.leftPos + 79, this.topPos + 15, this));
         this.editWidget = this.addRenderableWidget(new NoteGridEditWidget(this.width, this.height, this));
-        this.editDoneButton = this.addRenderableWidget(new Button.Builder(Component.literal("Done"), (button) -> changeEditMode(Boolean.FALSE)).pos(this.width / 2 - 80, this.height / 2 + 70).width(160).build());
+        this.editDoneButton = this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (button) -> changeEditMode(Boolean.FALSE)).pos(this.width / 2 - 80, this.height / 2 + 70).width(160).build());
         changeEditMode(editMode);
         updatePageButtonVisibility();
     }

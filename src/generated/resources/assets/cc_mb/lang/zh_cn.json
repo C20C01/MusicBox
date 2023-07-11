@@ -1,0 +1,11 @@
+{
+  "block.cc_mb.music_box_block": "八音盒",
+  "block.cc_mb.perforation_table_block": "打孔台",
+  "item.cc_mb.awl": "锥子",
+  "item.cc_mb.note_grid": "纸带",
+  "text.cc_mb.change_tick_per_beat": "八音盒每拍所用刻数已设为: ",
+  "text.cc_mb.clone": "将前一张纸带覆盖到后一张纸带\n（需要页数一致）",
+  "text.cc_mb.connect": "将两纸带连接",
+  "text.cc_mb.punch": "使用锥子为纸带打孔",
+  "text.cc_mb.set_tick_per_beat": "每拍所用刻数: "
+}

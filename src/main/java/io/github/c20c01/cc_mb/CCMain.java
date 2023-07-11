@@ -6,8 +6,8 @@ import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.PerforationTableBlock;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
+import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
-import io.github.c20c01.cc_mb.item.Puncher;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +28,13 @@ public class CCMain {
     public static final String ID = "cc_mb";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    // 文本
+    public static final String TEXT_PUNCH = "text." + ID + ".punch";
+    public static final String TEXT_CLONE = "text." + ID + ".clone";
+    public static final String TEXT_CONNECT = "text." + ID + ".connect";
+    public static final String TEXT_SET_TICK_PER_BEAT = "text." + ID + ".set_tick_per_beat";
+    public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
+
     // 网络相关
     public static final String NETWORK_VERSION = "1";
     public static final ResourceLocation CHANNEL_GRID_TO_S = new ResourceLocation(ID, "network_grid_to_s");
@@ -43,8 +50,8 @@ public class CCMain {
     // 物品
     public static final String NOTE_GRID_ITEM_ID = "note_grid";
     public static final RegistryObject<NoteGrid> NOTE_GRID_ITEM;
-    public static final String PUNCHER_ITEM_ID = "puncher";
-    public static final RegistryObject<Puncher> PUNCHER_ITEM;
+    public static final String AWL_ITEM_ID = "awl";
+    public static final RegistryObject<Awl> AWL_ITEM;
 
 
     // 方块
@@ -65,7 +72,7 @@ public class CCMain {
 
     static {
         NOTE_GRID_ITEM = ITEMS.register(NOTE_GRID_ITEM_ID, NoteGrid::new);
-        PUNCHER_ITEM = ITEMS.register(PUNCHER_ITEM_ID, Puncher::new);
+        AWL_ITEM = ITEMS.register(AWL_ITEM_ID, Awl::new);
 
         MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, MusicBoxBlock::new);
         MUSIC_BOX_BLOCK_ITEM = ITEMS.register(MUSIC_BOX_BLOCK_ID, () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
@@ -83,12 +90,12 @@ public class CCMain {
                 .displayItems((parameters, output) -> {
                     output.accept(MUSIC_BOX_BLOCK_ITEM.get());
                     output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
-                    output.accept(PUNCHER_ITEM.get());
+                    output.accept(AWL_ITEM.get());
                     output.accept(Items.SLIME_BALL);
                     output.accept(NOTE_GRID_ITEM.get());
                     output.accept(NoteGrid.changeToTestingGrid(new ItemStack(NOTE_GRID_ITEM.get())));
                 })
-                .title(Component.literal("TODO"))
+                .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))
                 .build()
         );
     }

@@ -68,7 +68,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         this.toolSlot = this.addSlot(new Slot(this.container, 1, 25, 42) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
-                return itemStack.is(Items.SLIME_BALL) || itemStack.is(CCMain.PUNCHER_ITEM.get());
+                return itemStack.is(Items.SLIME_BALL) || itemStack.is(CCMain.AWL_ITEM.get());
             }
 
             @Override
@@ -167,7 +167,6 @@ public class PerforationTableMenu extends AbstractContainerMenu {
             ItemStack tool = toolSlot.getItem();
             if (!player.getAbilities().instabuild && tool.hurt(cost, player.level().random, (ServerPlayer) player)) {
                 tool.shrink(1);
-                player.playSound(SoundEvents.ANVIL_BREAK);
             }
         }
     }
@@ -198,8 +197,8 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     public void punchGridOnServer(ServerPlayer player, byte page, byte beat, byte note) {
-        hurtTool(player, 2);
         punchGrid(page, beat, note);
+        hurtTool(player, 2);
     }
 
     protected boolean punchGrid(byte page, byte beat, byte note) {
@@ -248,7 +247,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
             return;
         }
 
-        if (tool.is(CCMain.PUNCHER_ITEM.get())) {
+        if (tool.is(CCMain.AWL_ITEM.get())) {
             if (otherGridSlot.getItem().isEmpty()) {
                 mode = Mode.PUNCH;
             } else {

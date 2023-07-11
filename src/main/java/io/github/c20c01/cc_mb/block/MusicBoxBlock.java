@@ -1,10 +1,13 @@
 package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.item.Awl;
+import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -130,6 +133,14 @@ public class MusicBoxBlock extends BaseEntityBlock {
         MusicBoxBlockEntity blockEntity = (MusicBoxBlockEntity) level.getBlockEntity(blockPos);
         if (blockEntity == null) {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
+        }
+
+        if (itemStack.is(CCMain.AWL_ITEM.get()) && !blockState.getValue(POWERED)) {
+            // 调节每拍所用的tick数
+            byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
+            blockEntity.setTickPerBeat(tickPerBeat);
+            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), Boolean.TRUE);
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
         if (blockState.getValue(EMPTY)) {

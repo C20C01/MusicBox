@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.block;
 
+import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -45,6 +46,6 @@ public class PerforationTableBlock extends Block {
     @Nullable
     @SuppressWarnings("deprecation")
     public MenuProvider getMenuProvider(BlockState blockState, Level level, BlockPos blockPos) {
-        return new SimpleMenuProvider((containerId, inventory, player) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.literal("TODO"));
+        return new SimpleMenuProvider((containerId, inventory, player) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.translatable(CCMain.PERFORATION_TABLE_BLOCK.get().getDescriptionId()));
     }
 }

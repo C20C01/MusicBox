@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/handheld",
   "textures": {
-    "layer0": "cc_mb:item/puncher"
+    "layer0": "cc_mb:item/awl"
   }
 }

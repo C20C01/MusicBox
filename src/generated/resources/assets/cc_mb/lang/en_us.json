@@ -1,0 +1,11 @@
+{
+  "block.cc_mb.music_box_block": "Music box",
+  "block.cc_mb.perforation_table_block": "Perforation table",
+  "item.cc_mb.awl": "Awl",
+  "item.cc_mb.note_grid": "Note grid",
+  "text.cc_mb.change_tick_per_beat": "Ticks per beat has been set to:",
+  "text.cc_mb.clone": "Cover the note grid with the previous one\n(Requires consistent number of pages)",
+  "text.cc_mb.connect": "Connect the two note grid",
+  "text.cc_mb.punch": "Punch the note grid with awl",
+  "text.cc_mb.set_tick_per_beat": "Ticks per beat: "
+}

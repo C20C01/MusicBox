@@ -27,11 +27,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 
 public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleItem {
+    public static final int MIN_TICK_PER_BEAT = 4;
+    public static final int MAX_TICK_PER_BEAT = 20;
     private byte delta = 0;
     private byte beat = 0;
     private byte page = 0;
     private byte note = -1;
     private byte lastNote = -2;
+    private byte tickPerBeat = 10;
     private NoteGrid.Page[] pages;
     private ItemStack noteGrid = ItemStack.EMPTY;
 
@@ -81,7 +84,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     }
 
     public static void playTick(Level level, BlockPos blockPos, BlockState blockState, MusicBoxBlockEntity blockEntity) {
-        if (blockState.getValue(MusicBoxBlock.POWERED)) {
+        if (blockState.getValue(MusicBoxBlock.POWERED) && !blockState.getValue(MusicBoxBlock.EMPTY)) {
             blockEntity.playTick((ServerLevel) level, blockPos, blockState);
         }
     }
@@ -89,7 +92,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     public void playTick(ServerLevel level, BlockPos blockPos, BlockState blockState) {
         if (pages == null) return;
         delta++;
-        if (delta >= 10) {
+        if (delta >= tickPerBeat) {
             delta = 0;
             playOneBeat(level, blockPos, blockState);
         }
@@ -155,7 +158,9 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         beat = compoundTag.getByte("Beat");
         page = compoundTag.getByte("Page");
         note = compoundTag.getByte("Note");
-        setNoteGrid(ItemStack.of(compoundTag.getCompound("NoteGrid")));
+        setTickPerBeat(compoundTag.getByte("TickPerBeat"));
+        ItemStack noteGrid = ItemStack.of(compoundTag.getCompound("NoteGrid"));
+        if (noteGrid.is(CCMain.NOTE_GRID_ITEM.get())) setNoteGrid(noteGrid);
     }
 
     @Override
@@ -165,6 +170,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         compoundTag.putShort("Beat", beat);
         compoundTag.putByte("Page", page);
         compoundTag.putByte("Note", note);
+        compoundTag.putByte("TickPerBeat", tickPerBeat);
         compoundTag.put("NoteGrid", noteGrid.save(new CompoundTag()));
     }
 
@@ -214,5 +220,21 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
             Vec3 vec3 = Vec3.atBottomCenterOf(blockPos).add(0.0D, 1.2F, 0.0D);
             serverlevel.sendParticles(ParticleTypes.NOTE, vec3.x(), vec3.y(), vec3.z(), 0, note / 24D, 0.0D, 0.0D, 1.0D);
         }
+    }
+
+    public void setTickPerBeat(byte tickPerBeat) {
+        if (tickPerBeat < MIN_TICK_PER_BEAT) {
+            this.tickPerBeat = MIN_TICK_PER_BEAT;
+            return;
+        }
+        if (tickPerBeat > MAX_TICK_PER_BEAT) {
+            this.tickPerBeat = MAX_TICK_PER_BEAT;
+            return;
+        }
+        this.tickPerBeat = tickPerBeat;
+    }
+
+    public byte getTickPerBeat() {
+        return tickPerBeat;
     }
 }

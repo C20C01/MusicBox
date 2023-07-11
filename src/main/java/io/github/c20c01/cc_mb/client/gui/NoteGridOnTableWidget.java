@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.client.gui;
 
+import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
@@ -72,9 +73,9 @@ public class NoteGridOnTableWidget extends AbstractWidget {
     public void setTip(PerforationTableMenu.Mode mode) {
         Component component = null;
         switch (mode) {
-            case PUNCH -> component = Component.literal("Punch");
-            case CONNECT -> component = Component.literal("Connect");
-            case CLONE -> component = Component.literal("Clone");
+            case PUNCH -> component = Component.translatable(CCMain.TEXT_PUNCH);
+            case CONNECT -> component = Component.translatable(CCMain.TEXT_CONNECT);
+            case CLONE -> component = Component.translatable(CCMain.TEXT_CLONE);
         }
         setTooltip(component == null ? null : Tooltip.create(component));
     }
