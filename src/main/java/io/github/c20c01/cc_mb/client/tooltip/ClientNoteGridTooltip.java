@@ -22,7 +22,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientNoteGridTooltip implements ClientTooltipComponent {
-    private static final Component text = Component.translatable(CCMain.TEXT_SHIFT_TO_PREVIEW).withStyle(ChatFormatting.DARK_GRAY);
+    private static final Component text = Component.translatable(CCMain.TEXT_SHIFT_TO_PREVIEW).withStyle(ChatFormatting.GRAY);
     private final NoteGrid.Page page;
 
     public ClientNoteGridTooltip(NoteGrid.Tooltip tooltip) {
