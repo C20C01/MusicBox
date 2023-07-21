@@ -135,7 +135,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
 
-        if (itemStack.is(CCMain.AWL_ITEM.get()) && !blockState.getValue(POWERED)) {
+        if (itemStack.is(CCMain.AWL_ITEM.get())) {
             // 调节每拍所用的tick数
             byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
             blockEntity.setTickPerBeat(tickPerBeat);
@@ -145,8 +145,8 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
         if (blockState.getValue(EMPTY)) {
             // 放入纸带
-            if (itemStack.is(CCMain.NOTE_GRID_ITEM.get()) && blockEntity.setNoteGrid(itemStack)) {
-                if (!player.getAbilities().instabuild) {
+            if (itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
+                if (blockEntity.setNoteGrid(itemStack) && !player.getAbilities().instabuild) {
                     itemStack.setCount(0);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);

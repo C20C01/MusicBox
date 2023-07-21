@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.fml.common.Mod;
@@ -28,12 +29,32 @@ public class CCMain {
     public static final String ID = "cc_mb";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    // 文本
+    // 提示文本
     public static final String TEXT_PUNCH = "text." + ID + ".punch";
-    public static final String TEXT_CLONE = "text." + ID + ".clone";
+    public static final String TEXT_SUPERPOSE = "text." + ID + ".superpose";
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
+    public static final String TEXT_BOOK = "text." + ID + ".book";
     public static final String TEXT_SET_TICK_PER_BEAT = "text." + ID + ".set_tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
+    public static final String TEXT_SHIFT_TO_PREVIEW = "text." + ID + ".shift_to_preview";
+
+    // 音色文本
+    public static final String TEXT_SOUND_BASS = "text." + ID + ".bass";
+    public static final String TEXT_SOUND_SNARE = "text." + ID + ".snare";
+    public static final String TEXT_SOUND_HAT = "text." + ID + ".hat";
+    public static final String TEXT_SOUND_BASS_DRUM = "text." + ID + ".bass_drum";
+    public static final String TEXT_SOUND_BELL = "text." + ID + ".bell";
+    public static final String TEXT_SOUND_FLUTE = "text." + ID + ".flute";
+    public static final String TEXT_SOUND_CHIME = "text." + ID + ".chime";
+    public static final String TEXT_SOUND_GUITAR = "text." + ID + ".guitar";
+    public static final String TEXT_SOUND_XYLOPHONE = "text." + ID + ".xylophone";
+    public static final String TEXT_SOUND_IRON_XYLOPHONE = "text." + ID + ".iron_xylophone";
+    public static final String TEXT_SOUND_COW_BELL = "text." + ID + ".cow_bell";
+    public static final String TEXT_SOUND_DIDGERIDOO = "text." + ID + ".didgeridoo";
+    public static final String TEXT_SOUND_BIT = "text." + ID + ".bit";
+    public static final String TEXT_SOUND_BANJO = "text." + ID + ".banjo";
+    public static final String TEXT_SOUND_PLING = "text." + ID + ".pling";
+    public static final String TEXT_SOUND_HARP = "text." + ID + ".harp";
 
     // 网络相关
     public static final String NETWORK_VERSION = "1";
@@ -85,19 +106,33 @@ public class CCMain {
         PERFORATION_TABLE_MENU = MENU_TYPES.register(PERFORATION_TABLE_MENU_ID, () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
 
 
-        CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
-                .icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance())
-                .displayItems((parameters, output) -> {
-                    output.accept(MUSIC_BOX_BLOCK_ITEM.get());
-                    output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
-                    output.accept(AWL_ITEM.get());
-                    output.accept(Items.SLIME_BALL);
-                    output.accept(NOTE_GRID_ITEM.get());
-                    output.accept(NoteGrid.changeToTestingGrid(new ItemStack(NOTE_GRID_ITEM.get())));
-                })
-                .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))
-                .build()
-        );
+        CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder().icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
+            output.accept(MUSIC_BOX_BLOCK_ITEM.get());
+            output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
+            output.accept(AWL_ITEM.get());
+            output.accept(Items.SLIME_BALL);
+            output.accept(Items.WRITABLE_BOOK);
+            output.accept(NOTE_GRID_ITEM.get());
+            output.accept(NoteGrid.changeToTestingGrid(new ItemStack(NOTE_GRID_ITEM.get())));
+
+            output.accept(getNamedItem(Items.DARK_OAK_WOOD, Component.translatable(TEXT_SOUND_BASS)));
+            output.accept(getNamedItem(Items.SAND, Component.translatable(TEXT_SOUND_SNARE)));
+            output.accept(getNamedItem(Items.GREEN_STAINED_GLASS, Component.translatable(TEXT_SOUND_HAT)));
+            output.accept(getNamedItem(Items.SMOOTH_STONE, Component.translatable(TEXT_SOUND_BASS_DRUM)));
+            output.accept(getNamedItem(Items.GOLD_BLOCK, Component.translatable(TEXT_SOUND_BELL)));
+            output.accept(getNamedItem(Items.CLAY, Component.translatable(TEXT_SOUND_FLUTE)));
+            output.accept(getNamedItem(Items.PACKED_ICE, Component.translatable(TEXT_SOUND_CHIME)));
+            output.accept(getNamedItem(Items.PINK_WOOL, Component.translatable(TEXT_SOUND_GUITAR)));
+            output.accept(getNamedItem(Items.BONE_BLOCK, Component.translatable(TEXT_SOUND_XYLOPHONE)));
+            output.accept(getNamedItem(Items.IRON_BLOCK, Component.translatable(TEXT_SOUND_IRON_XYLOPHONE)));
+            output.accept(getNamedItem(Items.SOUL_SAND, Component.translatable(TEXT_SOUND_COW_BELL)));
+            output.accept(getNamedItem(Items.PUMPKIN, Component.translatable(TEXT_SOUND_DIDGERIDOO)));
+            output.accept(getNamedItem(Items.EMERALD_BLOCK, Component.translatable(TEXT_SOUND_BIT)));
+            output.accept(getNamedItem(Items.HAY_BLOCK, Component.translatable(TEXT_SOUND_BANJO)));
+            output.accept(getNamedItem(Items.GLOWSTONE, Component.translatable(TEXT_SOUND_PLING)));
+            output.accept(getNamedItem(Items.MOSS_BLOCK, Component.translatable(TEXT_SOUND_HARP)));
+
+        }).title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId())).build());
     }
 
     public CCMain() {
@@ -107,5 +142,9 @@ public class CCMain {
         BLOCK_ENTITY_TYPES.register(modEventBus);
         MENU_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
+    }
+
+    private static ItemStack getNamedItem(ItemLike itemLike, Component component) {
+        return new ItemStack(itemLike).setHoverName(component);
     }
 }

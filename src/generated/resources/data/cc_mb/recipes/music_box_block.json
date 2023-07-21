@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "item": "minecraft:note_block"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PNP",
+    "PPP"
+  ],
+  "result": {
+    "item": "cc_mb:music_box_block"
+  },
+  "show_notification": true
+}

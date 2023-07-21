@@ -4,13 +4,17 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.MusicBoxBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -38,8 +42,32 @@ public class Awl extends Item {
         }
 
         setTickPerBeatTag(tag, tickPerBeat);
-        player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(String.valueOf(tickPerBeat)).withStyle(ChatFormatting.GOLD), Boolean.TRUE);
+        player.displayClientMessage(
+                Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT)
+                        .append(String.valueOf(tickPerBeat))
+                        .withStyle(ChatFormatting.GOLD),
+                Boolean.TRUE
+        );
         return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos blockPos = context.getClickedPos();
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
+            Player player = context.getPlayer();
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.displayClientMessage(
+                        Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT)
+                                .append(String.valueOf(blockEntity.getTickPerBeat()))
+                                .withStyle(ChatFormatting.DARK_GREEN),
+                        Boolean.TRUE
+                );
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+        return super.useOn(context);
     }
 
     private static void setTickPerBeatTag(CompoundTag tag, byte tickPerBeat) {

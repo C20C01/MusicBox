@@ -20,13 +20,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @OnlyIn(Dist.CLIENT)
 public class NoteGridOnTableWidget extends AbstractWidget {
     private final PerforationTableScreen screen;
-    private final int noteGridLeft;
-    private final int noteGridBottom;
+    public static final int WIDTH = 68;
+    public static final int HEIGHT = 53;
 
     public NoteGridOnTableWidget(int x, int y, PerforationTableScreen screen) {
-        super(x, y, 68, 53, Component.empty());
-        noteGridLeft = getX() + 2;
-        noteGridBottom = getY() + 50;
+        super(x, y, WIDTH, HEIGHT, Component.empty());
         this.visible = !screen.isEditMode();
         this.screen = screen;
     }
@@ -34,16 +32,20 @@ public class NoteGridOnTableWidget extends AbstractWidget {
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (screen.pages == null) return;
-        guiGraphics.blit(PerforationTableScreen.GUI_BACKGROUND, getX(), getY(), 0, 168, width, height);
+        renderNoteGrid(guiGraphics, screen.pages[screen.page], getX(), getY());
+    }
+
+    public static void renderNoteGrid(GuiGraphics guiGraphics, NoteGrid.Page page, int x, int y) {
+        guiGraphics.blit(PerforationTableScreen.GUI_BACKGROUND, x, y, 0, 168, WIDTH, HEIGHT);
         for (byte beat = 0; beat < 64; beat++) {
-            NoteGrid.Beat oneBeat = screen.pages[screen.page].getBeat(beat);
+            NoteGrid.Beat oneBeat = page.getBeat(beat);
             for (byte note : oneBeat.getNotes()) {
-                drawNoteOnTable(guiGraphics, beat, note);
+                drawNoteOnTable(guiGraphics, x + 2, y + 50, beat, note);
             }
         }
     }
 
-    private void drawNoteOnTable(GuiGraphics guiGraphics, byte beat, byte note) {
+    private static void drawNoteOnTable(GuiGraphics guiGraphics, int noteGridLeft, int noteGridBottom, byte beat, byte note) {
         int x = noteGridLeft + beat;
         int y = noteGridBottom - note * 2;
         guiGraphics.fill(x, y, x + 1, y + 1, PerforationTableScreen.BLACK);
@@ -64,8 +66,9 @@ public class NoteGridOnTableWidget extends AbstractWidget {
     public void onClick(double x, double y) {
         super.onClick(x, y);
         switch (screen.getMenu().mode) {
-            case CLONE -> sendIntToServer(0);
+            case SUPERPOSE -> sendIntToServer(0);
             case CONNECT -> sendIntToServer(1);
+            case BOOK -> sendIntToServer(2);
             case PUNCH -> screen.changeEditMode(Boolean.TRUE);
         }
     }
@@ -73,9 +76,10 @@ public class NoteGridOnTableWidget extends AbstractWidget {
     public void setTip(PerforationTableMenu.Mode mode) {
         Component component = null;
         switch (mode) {
-            case PUNCH -> component = Component.translatable(CCMain.TEXT_PUNCH);
+            case SUPERPOSE -> component = Component.translatable(CCMain.TEXT_SUPERPOSE);
             case CONNECT -> component = Component.translatable(CCMain.TEXT_CONNECT);
-            case CLONE -> component = Component.translatable(CCMain.TEXT_CLONE);
+            case BOOK -> component = Component.translatable(CCMain.TEXT_BOOK);
+            case PUNCH -> component = Component.translatable(CCMain.TEXT_PUNCH);
         }
         setTooltip(component == null ? null : Tooltip.create(component));
     }

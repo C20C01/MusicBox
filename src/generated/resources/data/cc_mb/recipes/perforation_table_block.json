@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "item": "cc_mb:note_grid"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "NN",
+    "PP",
+    "PP"
+  ],
+  "result": {
+    "item": "cc_mb:perforation_table_block"
+  },
+  "show_notification": true
+}
