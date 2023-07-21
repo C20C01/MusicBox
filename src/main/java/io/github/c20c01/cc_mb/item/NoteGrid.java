@@ -1,9 +1,7 @@
 package io.github.c20c01.cc_mb.item;
 
-import com.google.common.collect.ImmutableList;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
@@ -131,13 +129,11 @@ public class NoteGrid extends Item {
             return null;
         }
 
-        ImmutableList.Builder<String> builder = ImmutableList.builder();
-        BookViewScreen.loadPages(tag, builder::add);
-        List<String> codeOfPages = builder.build();
-
-        Page[] pages = new Page[codeOfPages.size()];
-        for (int i = 0; i < codeOfPages.size(); i++) {
-            pages[i] = Page.of(codeOfPages.get(i));
+        ListTag codeOfPages = tag.getList("pages", Tag.TAG_STRING);
+        int size = Math.min(codeOfPages.size(), MAX_PAGE);
+        Page[] pages = new Page[size];
+        for (int i = 0; i < size; i++) {
+            pages[i] = Page.of(codeOfPages.getString(i));
         }
 
         return pages;
