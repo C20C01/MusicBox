@@ -37,6 +37,7 @@ public class CCMain {
     public static final String TEXT_SET_TICK_PER_BEAT = "text." + ID + ".set_tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
     public static final String TEXT_SHIFT_TO_PREVIEW = "text." + ID + ".shift_to_preview";
+    public static final String TEXT_NUMBER_OF_PAGES = "text." + ID + ".number_of_pages";
 
     // 音色文本
     public static final String TEXT_SOUND_BASS = "text." + ID + ".bass";

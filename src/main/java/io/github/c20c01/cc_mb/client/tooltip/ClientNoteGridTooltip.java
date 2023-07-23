@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
@@ -22,11 +23,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientNoteGridTooltip implements ClientTooltipComponent {
-    private static final Component text = Component.translatable(CCMain.TEXT_SHIFT_TO_PREVIEW).withStyle(ChatFormatting.GRAY);
-    private final NoteGrid.Page page;
+    private static final MutableComponent SHIFT_TO_PREVIEW = Component.translatable(CCMain.TEXT_SHIFT_TO_PREVIEW).withStyle(ChatFormatting.GRAY);
+    private final NoteGrid.Page firstPage;
+    private final String numberOfPages;
 
     public ClientNoteGridTooltip(NoteGrid.Tooltip tooltip) {
-        this.page = tooltip.page();
+        this.firstPage = tooltip.page();
+        this.numberOfPages = Component.translatable(CCMain.TEXT_NUMBER_OF_PAGES).getString() + tooltip.numberOfPages();
     }
 
     private static boolean isShiftDown() {
@@ -35,18 +38,18 @@ public class ClientNoteGridTooltip implements ClientTooltipComponent {
 
     @Override
     public int getHeight() {
-        return isShiftDown() ? NoteGridOnTableWidget.HEIGHT + 2 : 10;
+        return isShiftDown() ? NoteGridOnTableWidget.HEIGHT + 12 : 10;
     }
 
     @Override
     public int getWidth(Font font) {
-        return isShiftDown() ? NoteGridOnTableWidget.WIDTH : font.width(text);
+        return isShiftDown() ? Math.max(NoteGridOnTableWidget.WIDTH, font.width(numberOfPages)) : font.width(SHIFT_TO_PREVIEW);
     }
 
     @Override
     public void renderText(Font font, int x, int y, Matrix4f matrix4f, MultiBufferSource.BufferSource bufferSource) {
         if (!Screen.hasShiftDown()) {
-            font.drawInBatch(text, x, y, 16777215, true, matrix4f, bufferSource, Font.DisplayMode.NORMAL, 0, 16777215);
+            font.drawInBatch(SHIFT_TO_PREVIEW, x, y, 16777215, true, matrix4f, bufferSource, Font.DisplayMode.NORMAL, 0, 16777215);
         }
         ClientTooltipComponent.super.renderText(font, x, y, matrix4f, bufferSource);
     }
@@ -54,7 +57,8 @@ public class ClientNoteGridTooltip implements ClientTooltipComponent {
     @Override
     public void renderImage(Font font, int x, int y, GuiGraphics guiGraphics) {
         if (Screen.hasShiftDown()) {
-            NoteGridOnTableWidget.renderNoteGrid(guiGraphics, page, x, y);
+            NoteGridOnTableWidget.renderNoteGrid(guiGraphics, firstPage, x, y);
+            guiGraphics.drawString(font, numberOfPages, x, (y + NoteGridOnTableWidget.HEIGHT + 2), 16777215);
         }
         ClientTooltipComponent.super.renderImage(font, x, y, guiGraphics);
     }

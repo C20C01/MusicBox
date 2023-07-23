@@ -86,6 +86,11 @@ public class CCLanguageProvider extends LanguageProvider {
             case EN_US -> "[Shift to preview]";
             case ZH_CN -> "[按住Shift键预览]";
         });
+        this.add(CCMain.TEXT_NUMBER_OF_PAGES, switch (this.locale) {
+            default -> throw new IllegalStateException();
+            case EN_US -> "Page count: ";
+            case ZH_CN -> "总页数: ";
+        });
 
         this.add(CCMain.TEXT_SOUND_BASS, switch (this.locale) {
             default -> throw new IllegalStateException();

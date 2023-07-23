@@ -19,6 +19,7 @@
   "text.cc_mb.harp": "Harp",
   "text.cc_mb.hat": "Hat",
   "text.cc_mb.iron_xylophone": "Iron xylophone",
+  "text.cc_mb.number_of_pages": "Page count: ",
   "text.cc_mb.pling": "Pling",
   "text.cc_mb.punch": "Punch the note grid with awl",
   "text.cc_mb.set_tick_per_beat": "Ticks per beat: ",

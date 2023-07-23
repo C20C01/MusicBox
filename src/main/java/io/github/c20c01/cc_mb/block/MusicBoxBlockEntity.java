@@ -27,7 +27,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 
 public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleItem {
-    public static final int MIN_TICK_PER_BEAT = 4;
+    public static final int MIN_TICK_PER_BEAT = 2;
     public static final int MAX_TICK_PER_BEAT = 20;
     private byte delta = 0;
     private byte beat = 0;

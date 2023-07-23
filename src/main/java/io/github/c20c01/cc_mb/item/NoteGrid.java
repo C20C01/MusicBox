@@ -38,12 +38,13 @@ public class NoteGrid extends Item {
         return noteGrid;
     }
 
-    public record Tooltip(NoteGrid.Page page) implements TooltipComponent {
+    public record Tooltip(NoteGrid.Page page, Byte numberOfPages) implements TooltipComponent {
     }
 
     @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack itemStack) {
-        return Optional.of(new Tooltip(readFromTag(itemStack)[0]));
+        Page[] pages = readFromTag(itemStack);
+        return Optional.of(new Tooltip(pages[0], (byte) pages.length));
     }
 
     @Override
