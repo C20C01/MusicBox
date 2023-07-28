@@ -25,7 +25,6 @@ import java.util.Set;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-
 public class CCLootTableProvider extends LootTableProvider {
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent event) {

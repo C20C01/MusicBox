@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "empty=true": {
+      "model": "cc_mb:block/sound_box_block_empty"
+    },
+    "empty=false": {
+      "model": "cc_mb:block/sound_box_block"
+    }
+  }
+}

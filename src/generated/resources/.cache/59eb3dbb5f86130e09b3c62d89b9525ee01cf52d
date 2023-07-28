@@ -1,3 +1,4 @@
-// 1.20.1	2023-07-11T20:35:08.4349888	Loot Tables
+// 1.20.1	2023-07-26T21:31:01.6168935	Loot Tables
 ebf2365665c8a860bf3613acec528c444425fffd data/cc_mb/loot_tables/blocks/music_box_block.json
 af471eec0c6c028ad0b7b9f60212a96480ab82fe data/cc_mb/loot_tables/blocks/perforation_table_block.json
+1d0c507a8f880ec72768f2a1ead93e5e3468dadc data/cc_mb/loot_tables/blocks/sound_box_block.json

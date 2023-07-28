@@ -1,8 +1,10 @@
 {
   "block.cc_mb.music_box_block": "Music box",
   "block.cc_mb.perforation_table_block": "Perforation table",
+  "block.cc_mb.sound_box_block": "Sound box",
   "item.cc_mb.awl": "Awl",
   "item.cc_mb.note_grid": "Note grid",
+  "item.cc_mb.sound_shard": "Sound shard",
   "text.cc_mb.banjo": "Banjo",
   "text.cc_mb.bass": "Bass",
   "text.cc_mb.bass_drum": "Bass drum",
@@ -23,6 +25,7 @@
   "text.cc_mb.pling": "Pling",
   "text.cc_mb.punch": "Punch the note grid with awl",
   "text.cc_mb.set_tick_per_beat": "Ticks per beat: ",
+  "text.cc_mb.shard_without_sound": "The shard doesn't have a sound",
   "text.cc_mb.shift_to_preview": "[Shift to preview]",
   "text.cc_mb.snare": "Snare",
   "text.cc_mb.superpose": "Superpose the right note grid to the left one",

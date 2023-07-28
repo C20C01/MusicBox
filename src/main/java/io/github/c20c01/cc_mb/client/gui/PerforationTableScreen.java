@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -22,7 +22,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected static final int BLACK = -16777216;
-    protected NoteGrid.Page[] pages;
+    protected NoteGridData.Page[] pages;
     protected byte page = 0;
 
     private PageButton backButton;
@@ -64,7 +64,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     @Override
     protected void containerTick() {
         if (menu.shouldUpdate()) {
-            NoteGrid.Page[] update = menu.getPages();
+            NoteGridData.Page[] update = menu.getPages();
             if (update == null || page >= update.length) {
                 page = 0;
                 changeEditMode(Boolean.FALSE);
@@ -87,7 +87,6 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // CCMain.LOGGER.info("mouseClicked: " + mouseX + ", " + mouseY + ", " + button);
         if (editMode) {
             editWidget.mouseClicked(mouseX, mouseY, button);
             editDoneButton.mouseClicked(mouseX, mouseY, button);

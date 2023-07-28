@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
-import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.network.CCNetwork;
+import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,6 +20,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class NoteGridEditWidget extends AbstractWidget {
     private static final int TRANSLUCENT_BLACK = 838860800;
     private static final int PAPER_COLOR = -133142;
+    private static final String[] NOTE_NAME = new String[]{"1", "#1", "2", "#2", "3", "4", "#4", "5", "#5", "6", "#6", "7"};
     private final byte[] mousePosOnGird = new byte[]{-1, -1};
     private final PerforationTableScreen screen;
     private final int noteGridBottom;
@@ -54,7 +55,7 @@ public class NoteGridEditWidget extends AbstractWidget {
         // 竖线&音符
         for (byte beat = 0; beat < 64; beat++) {
             guiGraphics.vLine(leftLine + beat * 6, getY() + 12, noteGridBottom + 1, TRANSLUCENT_BLACK);
-            NoteGrid.Beat oneBeat = screen.pages[screen.page].getBeat(beat);
+            NoteGridData.Beat oneBeat = screen.pages[screen.page].getBeat(beat);
             int noteLeft = getX() + 12;
             int noteBottom = getY() + 156;
             for (byte note : oneBeat.getNotes()) {
@@ -88,13 +89,11 @@ public class NoteGridEditWidget extends AbstractWidget {
 
     @Override
     public void onClick(double x, double y) {
-        super.onClick(x, y);
         if (mousePosOnGird[0] != -1) {
             byte page = screen.page;
             byte beat = mousePosOnGird[0];
             byte note = mousePosOnGird[1];
             if (screen.getMenu().punchGrid(page, beat, note)) {
-                // CCMain.LOGGER.info("To Server punch: " + page + "," + beat + "," + note);
                 var packet = new CCNetwork.NoteGridPacket(screen.getMenu().containerId, page, beat, note);
                 CCNetwork.CHANNEL_GRID_TO_S.sendToServer(packet);
             }
@@ -128,8 +127,7 @@ public class NoteGridEditWidget extends AbstractWidget {
     }
 
     private void setTip() {
-        String note = new String[]{"1", "#1", "2", "#2", "3", "4", "#4", "5", "#5", "6", "#6", "7"}[(mousePosOnGird[1] + 6) % 12]
-                + " (" + mousePosOnGird[1] + ")";
+        String note = NOTE_NAME[(mousePosOnGird[1] + 6) % 12] + " (" + mousePosOnGird[1] + ")";
         tip = Component.literal("Beat: " + mousePosOnGird[0] + ", Note: " + note);
     }
 }

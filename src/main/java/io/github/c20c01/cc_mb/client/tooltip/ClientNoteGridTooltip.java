@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.client.tooltip;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.NoteGridOnTableWidget;
 import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.Font;
@@ -24,7 +25,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @OnlyIn(Dist.CLIENT)
 public class ClientNoteGridTooltip implements ClientTooltipComponent {
     private static final MutableComponent SHIFT_TO_PREVIEW = Component.translatable(CCMain.TEXT_SHIFT_TO_PREVIEW).withStyle(ChatFormatting.GRAY);
-    private final NoteGrid.Page firstPage;
+    private final NoteGridData.Page firstPage;
     private final String numberOfPages;
 
     public ClientNoteGridTooltip(NoteGrid.Tooltip tooltip) {
@@ -49,7 +50,7 @@ public class ClientNoteGridTooltip implements ClientTooltipComponent {
     @Override
     public void renderText(Font font, int x, int y, Matrix4f matrix4f, MultiBufferSource.BufferSource bufferSource) {
         if (!Screen.hasShiftDown()) {
-            font.drawInBatch(SHIFT_TO_PREVIEW, x, y, 16777215, true, matrix4f, bufferSource, Font.DisplayMode.NORMAL, 0, 16777215);
+            font.drawInBatch(SHIFT_TO_PREVIEW, x, y, 16777215, true, matrix4f, bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
         }
         ClientTooltipComponent.super.renderText(font, x, y, matrix4f, bufferSource);
     }

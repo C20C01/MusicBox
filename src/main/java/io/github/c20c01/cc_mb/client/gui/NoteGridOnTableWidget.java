@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,10 +35,10 @@ public class NoteGridOnTableWidget extends AbstractWidget {
         renderNoteGrid(guiGraphics, screen.pages[screen.page], getX(), getY());
     }
 
-    public static void renderNoteGrid(GuiGraphics guiGraphics, NoteGrid.Page page, int x, int y) {
+    public static void renderNoteGrid(GuiGraphics guiGraphics, NoteGridData.Page page, int x, int y) {
         guiGraphics.blit(PerforationTableScreen.GUI_BACKGROUND, x, y, 0, 168, WIDTH, HEIGHT);
         for (byte beat = 0; beat < 64; beat++) {
-            NoteGrid.Beat oneBeat = page.getBeat(beat);
+            NoteGridData.Beat oneBeat = page.getBeat(beat);
             for (byte note : oneBeat.getNotes()) {
                 drawNoteOnTable(guiGraphics, x + 2, y + 50, beat, note);
             }

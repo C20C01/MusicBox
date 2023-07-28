@@ -48,6 +48,16 @@ public class CCLanguageProvider extends LanguageProvider {
             case EN_US -> "Awl";
             case ZH_CN -> "锥子";
         });
+        this.add(CCMain.SOUND_BOX_BLOCK.get(), switch (this.locale) {
+            default -> throw new IllegalStateException();
+            case EN_US -> "Sound box";
+            case ZH_CN -> "声响盒";
+        });
+        this.add(CCMain.SOUND_SHARD_ITEM.get(), switch (this.locale) {
+            default -> throw new IllegalStateException();
+            case EN_US -> "Sound shard";
+            case ZH_CN -> "声响碎片";
+        });
 
 
         this.add(CCMain.TEXT_PUNCH, switch (this.locale) {
@@ -90,6 +100,11 @@ public class CCLanguageProvider extends LanguageProvider {
             default -> throw new IllegalStateException();
             case EN_US -> "Page count: ";
             case ZH_CN -> "总页数: ";
+        });
+        this.add(CCMain.TEXT_SHARD_WITHOUT_SOUND, switch (this.locale) {
+            default -> throw new IllegalStateException();
+            case EN_US -> "The shard doesn't have a sound";
+            case ZH_CN -> "碎片还没有记录声音";
         });
 
         this.add(CCMain.TEXT_SOUND_BASS, switch (this.locale) {

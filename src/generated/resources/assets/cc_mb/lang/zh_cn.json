@@ -1,8 +1,10 @@
 {
   "block.cc_mb.music_box_block": "八音盒",
   "block.cc_mb.perforation_table_block": "打孔台",
+  "block.cc_mb.sound_box_block": "声响盒",
   "item.cc_mb.awl": "锥子",
   "item.cc_mb.note_grid": "纸带",
+  "item.cc_mb.sound_shard": "声响碎片",
   "text.cc_mb.banjo": "班卓琴",
   "text.cc_mb.bass": "贝斯",
   "text.cc_mb.bass_drum": "底鼓",
@@ -23,6 +25,7 @@
   "text.cc_mb.pling": "扣弦（电钢琴）",
   "text.cc_mb.punch": "使用锥子为纸带打孔",
   "text.cc_mb.set_tick_per_beat": "每拍所用刻数: ",
+  "text.cc_mb.shard_without_sound": "碎片还没有记录声音",
   "text.cc_mb.shift_to_preview": "[按住Shift键预览]",
   "text.cc_mb.snare": "小军鼓",
   "text.cc_mb.superpose": "将右面的纸带叠加到左面的纸带",

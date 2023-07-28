@@ -24,10 +24,12 @@ import java.util.function.Supplier;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCNetwork {
     public static final SimpleChannel CHANNEL_GRID_TO_S = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_GRID_TO_S, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
+    public static final SimpleChannel CHANNEL_SOUND_SHARD_TO_S = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_SOUND_SHARD_TO_S, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
 
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         CHANNEL_GRID_TO_S.registerMessage(0, NoteGridPacket.class, NoteGridPacket::encode, NoteGridPacket::decode, NoteGridPacket::handleOnServer, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL_SOUND_SHARD_TO_S.registerMessage(0, SoundShardPacket.class, SoundShardPacket::encode, SoundShardPacket::decode, SoundShardPacket::handleOnServer, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     public record NoteGridPacket(int containerId, byte page, byte beat, byte note) {
@@ -57,6 +59,26 @@ public class CCNetwork {
                 }
             }
 
+            context.setPacketHandled(true);
+        }
+    }
+
+    public record SoundShardPacket(int slot, String sound) {
+        public static SoundShardPacket decode(FriendlyByteBuf friendlyByteBuf) {
+            return new SoundShardPacket(friendlyByteBuf.readVarInt(), friendlyByteBuf.readUtf());
+        }
+
+        public void encode(FriendlyByteBuf friendlyByteBuf) {
+            friendlyByteBuf.writeVarInt(slot);
+            friendlyByteBuf.writeUtf(sound);
+        }
+
+        public void handleOnServer(Supplier<NetworkEvent.Context> contextSupplier) {
+            NetworkEvent.Context context = contextSupplier.get();
+            ServerPlayer player = context.getSender();
+            if (player != null) {
+                context.enqueueWork(() -> UpdateSoundShard.onServer(player, slot, sound));
+            }
             context.setPacketHandled(true);
         }
     }

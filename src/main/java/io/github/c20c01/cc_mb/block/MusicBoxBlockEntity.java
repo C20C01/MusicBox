@@ -1,15 +1,17 @@
 package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
@@ -35,7 +38,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     private byte note = -1;
     private byte lastNote = -2;
     private byte tickPerBeat = 10;
-    private NoteGrid.Page[] pages;
+    private NoteGridData.Page[] pages;
     private ItemStack noteGrid = ItemStack.EMPTY;
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -45,9 +48,9 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     public boolean setNoteGrid(ItemStack noteGrid) {
         if (this.noteGrid.isEmpty()) {
             this.noteGrid = noteGrid.copy();
-            pages = NoteGrid.readFromTag(this.noteGrid);
+            pages = NoteGridData.readFromTag(this.noteGrid);
             if (getLevel() != null)
-                MusicBoxBlock.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.FALSE);
+                CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.FALSE);
             return true;
         }
         return false;
@@ -61,10 +64,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         lastNote = -2;
         pages = null;
         noteGrid = ItemStack.EMPTY;
-    }
-
-    public ItemStack getNoteGrid() {
-        return noteGrid.copy();
+        setChanged();
     }
 
     public ItemStack outNoteGrid() {
@@ -74,7 +74,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
 
         ItemStack oldItemStack = noteGrid.copy();
         if (getLevel() != null)
-            MusicBoxBlock.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.TRUE);
+            CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.TRUE);
         reset();
         return oldItemStack;
     }
@@ -89,34 +89,29 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         }
     }
 
-    public void playTick(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+    private void playTick(ServerLevel level, BlockPos blockPos, BlockState blockState) {
         if (pages == null) return;
         delta++;
         if (delta >= tickPerBeat) {
             delta = 0;
-            playOneBeat(level, blockPos, blockState);
+            tryToPlayOneBeat(level, blockPos, blockState);
         }
     }
 
-    public void playOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+    public void tryToPlayOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
         if (pages == null) return;
 
         try {
-            NoteGrid.Page nowPage = pages[page];
-            NoteGrid.Beat oneBeat = nowPage.getBeat(beat);
-            if (oneBeat.notEmpty()) {
-                note = oneBeat.play(level, blockPos, blockState);
-                if (level.getBlockState(blockPos.above()).isAir()) spawnMusicParticles(level, blockPos, note);
-            } else {
-                note = -1;
-            }
+            NoteGridData.Page nowPage = pages[page];
+            NoteGridData.Beat oneBeat = nowPage.getBeat(beat);
+            note = playOneBeat(oneBeat, level, blockPos, blockState);
         } catch (ArrayIndexOutOfBoundsException e) {
             finishOneNoteGrid(level, blockPos, blockState);
             return;
         }
 
         beat++;
-        if (beat >= NoteGrid.Page.SIZE) {
+        if (beat >= NoteGridData.Page.SIZE) {
             page++;
             if (page >= pages.length) {
                 finishOneNoteGrid(level, blockPos, blockState);
@@ -129,6 +124,39 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
             lastNote = note;
             level.updateNeighbourForOutputSignal(blockPos, blockState.getBlock());
         }
+    }
+
+    private byte playOneBeat(NoteGridData.Beat beat, ServerLevel level, BlockPos blockPos, BlockState blockState) {
+        byte minNote = -1;
+
+        if (beat.notEmpty()) {
+            NoteBlockInstrument instrument = blockState.getValue(MusicBoxBlock.INSTRUMENT);
+            Holder<SoundEvent> holder;
+            long soundSeed;
+
+            if (instrument.hasCustomSound() && level.getBlockEntity(blockPos.below()) instanceof SoundBoxBlockEntity soundBoxBlockEntity) {
+                // 按声响盒的声音播放
+                holder = soundBoxBlockEntity.getInstrument();
+                if (holder == SoundBoxBlockEntity.EMPTY) {
+                    return minNote;
+                }
+
+                // 规定种子是为了保证每次播放的都是声音事件里的同一种声音
+                // 这应该是在不mixin的情况下最方便的法子了
+                soundSeed = soundBoxBlockEntity.getSoundSeed();
+            } else {
+                holder = instrument.getSoundEvent();
+                soundSeed = level.random.nextLong();
+            }
+
+            minNote = beat.play(level, blockPos, holder, soundSeed);
+
+            if (level.getBlockState(blockPos.above()).isAir()) {
+                spawnMusicParticles(level, blockPos, minNote);
+            }
+        }
+
+        return minNote;
     }
 
     private void finishOneNoteGrid(ServerLevel level, BlockPos blockPos, BlockState blockState) {
