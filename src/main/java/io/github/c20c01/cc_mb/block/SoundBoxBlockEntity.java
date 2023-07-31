@@ -49,6 +49,7 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
             if (getLevel() != null) {
                 CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, Boolean.FALSE);
             }
+            setChanged();
             return true;
         }
         return false;
@@ -62,6 +63,7 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
         if (getLevel() != null) {
             CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.TRUE);
         }
+        setChanged();
         return oldItemStack;
     }
 

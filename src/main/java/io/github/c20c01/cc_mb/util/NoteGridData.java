@@ -29,10 +29,12 @@ public class NoteGridData {
         ItemStack noteGrid = new ItemStack(CCMain.NOTE_GRID_ITEM.get());
 
         byte[] notes = new byte[]{
-                6, 6, 13, 13, 15, 15, 13, 11, 11, 10, 10, 8, 8, 6, -1,
+                6, 6, 13, 13, 15, 15, 13, -1,
+                11, 11, 10, 10, 8, 8, 6, -1,
                 13, 13, 11, 11, 10, 10, 8, -1,
                 13, 13, 11, 11, 10, 10, 8, -1,
-                6, 6, 13, 13, 15, 15, 13, 11, 11, 10, 10, 8, 8, 6
+                6, 6, 13, 13, 15, 15, 13, -1,
+                11, 11, 10, 10, 8, 8, 6
         };
         Beat[] beats1 = new Beat[notes.length];
         for (int i = 0; i < beats1.length; i++) {

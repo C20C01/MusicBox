@@ -42,7 +42,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
      * CONNECT: 连接
      * BOOK: 从书中读取
      */
-    protected enum Mode {
+    public enum Mode {
         EMPTY, CHECK, PUNCH, SUPERPOSE, CONNECT, BOOK
     }
 
@@ -80,7 +80,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
             @Override
             public int getMaxStackSize() {
-                return 1;
+                return 64;
             }
 
             @Override

@@ -33,7 +33,7 @@ public class Awl extends Item {
         CompoundTag tag = awl.getOrCreateTag();
 
         byte tickPerBeat = getTickPerBeatTag(tag);
-        tickPerBeat += player.isShiftKeyDown() ? -1 : 1;
+        tickPerBeat += (byte) (player.isShiftKeyDown() ? -1 : 1);
 
         if (tickPerBeat < MusicBoxBlockEntity.MIN_TICK_PER_BEAT) {
             tickPerBeat = MusicBoxBlockEntity.MAX_TICK_PER_BEAT;
