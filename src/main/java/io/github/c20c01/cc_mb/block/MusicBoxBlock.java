@@ -135,7 +135,6 @@ public class MusicBoxBlock extends BaseEntityBlock {
             // 调节每拍所用的tick数
             byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
             blockEntity.setTickPerBeat(tickPerBeat);
-            blockEntity.setChanged();
             player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), Boolean.TRUE);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }

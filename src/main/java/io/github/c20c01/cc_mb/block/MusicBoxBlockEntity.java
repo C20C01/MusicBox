@@ -49,8 +49,10 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
         if (this.noteGrid.isEmpty()) {
             this.noteGrid = noteGrid.copy();
             pages = NoteGridData.readFromTag(this.noteGrid);
-            if (getLevel() != null)
+            if (getLevel() != null) {
                 CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.FALSE);
+            }
+            setChanged();
             return true;
         }
         return false;
@@ -124,6 +126,8 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
             lastNote = note;
             level.updateNeighbourForOutputSignal(blockPos, blockState.getBlock());
         }
+
+        setChanged();
     }
 
     private byte playOneBeat(NoteGridData.Beat beat, ServerLevel level, BlockPos blockPos, BlockState blockState) {
@@ -259,7 +263,10 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
             this.tickPerBeat = MAX_TICK_PER_BEAT;
             return;
         }
-        this.tickPerBeat = tickPerBeat;
+        if (this.tickPerBeat != tickPerBeat) {
+            this.tickPerBeat = tickPerBeat;
+            setChanged();
+        }
     }
 
     public byte getTickPerBeat() {
