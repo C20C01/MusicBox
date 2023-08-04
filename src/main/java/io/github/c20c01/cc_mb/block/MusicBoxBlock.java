@@ -141,12 +141,14 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
         if (blockState.getValue(EMPTY)) {
             // 放入纸带
-            if (itemStack.is(CCMain.NOTE_GRID_ITEM.get()) && blockEntity.setNoteGrid(itemStack)) {
-                blockEntity.setChanged();
-                itemStack.shrink(1);
-                return InteractionResult.sidedSuccess(level.isClientSide);
+            if (itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
+                if (level.isClientSide) {
+                    return InteractionResult.SUCCESS;
+                } else if (blockEntity.setNoteGrid(itemStack)) {
+                    itemStack.shrink(1);
+                    return InteractionResult.CONSUME;
+                }
             }
-
         } else {
             if (player.isShiftKeyDown()) {
                 // 取出纸带
