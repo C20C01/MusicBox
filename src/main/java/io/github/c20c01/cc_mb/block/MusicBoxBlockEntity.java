@@ -131,8 +131,6 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
     }
 
     private byte playOneBeat(NoteGridData.Beat beat, ServerLevel level, BlockPos blockPos, BlockState blockState) {
-        byte minNote = -1;
-
         if (beat.notEmpty()) {
             NoteBlockInstrument instrument = blockState.getValue(MusicBoxBlock.INSTRUMENT);
             Holder<SoundEvent> holder;
@@ -142,7 +140,7 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
                 // 按声响盒的声音播放
                 holder = soundBoxBlockEntity.getInstrument();
                 if (holder == SoundBoxBlockEntity.EMPTY) {
-                    return minNote;
+                    return beat.getMinNote();
                 }
 
                 // 规定种子是为了保证每次播放的都是声音事件里的同一种声音
@@ -153,14 +151,15 @@ public class MusicBoxBlockEntity extends BlockEntity implements ContainerSingleI
                 soundSeed = level.random.nextLong();
             }
 
-            minNote = beat.play(level, blockPos, holder, soundSeed);
+            byte minNote = beat.play(level, blockPos, holder, soundSeed);
 
             if (level.getBlockState(blockPos.above()).isAir()) {
                 spawnMusicParticles(level, blockPos, minNote);
             }
-        }
 
-        return minNote;
+            return minNote;
+        }
+        return -1;
     }
 
     private void finishOneNoteGrid(ServerLevel level, BlockPos blockPos, BlockState blockState) {

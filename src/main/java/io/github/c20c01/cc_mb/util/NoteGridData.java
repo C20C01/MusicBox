@@ -302,6 +302,10 @@ public class NoteGridData {
             return notes;
         }
 
+        public byte getMinNote() {
+            return notes[0];
+        }
+
         public boolean notEmpty() {
             return notes.length > 0;
         }
@@ -316,7 +320,7 @@ public class NoteGridData {
                 level.playSeededSound(null, x, y, z, holder, SoundSource.RECORDS, 3.0F, pitch, soundSeed);
             }
 
-            return notes[0];
+            return getMinNote();
         }
     }
 }
