@@ -1,9 +1,11 @@
 # 纸带八音盒
 
-Forge - 1.12.2
+Forge - 1.20.1
 ![MusicBox.png](MusicBox.png)
 
 ---
+
+English introduction on CurseForge >> [Here](https://www.curseforge.com/minecraft/mc-mods/cc-mb)
 
 在纸带打出你喜欢的歌曲，使用八音盒进行播放
 
