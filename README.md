@@ -1,6 +1,9 @@
+[English version on CurseForge](https://www.curseforge.com/minecraft/mc-mods/cc-mb)
+
 # 纸带八音盒
 
 Forge - 1.20.1 - 0.4.1
+
 ![MusicBox.png](README/MusicBox.png)
 
 ---
@@ -9,10 +12,21 @@ Forge - 1.20.1 - 0.4.1
 
 ---
 
+## 预览
+
+B站上的演奏视频：[BV1Jh4y1y7TT](https://www.bilibili.com/video/BV1Jh4y1y7TT)
+
+![与比较器一起使用可以用来搞些自动化](README/PistonGroup.gif)
+
+![为纸带打孔](README/Punch.png)
+
+![装入纸带并启动八音盒](README/LoadAndPlay.gif)
+
 ## 跳转
 
 <!-- TOC -->
 * [纸带八音盒](#纸带八音盒)
+  * [预览](#预览)
   * [跳转](#跳转)
   * [模组内容](#模组内容)
     * [八音盒](#八音盒)
@@ -434,4 +448,5 @@ Forge - 1.20.1 - 0.4.1
 
 ## 下载
 
-你可以在[Releases](https://github.com/C20C01/MusicBox/releases)中下载已经发布的版本，Mod文件名一般遵循"cc_mb-x.x.x.jar"，点击即可下载
+* 推荐在[CurseForge](https://www.curseforge.com/minecraft/mc-mods/cc-mb)下载。
+* 也可以在[Releases](https://github.com/C20C01/MusicBox/releases)中下载，Mod文件名一般遵循"cc_mb-x.x.x.jar"，点击即可下载。
