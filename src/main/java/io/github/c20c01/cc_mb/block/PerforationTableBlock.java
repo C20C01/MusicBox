@@ -2,7 +2,6 @@ package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -21,10 +20,6 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 
 public class PerforationTableBlock extends Block {
     public PerforationTableBlock() {

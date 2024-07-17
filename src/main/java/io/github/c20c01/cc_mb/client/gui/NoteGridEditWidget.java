@@ -1,7 +1,8 @@
 package io.github.c20c01.cc_mb.client.gui;
 
+import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.network.CCNetwork;
-import io.github.c20c01.cc_mb.util.NoteGridData;
+import io.github.c20c01.cc_mb.network.NoteGridPacket;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -55,7 +56,7 @@ public class NoteGridEditWidget extends AbstractWidget {
         // 竖线&音符
         for (byte beat = 0; beat < 64; beat++) {
             guiGraphics.vLine(leftLine + beat * 6, getY() + 12, noteGridBottom + 1, TRANSLUCENT_BLACK);
-            NoteGridData.Beat oneBeat = screen.pages[screen.page].getBeat(beat);
+            Beat oneBeat = screen.pages[screen.page].getBeat(beat);
             int noteLeft = getX() + 12;
             int noteBottom = getY() + 156;
             for (byte note : oneBeat.getNotes()) {
@@ -94,7 +95,7 @@ public class NoteGridEditWidget extends AbstractWidget {
             byte beat = mousePosOnGird[0];
             byte note = mousePosOnGird[1];
             if (screen.getMenu().punchGrid(page, beat, note)) {
-                var packet = new CCNetwork.NoteGridPacket(screen.getMenu().containerId, page, beat, note);
+                var packet = new NoteGridPacket(screen.getMenu().containerId, page, beat, note);
                 CCNetwork.CHANNEL_GRID_TO_S.sendToServer(packet);
             }
         }

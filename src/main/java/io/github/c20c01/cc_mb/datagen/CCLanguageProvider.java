@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.data;
+package io.github.c20c01.cc_mb.datagen;
 
 import io.github.c20c01.cc_mb.CCMain;
 import net.minecraft.data.DataGenerator;
@@ -14,16 +14,16 @@ public class CCLanguageProvider extends LanguageProvider {
 
     private final String locale;
 
-    @SubscribeEvent
-    public static void onGatherData(GatherDataEvent event) {
-        var generator = event.getGenerator();
-        generator.addProvider(Boolean.TRUE, new CCLanguageProvider(generator, EN_US));
-        generator.addProvider(Boolean.TRUE, new CCLanguageProvider(generator, ZH_CN));
-    }
-
     private CCLanguageProvider(DataGenerator gen, String locale) {
         super(gen.getPackOutput(), CCMain.ID, locale);
         this.locale = locale;
+    }
+
+    @SubscribeEvent
+    public static void onGatherData(GatherDataEvent event) {
+        var generator = event.getGenerator();
+        generator.addProvider(true, new CCLanguageProvider(generator, EN_US));
+        generator.addProvider(true, new CCLanguageProvider(generator, ZH_CN));
     }
 
     @Override

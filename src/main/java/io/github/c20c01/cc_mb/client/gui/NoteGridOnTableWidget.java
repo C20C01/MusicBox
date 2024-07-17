@@ -1,7 +1,8 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.util.NoteGridData;
+import io.github.c20c01.cc_mb.data.Beat;
+import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,9 +20,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @OnlyIn(Dist.CLIENT)
 public class NoteGridOnTableWidget extends AbstractWidget {
-    private final PerforationTableScreen screen;
     public static final int WIDTH = 68;
     public static final int HEIGHT = 53;
+    private final PerforationTableScreen screen;
 
     public NoteGridOnTableWidget(int x, int y, PerforationTableScreen screen) {
         super(x, y, WIDTH, HEIGHT, Component.empty());
@@ -29,16 +30,10 @@ public class NoteGridOnTableWidget extends AbstractWidget {
         this.screen = screen;
     }
 
-    @Override
-    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        if (screen.pages == null) return;
-        renderNoteGrid(guiGraphics, screen.pages[screen.page], getX(), getY());
-    }
-
-    public static void renderNoteGrid(GuiGraphics guiGraphics, NoteGridData.Page page, int x, int y) {
+    public static void renderNoteGrid(GuiGraphics guiGraphics, Page page, int x, int y) {
         guiGraphics.blit(PerforationTableScreen.GUI_BACKGROUND, x, y, 0, 168, WIDTH, HEIGHT);
         for (byte beat = 0; beat < 64; beat++) {
-            NoteGridData.Beat oneBeat = page.getBeat(beat);
+            Beat oneBeat = page.getBeat(beat);
             for (byte note : oneBeat.getNotes()) {
                 drawNoteOnTable(guiGraphics, x + 2, y + 50, beat, note);
             }
@@ -49,6 +44,12 @@ public class NoteGridOnTableWidget extends AbstractWidget {
         int x = noteGridLeft + beat;
         int y = noteGridBottom - note * 2;
         guiGraphics.fill(x, y, x + 1, y + 1, PerforationTableScreen.BLACK);
+    }
+
+    @Override
+    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        if (screen.pages == null) return;
+        renderNoteGrid(guiGraphics, screen.pages[screen.page], getX(), getY());
     }
 
     @Override
@@ -69,7 +70,7 @@ public class NoteGridOnTableWidget extends AbstractWidget {
             case SUPERPOSE -> sendIntToServer(0);
             case CONNECT -> sendIntToServer(1);
             case BOOK -> sendIntToServer(2);
-            case PUNCH -> screen.changeEditMode(Boolean.TRUE);
+            case PUNCH -> screen.changeEditMode(true);
         }
     }
 

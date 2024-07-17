@@ -1,7 +1,6 @@
-package io.github.c20c01.cc_mb.data;
+package io.github.c20c01.cc_mb.datagen;
 
 import io.github.c20c01.cc_mb.CCMain;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.recipes.*;
 import net.minecraft.tags.ItemTags;
@@ -10,21 +9,18 @@ import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.function.Consumer;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCRecipeProvider extends RecipeProvider {
+    public CCRecipeProvider(DataGenerator generator) {
+        super(generator.getPackOutput());
+    }
+
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent event) {
         var generator = event.getGenerator();
-        generator.addProvider(Boolean.TRUE, new CCRecipeProvider(generator));
-    }
-
-    public CCRecipeProvider(DataGenerator generator) {
-        super(generator.getPackOutput());
+        generator.addProvider(true, new CCRecipeProvider(generator));
     }
 
     @Override

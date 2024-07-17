@@ -2,10 +2,9 @@ package io.github.c20c01.cc_mb.client.tooltip;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.NoteGridOnTableWidget;
+import io.github.c20c01.cc_mb.data.Page;
 import io.github.c20c01.cc_mb.item.NoteGrid;
-import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.ChatFormatting;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,15 +16,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
-
 @OnlyIn(Dist.CLIENT)
 public class ClientNoteGridTooltip implements ClientTooltipComponent {
     private static final MutableComponent SHIFT_TO_PREVIEW = Component.translatable(CCMain.TEXT_SHIFT_TO_PREVIEW).withStyle(ChatFormatting.GRAY);
-    private final NoteGridData.Page firstPage;
+    private final Page firstPage;
     private final String numberOfPages;
 
     public ClientNoteGridTooltip(NoteGrid.Tooltip tooltip) {

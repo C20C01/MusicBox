@@ -1,9 +1,9 @@
 package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import net.minecraft.ChatFormatting;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -27,19 +27,15 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.items.ItemHandlerHelper;
-import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
+import javax.annotation.Nullable;
 
 public class SoundBoxBlock extends Block implements EntityBlock {
     public static final BooleanProperty EMPTY = BooleanProperty.create("empty");
 
     public SoundBoxBlock() {
         super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
-        this.registerDefaultState(this.stateDefinition.any().setValue(EMPTY, Boolean.TRUE));
+        this.registerDefaultState(this.stateDefinition.any().setValue(EMPTY, true));
     }
 
     @Override
@@ -57,7 +53,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
         CompoundTag compoundTag = BlockItem.getBlockEntityData(itemStack);
         if (compoundTag != null && compoundTag.contains("SoundShard") && !ItemStack.of(compoundTag.getCompound("SoundShard")).isEmpty()) {
-            level.setBlock(blockPos, blockState.setValue(EMPTY, Boolean.FALSE), Block.UPDATE_CLIENTS);
+            level.setBlock(blockPos, blockState.setValue(EMPTY, false), Block.UPDATE_CLIENTS);
         }
     }
 
@@ -88,7 +84,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                     itemStack.shrink(1);
                     return InteractionResult.sidedSuccess(level.isClientSide);
                 } else {
-                    player.displayClientMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.GOLD), Boolean.TRUE);
+                    player.displayClientMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.GOLD), true);
                     return InteractionResult.SUCCESS;
                 }
             }
@@ -102,8 +98,8 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 }
             } else {
                 // 显示声音事件
-                if (!level.isClientSide){
-                    player.displayClientMessage(Component.literal(blockEntity.getInstrument().get().getLocation().toString()).withStyle(ChatFormatting.GRAY), Boolean.TRUE);
+                if (!level.isClientSide) {
+                    player.displayClientMessage(Component.literal(blockEntity.getInstrument().get().getLocation().toString()).withStyle(ChatFormatting.GRAY), true);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }

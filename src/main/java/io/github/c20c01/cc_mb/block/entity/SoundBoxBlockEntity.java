@@ -1,7 +1,8 @@
-package io.github.c20c01.cc_mb.block;
+package io.github.c20c01.cc_mb.block.entity;
 
 import io.github.c20c01.cc_mb.CCMain;
-import net.minecraft.MethodsReturnNonnullByDefault;
+import io.github.c20c01.cc_mb.block.BlockUtil;
+import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -15,11 +16,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
-
 public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleItem {
     public static final Holder<SoundEvent> EMPTY = Holder.direct(SoundEvents.EMPTY);
     private Holder<SoundEvent> instrument = EMPTY;
@@ -28,6 +24,10 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
 
     public SoundBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(CCMain.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState);
+    }
+
+    public boolean isSilent() {
+        return soundShard.isEmpty();
     }
 
     public Holder<SoundEvent> getInstrument() {
@@ -47,7 +47,7 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
             if (location == null) return false;
             instrument = Holder.direct(SoundEvent.createVariableRangeEvent(location));
             if (getLevel() != null) {
-                CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, Boolean.FALSE);
+                BlockUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, false);
             }
             setChanged();
             return true;
@@ -61,7 +61,7 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
         instrument = EMPTY;
         soundSeed = 0;
         if (getLevel() != null) {
-            CCUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.EMPTY, Boolean.TRUE);
+            BlockUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, true);
         }
         setChanged();
         return oldItemStack;

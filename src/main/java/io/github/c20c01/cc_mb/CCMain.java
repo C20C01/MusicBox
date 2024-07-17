@@ -1,26 +1,34 @@
 package io.github.c20c01.cc_mb;
 
 import com.mojang.datafixers.DSL;
-import io.github.c20c01.cc_mb.block.*;
+import com.mojang.logging.LogUtils;
+import io.github.c20c01.cc_mb.block.MusicBoxBlock;
+import io.github.c20c01.cc_mb.block.PerforationTableBlock;
+import io.github.c20c01.cc_mb.block.SoundBoxBlock;
+import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity$;
+import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.SoundShard;
-import io.github.c20c01.cc_mb.util.NoteGridData;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Mod(CCMain.ID)
 public class CCMain {
@@ -80,7 +88,7 @@ public class CCMain {
     public static final String MUSIC_BOX_BLOCK_ID = "music_box_block";
     public static final RegistryObject<MusicBoxBlock> MUSIC_BOX_BLOCK;
     public static final RegistryObject<BlockItem> MUSIC_BOX_BLOCK_ITEM;
-    public static final RegistryObject<BlockEntityType<MusicBoxBlockEntity>> MUSIC_BOX_BLOCK_ENTITY;
+    public static final RegistryObject<BlockEntityType<MusicBoxBlockEntity$>> MUSIC_BOX_BLOCK_ENTITY;
 
     public static final String PERFORATION_TABLE_BLOCK_ID = "perforation_table_block";
     public static final RegistryObject<PerforationTableBlock> PERFORATION_TABLE_BLOCK;
@@ -104,7 +112,7 @@ public class CCMain {
 
         MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, MusicBoxBlock::new);
         MUSIC_BOX_BLOCK_ITEM = ITEMS.register(MUSIC_BOX_BLOCK_ID, () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
-        MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(MUSIC_BOX_BLOCK_ID, () -> BlockEntityType.Builder.of(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
+        MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(MUSIC_BOX_BLOCK_ID, () -> BlockEntityType.Builder.of(MusicBoxBlockEntity$::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
 
         PERFORATION_TABLE_BLOCK = BLOCKS.register(PERFORATION_TABLE_BLOCK_ID, PerforationTableBlock::new);
         PERFORATION_TABLE_BLOCK_ITEM = ITEMS.register(PERFORATION_TABLE_BLOCK_ID, () -> new BlockItem(PERFORATION_TABLE_BLOCK.get(), new Item.Properties()));
@@ -115,36 +123,24 @@ public class CCMain {
 
         PERFORATION_TABLE_MENU = MENU_TYPES.register(PERFORATION_TABLE_MENU_ID, () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
 
-
-        CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder().icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
-            output.accept(MUSIC_BOX_BLOCK_ITEM.get());
-            output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
-            output.accept(SOUND_BOX_BLOCK_ITEM.get());
-            output.accept(AWL_ITEM.get());
-            output.accept(SOUND_SHARD_ITEM.get());
-            output.accept(Items.SLIME_BALL);
-            output.accept(Items.WRITABLE_BOOK);
-            output.accept(NOTE_GRID_ITEM.get());
-            output.accept(NoteGridData.getTestingGrid());
-
-            output.accept(getNamedItem(Items.CHERRY_LEAVES, Component.translatable(TEXT_SOUND_HARP)));
-            output.accept(getNamedItem(Items.DARK_OAK_WOOD, Component.translatable(TEXT_SOUND_BASS)));
-            output.accept(getNamedItem(Items.SAND, Component.translatable(TEXT_SOUND_SNARE)));
-            output.accept(getNamedItem(Items.GREEN_STAINED_GLASS, Component.translatable(TEXT_SOUND_HAT)));
-            output.accept(getNamedItem(Items.SMOOTH_STONE, Component.translatable(TEXT_SOUND_BASS_DRUM)));
-            output.accept(getNamedItem(Items.GOLD_BLOCK, Component.translatable(TEXT_SOUND_BELL)));
-            output.accept(getNamedItem(Items.CLAY, Component.translatable(TEXT_SOUND_FLUTE)));
-            output.accept(getNamedItem(Items.PACKED_ICE, Component.translatable(TEXT_SOUND_CHIME)));
-            output.accept(getNamedItem(Items.PINK_WOOL, Component.translatable(TEXT_SOUND_GUITAR)));
-            output.accept(getNamedItem(Items.BONE_BLOCK, Component.translatable(TEXT_SOUND_XYLOPHONE)));
-            output.accept(getNamedItem(Items.IRON_BLOCK, Component.translatable(TEXT_SOUND_IRON_XYLOPHONE)));
-            output.accept(getNamedItem(Items.SOUL_SAND, Component.translatable(TEXT_SOUND_COW_BELL)));
-            output.accept(getNamedItem(Items.PUMPKIN, Component.translatable(TEXT_SOUND_DIDGERIDOO)));
-            output.accept(getNamedItem(Items.EMERALD_BLOCK, Component.translatable(TEXT_SOUND_BIT)));
-            output.accept(getNamedItem(Items.HAY_BLOCK, Component.translatable(TEXT_SOUND_BANJO)));
-            output.accept(getNamedItem(Items.GLOWSTONE, Component.translatable(TEXT_SOUND_PLING)));
-
-        }).title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId())).build());
+        CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
+                        .icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance())
+                        .displayItems((parameters, output) -> {
+                            output.accept(MUSIC_BOX_BLOCK_ITEM.get());
+                            output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
+                            output.accept(SOUND_BOX_BLOCK_ITEM.get());
+                            output.accept(AWL_ITEM.get());
+                            output.accept(SOUND_SHARD_ITEM.get());
+                            output.accept(Items.SLIME_BALL);
+                            output.accept(Items.WRITABLE_BOOK);
+                            output.accept(NOTE_GRID_ITEM.get());
+                            //TODO
+//                    output.accept(NoteGridData.getTestingGrid());
+                            output.acceptAll(InstrumentBlocksHelper.getItems());
+                        })
+                        .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))
+                        .build()
+        );
     }
 
     public CCMain() {
@@ -156,7 +152,86 @@ public class CCMain {
         CREATIVE_MODE_TABS.register(modEventBus);
     }
 
-    private static ItemStack getNamedItem(ItemLike itemLike, Component component) {
-        return new ItemStack(itemLike).setHoverName(component);
+    /**
+     * Find all blocks that provide a tunable instrument according to {@link NoteBlockInstrument},
+     * also support new instruments added by other mods.
+     */
+    public static class InstrumentBlocksHelper {
+        private static final ArrayList<Block> INSTRUMENT_BLOCKS = new ArrayList<>(16);
+        private static final HashMap<NoteBlockInstrument, String> INSTRUMENT_TRANSLATION_KEY_MAP = new HashMap<>(16);
+
+        static {
+            add(Blocks.CHERRY_LEAVES, TEXT_SOUND_HARP);
+            add(Blocks.DARK_OAK_WOOD, TEXT_SOUND_BASS);
+            add(Blocks.SAND, TEXT_SOUND_SNARE);
+            add(Blocks.GREEN_STAINED_GLASS, TEXT_SOUND_HAT);
+            add(Blocks.SMOOTH_STONE, TEXT_SOUND_BASS_DRUM);
+            add(Blocks.GOLD_BLOCK, TEXT_SOUND_BELL);
+            add(Blocks.CLAY, TEXT_SOUND_FLUTE);
+            add(Blocks.PACKED_ICE, TEXT_SOUND_CHIME);
+            add(Blocks.PINK_WOOL, TEXT_SOUND_GUITAR);
+            add(Blocks.BONE_BLOCK, TEXT_SOUND_XYLOPHONE);
+            add(Blocks.IRON_BLOCK, TEXT_SOUND_IRON_XYLOPHONE);
+            add(Blocks.SOUL_SAND, TEXT_SOUND_COW_BELL);
+            add(Blocks.PUMPKIN, TEXT_SOUND_DIDGERIDOO);
+            add(Blocks.EMERALD_BLOCK, TEXT_SOUND_BIT);
+            add(Blocks.HAY_BLOCK, TEXT_SOUND_BANJO);
+            add(Blocks.GLOWSTONE, TEXT_SOUND_PLING);
+        }
+
+        /**
+         * Add the block that provide a tunable instrument and the translation key for the instrument.
+         */
+        public static void add(Block block, String translationKey) {
+            NoteBlockInstrument instrument = block.defaultBlockState().instrument();
+            if (instrument.isTunable() && !INSTRUMENT_TRANSLATION_KEY_MAP.containsKey(instrument)) {
+                INSTRUMENT_BLOCKS.add(block);
+                INSTRUMENT_TRANSLATION_KEY_MAP.put(instrument, translationKey);
+            }
+        }
+
+        public static ArrayList<ItemStack> getItems() {
+            updateBlockList();
+            ArrayList<ItemStack> items = new ArrayList<>(INSTRUMENT_BLOCKS.size());
+            for (Block block : INSTRUMENT_BLOCKS) {
+                items.add(getItem(block));
+            }
+            return items;
+        }
+
+        private static ItemStack getItem(Block block) {
+            NoteBlockInstrument instrument = block.defaultBlockState().instrument();
+            Component hoverName;
+            if (INSTRUMENT_TRANSLATION_KEY_MAP.containsKey(instrument)) {
+                hoverName = Component.translatable(INSTRUMENT_TRANSLATION_KEY_MAP.get(instrument));
+            } else {
+                hoverName = Component.literal(instrument.getSerializedName());
+            }
+            return new ItemStack(block).setHoverName(hoverName);
+        }
+
+        public static void updateBlockList() {
+            ArrayList<NoteBlockInstrument> instruments = new ArrayList<>();
+            for (NoteBlockInstrument instrument : NoteBlockInstrument.values()) {
+                if (instrument.isTunable()) {
+                    instruments.add(instrument);
+                }
+            }
+            for (Block block : INSTRUMENT_BLOCKS) {
+                instruments.remove(block.defaultBlockState().instrument());
+            }
+            if (instruments.isEmpty()) {
+                return;
+            }
+            // There are some instruments not found, iterate all blocks to find them
+            LogUtils.getLogger().info("Iterating all blocks for instruments{}", instruments);
+            for (Block block : ForgeRegistries.BLOCKS) {
+                NoteBlockInstrument instrument = block.defaultBlockState().instrument();
+                if (instruments.contains(instrument)) {
+                    instruments.remove(instrument);
+                    INSTRUMENT_BLOCKS.add(block);
+                }
+            }
+        }
     }
 }

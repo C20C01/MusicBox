@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.util.NoteGridData;
+import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -22,7 +22,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected static final int BLACK = -16777216;
-    protected NoteGridData.Page[] pages;
+    protected Page[] pages;
     protected byte page = 0;
 
     private PageButton backButton;
@@ -40,11 +40,11 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     protected void init() {
         super.init();
         int top = this.topPos + 57;
-        this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, Boolean.FALSE, (button) -> pageBack(), Boolean.TRUE));
-        this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, Boolean.TRUE, (button) -> pageForward(), Boolean.TRUE));
+        this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, false, (button) -> pageBack(), true));
+        this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, true, (button) -> pageForward(), true));
         this.gridOnTableWidget = this.addRenderableWidget(new NoteGridOnTableWidget(this.leftPos + 79, this.topPos + 15, this));
         this.editWidget = this.addRenderableWidget(new NoteGridEditWidget(this.width, this.height, this));
-        this.editDoneButton = this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (button) -> changeEditMode(Boolean.FALSE)).pos(this.width / 2 - 80, this.height / 2 + 70).width(160).build());
+        this.editDoneButton = this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (button) -> changeEditMode(false)).pos(this.width / 2 - 80, this.height / 2 + 70).width(160).build());
         changeEditMode(editMode);
         updatePageButtonVisibility();
     }
@@ -64,13 +64,13 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     @Override
     protected void containerTick() {
         if (menu.shouldUpdate()) {
-            NoteGridData.Page[] update = menu.getPages();
+            Page[] update = menu.getPages();
             if (update == null || page >= update.length) {
                 page = 0;
-                changeEditMode(Boolean.FALSE);
+                changeEditMode(false);
             }
             if (editMode && menu.mode != PerforationTableMenu.Mode.PUNCH) {
-                changeEditMode(Boolean.FALSE);
+                changeEditMode(false);
             }
             pages = update;
             updatePageButtonVisibility();

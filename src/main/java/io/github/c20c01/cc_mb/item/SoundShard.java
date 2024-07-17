@@ -3,7 +3,6 @@ package io.github.c20c01.cc_mb.item;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.network.UpdateSoundShard;
 import net.minecraft.ChatFormatting;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.nbt.CompoundTag;
@@ -29,13 +28,9 @@ import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.Nullable;
 import java.util.List;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 
 public class SoundShard extends Item {
     public SoundShard() {
@@ -56,6 +51,23 @@ public class SoundShard extends Item {
             }
             return InteractionResult.PASS;
         });
+    }
+
+    public static boolean hasSound(ItemStack itemStack) {
+        return itemStack.getTag() != null && itemStack.getTag().contains("SoundEvent");
+    }
+
+    private static MutableComponent getSoundEventTitle(ResourceLocation location) {
+        var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
+        MutableComponent result = Component.literal("???");
+
+        if (sound != null) {
+            Component subtitle = sound.getSubtitle();
+            if (subtitle != null) {
+                result = MutableComponent.create(subtitle.getContents());
+            }
+        }
+        return result;
     }
 
     @Override
@@ -97,10 +109,10 @@ public class SoundShard extends Item {
 
     @Override
     public void onUseTick(Level level, LivingEntity livingEntity, ItemStack itemStack, int tick) {
-        if (livingEntity instanceof Player player && level.isClientSide) {
+        if (level.isClientSide && livingEntity instanceof Player player) {
             ResourceLocation location = Listener.getLocation();
             if (location != null) {
-                player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.GOLD), Boolean.TRUE);
+                player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.GOLD), true);
             }
         }
         super.onUseTick(level, livingEntity, itemStack, tick);
@@ -134,10 +146,6 @@ public class SoundShard extends Item {
         return hasSound(itemStack) || super.isFoil(itemStack);
     }
 
-    public static boolean hasSound(ItemStack itemStack) {
-        return itemStack.getTag() != null && itemStack.getTag().contains("SoundEvent");
-    }
-
     @Override
     public int getUseDuration(ItemStack itemStack) {
         return 600;
@@ -148,19 +156,6 @@ public class SoundShard extends Item {
         return UseAnim.BOW;
     }
 
-    private static MutableComponent getSoundEventTitle(ResourceLocation location) {
-        var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
-        MutableComponent result = Component.literal("???");
-
-        if (sound != null) {
-            Component subtitle = sound.getSubtitle();
-            if (subtitle != null) {
-                result = MutableComponent.create(subtitle.getContents());
-            }
-        }
-        return result;
-    }
-
     @Mod.EventBusSubscriber(modid = CCMain.ID, value = Dist.CLIENT)
     private static class Listener {
         private static Listener listener;
@@ -169,12 +164,6 @@ public class SoundShard extends Item {
 
         public Listener() {
             listener = this;
-        }
-
-        @SubscribeEvent
-        public void listen(PlaySoundSourceEvent event) {
-            changed = true;
-            soundLocation = event.getSound().getLocation();
         }
 
         protected static void start() {
@@ -202,6 +191,12 @@ public class SoundShard extends Item {
                 listener = null;
                 return location;
             }
+        }
+
+        @SubscribeEvent
+        public void listen(PlaySoundSourceEvent event) {
+            changed = true;
+            soundLocation = event.getSound().getLocation();
         }
     }
 }

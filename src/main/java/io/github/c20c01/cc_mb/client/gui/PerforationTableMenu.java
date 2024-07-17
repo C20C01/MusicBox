@@ -1,7 +1,8 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.util.NoteGridData;
+import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,24 +28,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class PerforationTableMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final Container container = new SimpleContainer(3);
-    private NoteGridData.Page[] pages;
-    private boolean isItemChanged = false;
     private final Slot noteGridSlot;
     private final Slot toolSlot;
     private final Slot otherGridSlot;
     protected Mode mode = Mode.EMPTY;
-
-    /**
-     * EMPTY: 空
-     * CHECK: 查看
-     * PUNCH: 打孔
-     * SUPERPOSE: 叠加
-     * CONNECT: 连接
-     * BOOK: 从书中读取
-     */
-    public enum Mode {
-        EMPTY, CHECK, PUNCH, SUPERPOSE, CONNECT, BOOK
-    }
+    private Page[] pages;
+    private boolean isItemChanged = false;
 
     public PerforationTableMenu(int id, Inventory inventory) {
         this(id, inventory, ContainerLevelAccess.NULL);
@@ -214,7 +203,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     protected boolean punchGrid(byte page, byte beat, byte note) {
         try {
             if (pages[page].getBeat(beat).addOneNote(note)) {
-                NoteGridData.saveToTag(noteGridSlot.getItem(), pages);
+//                NoteGridData.saveToTag(noteGridSlot.getItem(), pages);
                 noteGridSlot.setChanged();
                 return true;
             }
@@ -224,7 +213,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     @Nullable
-    protected NoteGridData.Page[] getPages() {
+    protected Page[] getPages() {
         return pages;
     }
 
@@ -281,5 +270,17 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         }
 
         mode = Mode.CHECK;
+    }
+
+    /**
+     * EMPTY: 空
+     * CHECK: 查看
+     * PUNCH: 打孔
+     * SUPERPOSE: 叠加
+     * CONNECT: 连接
+     * BOOK: 从书中读取
+     */
+    public enum Mode {
+        EMPTY, CHECK, PUNCH, SUPERPOSE, CONNECT, BOOK
     }
 }
