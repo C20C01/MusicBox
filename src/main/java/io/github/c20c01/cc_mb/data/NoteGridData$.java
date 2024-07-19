@@ -1,22 +1,26 @@
 package io.github.c20c01.cc_mb.data;
 
 import io.github.c20c01.cc_mb.util.TagData;
+import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 // 重写，尚未完全实现
 
-public class NoteGridData$ extends SavedData implements TagData<ListTag> {
+public class NoteGridData$ extends SavedData implements TagData<ByteArrayTag> {
     public static final String DATA_KEY = "Notes";
     public static final byte MAX_PAGES = 64;
     private ArrayList<Page> pages = new ArrayList<>(List.of(new Page()));
@@ -25,12 +29,16 @@ public class NoteGridData$ extends SavedData implements TagData<ListTag> {
         return new NoteGridData$().setPages(pages);
     }
 
+    public static NoteGridData$ ofPages(Collection<Page> pages) {
+        return new NoteGridData$().setPages(pages);
+    }
+
     public static NoteGridData$ ofBook(ItemStack book) {
         return new NoteGridData$().loadBook(book);
     }
 
-    public static NoteGridData$ ofTag(ListTag noteGridTag) {
-        return new NoteGridData$().loadTag(noteGridTag);
+    public static NoteGridData$ ofTag(CompoundTag noteGridTag) {
+        return new NoteGridData$().loadTag((ByteArrayTag) noteGridTag.get(DATA_KEY));
     }
 
     /**
@@ -39,12 +47,13 @@ public class NoteGridData$ extends SavedData implements TagData<ListTag> {
     @Nullable
     public static NoteGridData$ ofId(MinecraftServer server, int noteGridId) {
         String key = makeKey(noteGridId);
-        return server.overworld().getDataStorage().get(NoteGridData$::load, key);
+        return server.overworld().getDataStorage().get(NoteGridData$::ofTag, key);
     }
 
-    public static NoteGridData$ load(CompoundTag tag) {
-        ListTag listTag = tag.getList(DATA_KEY, Tag.TAG_LIST);
-        return NoteGridData$.ofTag(listTag);
+    @Nullable
+    @OnlyIn(Dist.CLIENT)
+    public static NoteGridData$ ofId(int noteGridId, Consumer<NoteGridData$> updater) {
+        return ClientNoteGridManager.getNoteGridData(noteGridId, updater);
     }
 
     public static String makeKey(Integer noteGridId) {
@@ -68,22 +77,18 @@ public class NoteGridData$ extends SavedData implements TagData<ListTag> {
         return setPages(pages);
     }
 
-    @Override
-    public NoteGridData$ loadTag(ListTag noteGridTag) {
-        ArrayList<Page> pages = new ArrayList<>(noteGridTag.size());
-        for (Tag pageTag : noteGridTag) {
-            pages.add(Page.ofTag((ListTag) pageTag));
+    public NoteGridData$ loadTag(@Nullable ByteArrayTag noteGridTag) {
+        if (noteGridTag == null) {
+            return this;
         }
+        byte[] data = noteGridTag.getAsByteArray();
+        ArrayList<Page> pages = new Decoder().decode(data);
         return setPages(pages);
     }
 
-    @Override
-    public ListTag toTag() {
-        ListTag noteGridTag = new ListTag();
-        for (byte page = 0; page < pages.size(); page++) {
-            noteGridTag.add(getPage(page).toTag());
-        }
-        return noteGridTag;
+    public ByteArrayTag toTag() {
+        ArrayList<Byte> data = new Encoder().encode(pages);
+        return new ByteArrayTag(data);
     }
 
     @Override
@@ -122,5 +127,92 @@ public class NoteGridData$ extends SavedData implements TagData<ListTag> {
         this.pages.replaceAll(page -> page == null ? new Page() : page);
         setDirty();
         return this;
+    }
+
+    private static class Decoder {
+        final ArrayList<Page> PAGES = new ArrayList<>();
+        final ArrayList<Beat> BEATS = new ArrayList<>(Page.BEATS_SIZE);
+        final ArrayList<Byte> NOTES = new ArrayList<>(5);
+
+        ArrayList<Page> decode(byte[] data) {
+            for (byte b : data) {
+                if (b > 0) {
+                    handleNote(b);
+                } else {
+                    handleFlag(b);
+                }
+            }
+            return PAGES;
+        }
+
+        void handleFlag(byte b) {
+            finishBeat();
+            if (b == 0) {
+                finishPage();
+            } else {
+                byte emptyBeats = (byte) (-b - 1);
+                for (byte i = 0; i < emptyBeats; i++) {
+                    BEATS.add(null);
+                }
+            }
+        }
+
+        void handleNote(byte b) {
+            byte note = (byte) (b - 1);
+            if (Beat.isAvailableNote(note)) {
+                NOTES.add(note);
+            }
+        }
+
+        void finishBeat() {
+            if (!NOTES.isEmpty()) {
+                BEATS.add(Beat.ofNotes(NOTES));
+                NOTES.clear();
+            }
+        }
+
+        void finishPage() {
+            PAGES.add(Page.ofBeats(BEATS));
+            BEATS.clear();
+        }
+    }
+
+    private static class Encoder {
+        final ArrayList<Byte> DATA = new ArrayList<>(1024);
+        byte emptyBeats = 0;
+
+        ArrayList<Byte> encode(ArrayList<Page> pages) {
+            for (Page page : pages) {
+                for (byte i = 0; i < Page.BEATS_SIZE; i++) {
+                    if (page.isEmptyBeat(i)) {
+                        emptyBeats++;
+                    } else {
+                        addFlag();
+                        addBeat(page.getBeat(i));
+                    }
+                }
+                finishPage();
+            }
+            return DATA;
+        }
+
+        void addBeat(Beat beat) {
+            byte[] notes = beat.getNotes();
+            DATA.ensureCapacity(DATA.size() + notes.length);
+            for (byte note : notes) {
+                DATA.add((byte) (note + 1));
+            }
+        }
+
+        void addFlag() {
+            byte flag = (byte) (-emptyBeats - 1);
+            DATA.add(flag);
+            emptyBeats = 0;
+        }
+
+        void finishPage() {
+            DATA.add((byte) 0);
+            emptyBeats = 0;
+        }
     }
 }

@@ -3,7 +3,6 @@ package io.github.c20c01.cc_mb.client.gui;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -20,10 +19,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 
 public class PerforationTableMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;

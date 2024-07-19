@@ -26,6 +26,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class MusicBoxBlockEntity$ extends AbstractItemLoaderBlockEntity implements PlayerListener {
     public static final String NOTE_GRID = "NoteGrid";
+    private static final byte BEAT_PER_SYNC_ON_BEAT = 20;
+    private byte beatSinceLastSyncOnBeat;
     private final NoteGridPlayer PLAYER;
 
     public MusicBoxBlockEntity$(BlockPos blockPos, BlockState blockState) {
@@ -66,14 +68,16 @@ public class MusicBoxBlockEntity$ extends AbstractItemLoaderBlockEntity implemen
         if (level == null) {
             return;
         }
+        Integer noteGridId = NoteGrid.getId(noteGrid);
+        if (noteGridId == null) {
+            return;
+        }
         if (level instanceof ServerLevel serverLevel) {
-            Integer noteGridId = NoteGrid.getId(noteGrid);
-            if (noteGridId != null) {
-                NoteGridData$ noteGridData = NoteGridData$.ofId(serverLevel.getServer(), noteGridId);
-                PLAYER.setNoteGridData(noteGridData);
-            }
+            NoteGridData$ noteGridData = NoteGridData$.ofId(serverLevel.getServer(), noteGridId);
+            PLAYER.setNoteGridData(noteGridData);
         } else {
-
+            NoteGridData$ noteGridData = NoteGridData$.ofId(noteGridId, PLAYER::setNoteGridData);
+            PLAYER.setNoteGridData(noteGridData);
         }
         System.out.println("Load item in: " + level);
         BlockUtil.changeProperty(level, getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, true);
@@ -96,6 +100,11 @@ public class MusicBoxBlockEntity$ extends AbstractItemLoaderBlockEntity implemen
         return itemStack.is(CCMain.NOTE_GRID_ITEM.get()) && this.getItem(slot).isEmpty();
     }
 
+    /**
+     * Eject the note grid item from the music box.
+     * If there is a container(NOT a worldly container) at the back of the music box, put the note grid item into it.
+     * Otherwise, spawn the note grid item.
+     */
     private void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState) {
         Direction direction = blockState.getValue(MusicBoxBlock.FACING);
         Container container = HopperBlockEntity.getContainerAt(level, blockPos.relative(direction.getOpposite()));
@@ -124,6 +133,7 @@ public class MusicBoxBlockEntity$ extends AbstractItemLoaderBlockEntity implemen
             return;
         }
         PLAYER.setTickPerBeat(tickPerBeat);
+        // Sync the note grid player information to the client.
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.getChunkSource().blockChanged(blockPos);
         }
@@ -149,6 +159,11 @@ public class MusicBoxBlockEntity$ extends AbstractItemLoaderBlockEntity implemen
         level.blockEntityChanged(blockPos);
         if (currentBeat.getMinNote() != lastBeat.getMinNote()) {
             level.updateNeighbourForOutputSignal(blockPos, blockState.getBlock());
+        }
+        // Sync the note grid player information to the client every BEAT_PER_SYNC_ON_BEAT beats.
+        if (level instanceof ServerLevel serverLevel && beatSinceLastSyncOnBeat++ >= BEAT_PER_SYNC_ON_BEAT) {
+            beatSinceLastSyncOnBeat = 0;
+            serverLevel.getChunkSource().blockChanged(blockPos);
         }
     }
 }

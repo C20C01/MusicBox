@@ -3,7 +3,6 @@ package io.github.c20c01.cc_mb.client.gui;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.Page;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -12,11 +11,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 
 @OnlyIn(Dist.CLIENT)
 public class NoteGridOnTableWidget extends AbstractWidget {

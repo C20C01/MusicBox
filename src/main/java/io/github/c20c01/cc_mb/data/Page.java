@@ -1,19 +1,18 @@
 package io.github.c20c01.cc_mb.data;
 
-import io.github.c20c01.cc_mb.util.TagData;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class Page implements TagData<ListTag> {
+public class Page {
     public static final byte BEATS_SIZE = 64;
     private final Beat[] BEATS = new Beat[BEATS_SIZE];
 
-    public static Page ofBeats(Beat[] beats) {
+    public static Page ofBeats(Beat... beats) {
+        return new Page().loadBeats(beats);
+    }
+
+    public static Page ofBeats(Collection<Beat> beats) {
         return new Page().loadBeats(beats);
     }
 
@@ -21,11 +20,11 @@ public class Page implements TagData<ListTag> {
         return new Page().loadCode(codeOfPage);
     }
 
-    public static Page ofTag(ListTag pageTag) {
-        return new Page().loadTag(pageTag);
+    public Page loadBeats(Beat[] beats) {
+        return setBeats(beats);
     }
 
-    public Page loadBeats(Beat[] beats) {
+    public Page loadBeats(Collection<Beat> beats) {
         return setBeats(beats);
     }
 
@@ -39,24 +38,6 @@ public class Page implements TagData<ListTag> {
     }
 
     @Override
-    public Page loadTag(ListTag pageTag) {
-        ArrayList<Beat> beats = new ArrayList<>(pageTag.size());
-        for (Tag beatTag : pageTag) {
-            beats.add(Beat.ofTag((ByteArrayTag) beatTag));
-        }
-        return setBeats(beats);
-    }
-
-    @Override
-    public ListTag toTag() {
-        ListTag pageTag = new ListTag();
-        for (byte beat = 0; beat < BEATS_SIZE; beat++) {
-            pageTag.add(getBeat(beat).toTag());
-        }
-        return pageTag;
-    }
-
-    @Override
     public String toString() {
         return "Page:" + Arrays.toString(BEATS);
     }
@@ -66,6 +47,17 @@ public class Page implements TagData<ListTag> {
             BEATS[index] = new Beat();
         }
         return BEATS[index];
+    }
+
+    /**
+     * Read only! If you want to modify the beat, use {@link #getBeat(byte)} instead.
+     */
+    public Beat getBeat(byte index, Beat defaultBeat) {
+        return BEATS[index] == null ? defaultBeat : BEATS[index];
+    }
+
+    public boolean isEmptyBeat(byte index) {
+        return BEATS[index] == null || BEATS[index].isEmpty();
     }
 
     public Page setBeats(Beat[] beats) {

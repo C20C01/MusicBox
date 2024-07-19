@@ -20,6 +20,9 @@ public class Setup {
         event.enqueueWork(() -> {
             // 注册菜单页面
             MenuScreens.register(CCMain.PERFORATION_TABLE_MENU.get(), PerforationTableScreen::new);
+
+            // 更新乐器方块列表
+            CCMain.InstrumentBlocksHelper.updateBlockList();
         });
     }
 

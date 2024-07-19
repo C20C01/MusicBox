@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 public class NoteGridPlayer {
     public static final byte MIN_TICK_PER_BEAT = 1;
     public static final byte MAX_TICK_PER_BEAT = 20;
+    private static final Beat EMPTY_BEAT = new Beat();// Read only, used to avoid creating new object
     private static final float[] PITCHES = new float[25];
 
     static {
@@ -115,7 +116,7 @@ public class NoteGridPlayer {
 
         // TODO
         if (tag.contains("NoteGridData")) {
-            noteGridData = NoteGridData$.load(tag.getCompound("NoteGridData"));
+            noteGridData = NoteGridData$.ofTag(tag.getCompound("NoteGridData"));
         }
     }
 
@@ -147,7 +148,7 @@ public class NoteGridPlayer {
             return;
         }
         Beat lastBeat = beat;
-        beat = noteGridData.getPage(pageNumber).getBeat(beatNumber);
+        beat = noteGridData.getPage(pageNumber).getBeat(beatNumber, EMPTY_BEAT);
         LISTENER.onBeat(level, blockPos, blockState, lastBeat, beat);
         if (level.isClientSide) {
             playBeat((ClientLevel) level, blockPos, blockState, beat);

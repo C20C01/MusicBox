@@ -1,13 +1,5 @@
 package io.github.c20c01.cc_mb.data;
 
-import io.github.c20c01.cc_mb.util.TagData;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.NoteBlock;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -18,20 +10,20 @@ import java.util.Set;
 /**
  * A beat is a set of notes that can be played together.
  */
-public class Beat implements TagData<ByteArrayTag> {
+public class Beat {
     private byte[] notes = ArrayUtils.EMPTY_BYTE_ARRAY;
     private byte minNote = Byte.MAX_VALUE;
 
-    public static Beat ofNotes(byte[] notes) {
+    public static Beat ofNotes(byte... notes) {
+        return new Beat().loadNotes(notes);
+    }
+
+    public static Beat ofNotes(Collection<Byte> notes) {
         return new Beat().loadNotes(notes);
     }
 
     public static Beat ofCode(String codeOfBeat) {
         return new Beat().loadCode(codeOfBeat);
-    }
-
-    public static Beat ofTag(ByteArrayTag beatTag) {
-        return new Beat().loadTag(beatTag);
     }
 
     /**
@@ -74,6 +66,10 @@ public class Beat implements TagData<ByteArrayTag> {
         return setNotes(notes);
     }
 
+    public Beat loadNotes(Collection<Byte> notes) {
+        return setNotes(notes);
+    }
+
     public Beat loadCode(String codeOfBeat) {
         if (codeOfBeat.isEmpty()) {
             return this;
@@ -86,17 +82,6 @@ public class Beat implements TagData<ByteArrayTag> {
             }
         }
         return setNotes(notes);
-    }
-
-    @Override
-    public Beat loadTag(ByteArrayTag beatTag) {
-        byte[] notes = beatTag.getAsByteArray();
-        return loadNotes(notes);
-    }
-
-    @Override
-    public ByteArrayTag toTag() {
-        return new ByteArrayTag(notes);
     }
 
     @Override
@@ -136,12 +121,16 @@ public class Beat implements TagData<ByteArrayTag> {
         return notes.length == 0 ? -1 : minNote;
     }
 
-    private boolean isAvailableNote(byte note) {
-        return !ArrayUtils.contains(notes, note) && note >= 0 && note <= 24;
+    public static boolean isAvailableNote(byte note) {
+        return note <= 24 && note >= 0;
+    }
+
+    private boolean canAddToNotes(byte note) {
+        return isAvailableNote(note) && !ArrayUtils.contains(notes, note);
     }
 
     public boolean addOneNote(byte note) {
-        if (isAvailableNote(note)) {
+        if (canAddToNotes(note)) {
             setNotes(ArrayUtils.add(notes, note));
             return true;
         }
@@ -152,7 +141,7 @@ public class Beat implements TagData<ByteArrayTag> {
         byte len = 0;
         byte[] availableNewNotes = new byte[newNotes.length];
         for (byte note : newNotes) {
-            if (isAvailableNote(note)) {
+            if (canAddToNotes(note)) {
                 availableNewNotes[len++] = note;
             }
         }

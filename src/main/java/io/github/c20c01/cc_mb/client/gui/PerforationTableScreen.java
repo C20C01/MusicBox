@@ -2,7 +2,6 @@ package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.Page;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -12,11 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 
 @OnlyIn(Dist.CLIENT)
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {

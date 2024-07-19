@@ -100,7 +100,7 @@ public class CCMain {
     public static final RegistryObject<BlockEntityType<SoundBoxBlockEntity>> SOUND_BOX_BLOCK_ENTITY;
 
 
-    //GUI
+    // GUI
     public static final String PERFORATION_TABLE_MENU_ID = "perforation_table_menu";
     public static final RegistryObject<MenuType<PerforationTableMenu>> PERFORATION_TABLE_MENU;
 
