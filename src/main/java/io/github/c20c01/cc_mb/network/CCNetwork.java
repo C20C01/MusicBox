@@ -9,16 +9,38 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-import java.util.Optional;
-
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCNetwork {
-    public static final SimpleChannel CHANNEL_GRID_TO_S = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_GRID_TO_S, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
-    public static final SimpleChannel CHANNEL_SOUND_SHARD_TO_S = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_SOUND_SHARD_TO_S, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
+    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_ID, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
 
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
-        CHANNEL_GRID_TO_S.registerMessage(0, NoteGridPacket.class, NoteGridPacket::encode, NoteGridPacket::decode, NoteGridPacket::handleOnServer, Optional.of(NetworkDirection.PLAY_TO_SERVER));
-        CHANNEL_SOUND_SHARD_TO_S.registerMessage(0, SoundShardPacket.class, SoundShardPacket::encode, SoundShardPacket::decode, SoundShardPacket::handleOnServer, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        // Tell the server to punch the note grid at specific position.
+        CHANNEL.messageBuilder(NoteGridPacket.class, 0, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(NoteGridPacket::encode)
+                .decoder(NoteGridPacket::decode)
+                .consumerMainThread(NoteGridPacket::handleOnServer)
+                .add();
+
+        // Tell the server to update the sound shard with specific sound event name.
+        CHANNEL.messageBuilder(SoundShardPacket.class, 1, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(SoundShardPacket::encode)
+                .decoder(SoundShardPacket::decode)
+                .consumerMainThread(SoundShardPacket::handleOnServer)
+                .add();
+
+        // Ask the server to send the note grid data.
+        CHANNEL.messageBuilder(NoteGridRequestPacket.class, 2, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(NoteGridRequestPacket::encode)
+                .decoder(NoteGridRequestPacket::decode)
+                .consumerMainThread(NoteGridRequestPacket::handleOnServer)
+                .add();
+
+        // Send the note grid data to the client.
+        CHANNEL.messageBuilder(NoteGridDataPacket.class, 3, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(NoteGridDataPacket::encode)
+                .decoder(NoteGridDataPacket::decode)
+                .consumerMainThread(NoteGridDataPacket::handleOnClient)
+                .add();
     }
 }

@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.PerforationTableBlock;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
-import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity$;
+import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import io.github.c20c01.cc_mb.item.Awl;
@@ -65,8 +65,7 @@ public class CCMain {
 
     // 网络相关
     public static final String NETWORK_VERSION = "1";
-    public static final ResourceLocation CHANNEL_GRID_TO_S = new ResourceLocation(ID, "network_grid_to_s");
-    public static final ResourceLocation CHANNEL_SOUND_SHARD_TO_S = new ResourceLocation(ID, "network_sound_shard_to_s");
+    public static final ResourceLocation CHANNEL_ID = new ResourceLocation(ID, "network");
 
     // 注册器
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
@@ -88,7 +87,7 @@ public class CCMain {
     public static final String MUSIC_BOX_BLOCK_ID = "music_box_block";
     public static final RegistryObject<MusicBoxBlock> MUSIC_BOX_BLOCK;
     public static final RegistryObject<BlockItem> MUSIC_BOX_BLOCK_ITEM;
-    public static final RegistryObject<BlockEntityType<MusicBoxBlockEntity$>> MUSIC_BOX_BLOCK_ENTITY;
+    public static final RegistryObject<BlockEntityType<MusicBoxBlockEntity>> MUSIC_BOX_BLOCK_ENTITY;
 
     public static final String PERFORATION_TABLE_BLOCK_ID = "perforation_table_block";
     public static final RegistryObject<PerforationTableBlock> PERFORATION_TABLE_BLOCK;
@@ -112,7 +111,7 @@ public class CCMain {
 
         MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, MusicBoxBlock::new);
         MUSIC_BOX_BLOCK_ITEM = ITEMS.register(MUSIC_BOX_BLOCK_ID, () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
-        MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(MUSIC_BOX_BLOCK_ID, () -> BlockEntityType.Builder.of(MusicBoxBlockEntity$::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
+        MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(MUSIC_BOX_BLOCK_ID, () -> BlockEntityType.Builder.of(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
 
         PERFORATION_TABLE_BLOCK = BLOCKS.register(PERFORATION_TABLE_BLOCK_ID, PerforationTableBlock::new);
         PERFORATION_TABLE_BLOCK_ITEM = ITEMS.register(PERFORATION_TABLE_BLOCK_ID, () -> new BlockItem(PERFORATION_TABLE_BLOCK.get(), new Item.Properties()));

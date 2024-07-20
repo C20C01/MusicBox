@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity$;
+import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.player.NoteGridPlayer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -26,7 +26,7 @@ public class Awl extends Item {
     }
 
     public static byte getTickPerBeatTag(CompoundTag tag) {
-        return tag.contains("TickPerBeat") ? tag.getByte("TickPerBeat") : 10;
+        return tag.contains("TickPerBeat") ? tag.getByte("TickPerBeat") : NoteGridPlayer.getDefaultTickPerBeat();
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Awl extends Item {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         BlockPos blockPos = context.getClickedPos();
-        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity$ blockEntity) {
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
             Player player = context.getPlayer();
             if (player != null) {
                 String tickPerBeat = String.valueOf(blockEntity.getTickPerBeat());

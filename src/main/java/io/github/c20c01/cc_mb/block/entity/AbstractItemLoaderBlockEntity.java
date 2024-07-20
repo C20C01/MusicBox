@@ -66,7 +66,7 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     }
 
     private boolean handleSetItem(ItemStack pStack) {
-        if (canPlaceItem(0, pStack)) {
+        if (canPlaceItem(pStack)) {
             item = pStack;
             loadItem(item);
             return true;
@@ -125,6 +125,10 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
         if (pSlot == 0) {
             handleSetItem(pStack);
         }
+    }
+
+    public boolean canPlaceItem(ItemStack pStack) {
+        return canPlaceItem(0, pStack);
     }
 
     @Override

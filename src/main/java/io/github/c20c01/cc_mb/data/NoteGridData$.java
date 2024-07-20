@@ -8,8 +8,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -33,6 +32,10 @@ public class NoteGridData$ extends SavedData implements TagData<ByteArrayTag> {
         return new NoteGridData$().setPages(pages);
     }
 
+    public static NoteGridData$ ofBytes(byte[] data) {
+        return new NoteGridData$().setPages(new Decoder().decode(data));
+    }
+
     public static NoteGridData$ ofBook(ItemStack book) {
         return new NoteGridData$().loadBook(book);
     }
@@ -50,8 +53,10 @@ public class NoteGridData$ extends SavedData implements TagData<ByteArrayTag> {
         return server.overworld().getDataStorage().get(NoteGridData$::ofTag, key);
     }
 
+    /**
+     * Client only!
+     */
     @Nullable
-    @OnlyIn(Dist.CLIENT)
     public static NoteGridData$ ofId(int noteGridId, Consumer<NoteGridData$> updater) {
         return ClientNoteGridManager.getNoteGridData(noteGridId, updater);
     }
@@ -91,6 +96,10 @@ public class NoteGridData$ extends SavedData implements TagData<ByteArrayTag> {
         return new ByteArrayTag(data);
     }
 
+    public byte[] toBytes() {
+        return ArrayUtils.toPrimitive(new Encoder().encode(pages).toArray(new Byte[0]));
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag) {
         tag.put(DATA_KEY, toTag());
@@ -102,6 +111,7 @@ public class NoteGridData$ extends SavedData implements TagData<ByteArrayTag> {
      */
     public void save(MinecraftServer server, int noteGridId) {
         String key = makeKey(noteGridId);
+        ServerNoteGridManager.makeDirty(noteGridId);
         server.overworld().getDataStorage().set(key, this);
     }
 

@@ -1,10 +1,9 @@
 package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity$;
+import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.NoteGridData$;
 import io.github.c20c01.cc_mb.item.Awl;
-import io.github.c20c01.cc_mb.item.NoteGrid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -96,7 +95,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos) {
         if (blockState.getValue(HAS_NOTE_GRID)) {
             BlockEntity blockentity = level.getBlockEntity(blockPos);
-            return blockentity instanceof MusicBoxBlockEntity$ be ? be.getSignal() : 0;
+            return blockentity instanceof MusicBoxBlockEntity be ? be.getSignal() : 0;
         } else {
             return 0;
         }
@@ -109,7 +108,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
     @Override
     public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-        return new MusicBoxBlockEntity$(blockPos, blockState);
+        return new MusicBoxBlockEntity(blockPos, blockState);
     }
 
     @Override
@@ -123,7 +122,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
         // TODO
         if (!blockState.getValue(POWERED) && blockState.getValue(HAS_NOTE_GRID)) {
-            MusicBoxBlockEntity$ blockEntity = (MusicBoxBlockEntity$) level.getBlockEntity(blockPos);
+            MusicBoxBlockEntity blockEntity = (MusicBoxBlockEntity) level.getBlockEntity(blockPos);
             if (blockEntity != null) {
                 blockEntity.playOneBeat(level, blockPos, blockState);
             }
@@ -135,7 +134,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         ItemStack itemStack = player.getItemInHand(hand);
-        MusicBoxBlockEntity$ musicBoxBlockEntity = level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity$ be ? be : null;
+        MusicBoxBlockEntity musicBoxBlockEntity = level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity be ? be : null;
         if (musicBoxBlockEntity == null) {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
@@ -164,17 +163,10 @@ public class MusicBoxBlock extends BaseEntityBlock {
             }
         } else {
             // 放入纸带
-            if (itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
-                // TODO REMOVE
-                NoteGrid.setId(itemStack, 0);
-                // TODO REMOVE
-
-                if (level.isClientSide) {
-                    return InteractionResult.SUCCESS;
-                } else if (musicBoxBlockEntity.setItem(itemStack)) {
-                    itemStack.shrink(1);
-                    return InteractionResult.CONSUME;
-                }
+            if (musicBoxBlockEntity.canPlaceItem(itemStack)) {
+                musicBoxBlockEntity.setItem(itemStack);
+                itemStack.shrink(1);
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
 
             // TODO REMOVE
@@ -195,10 +187,9 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
-        // TODO
         super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
         CompoundTag compoundTag = BlockItem.getBlockEntityData(itemStack);
-        if (compoundTag != null && compoundTag.contains(MusicBoxBlockEntity$.NOTE_GRID) && !ItemStack.of(compoundTag.getCompound(MusicBoxBlockEntity$.NOTE_GRID)).isEmpty()) {
+        if (compoundTag != null && compoundTag.contains(MusicBoxBlockEntity.NOTE_GRID)) {
             BlockUtil.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true);
         }
     }
@@ -206,9 +197,8 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState1, boolean b) {
-        // TODO
         if (!blockState.is(blockState1.getBlock())) {
-            if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity$ blockEntity) {
+            if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
                 Containers.dropItemStack(level, blockPos.getX(), blockPos.getY(), blockPos.getZ(), blockEntity.getItem());
             }
         }
@@ -219,7 +209,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pType) {
         if (pState.getValue(POWERED) && pState.getValue(HAS_NOTE_GRID)) {
-            return createTickerHelper(pType, CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), MusicBoxBlockEntity$::tick);
+            return createTickerHelper(pType, CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), MusicBoxBlockEntity::tick);
         }
         return null;
     }

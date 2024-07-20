@@ -36,12 +36,12 @@ public class NoteGridPlayer {
     }
 
     private final PlayerListener LISTENER;
-    private byte tickPerBeat = (MIN_TICK_PER_BEAT + MAX_TICK_PER_BEAT) / 2;
+    private byte tickPerBeat = getDefaultTickPerBeat();
     private byte tickSinceLastBeat;
     private byte beatNumber;
     private byte pageNumber;
     private Beat beat = new Beat();
-    private NoteGridData$ noteGridData = null;//TODO Non persistent data
+    private NoteGridData$ noteGridData = null;
 
     public NoteGridPlayer(PlayerListener listener) {
         LISTENER = listener;
@@ -88,6 +88,10 @@ public class NoteGridPlayer {
         }
     }
 
+    public static byte getDefaultTickPerBeat() {
+        return (MIN_TICK_PER_BEAT + MAX_TICK_PER_BEAT) / 2;
+    }
+
     /**
      * @param note must be in the range of 0~24, or use {@link NoteBlock#getPitchFromNote(int)}
      */
@@ -107,17 +111,34 @@ public class NoteGridPlayer {
         this.tickPerBeat = (byte) Mth.clamp(tickPerBeat, MIN_TICK_PER_BEAT, MAX_TICK_PER_BEAT);
     }
 
+    public void loadUpdateTag(CompoundTag tag) {
+        byte[] data = tag.getByteArray("PlayerData");
+        setTickPerBeat(data[0]);
+        tickSinceLastBeat = data[1];
+        beatNumber = data[2];
+        pageNumber = data[3];
+        byte[] beatData = new byte[data.length - 4];
+        System.arraycopy(data, 4, beatData, 0, beatData.length);
+        beat = Beat.ofNotes(beatData);
+    }
+
+    public void saveUpdateTag(CompoundTag tag) {
+        byte[] notes = beat.getNotes();
+        byte[] data = new byte[notes.length + 4];
+        data[0] = tickPerBeat;
+        data[1] = tickSinceLastBeat;
+        data[2] = beatNumber;
+        data[3] = pageNumber;
+        System.arraycopy(notes, 0, data, 4, notes.length);
+        tag.putByteArray("PlayerData", data);
+    }
+
     public void load(CompoundTag tag) {
         setTickPerBeat(tag.getByte("TickPerBeat"));
         tickSinceLastBeat = tag.getByte("Interval");
         beatNumber = tag.getByte("Beat");
         pageNumber = tag.getByte("Page");
         beat = Beat.ofNotes(tag.getByteArray("LastBeat"));
-
-        // TODO
-        if (tag.contains("NoteGridData")) {
-            noteGridData = NoteGridData$.ofTag(tag.getCompound("NoteGridData"));
-        }
     }
 
     public void saveAdditional(CompoundTag tag) {
@@ -126,11 +147,6 @@ public class NoteGridPlayer {
         tag.putByte("Beat", beatNumber);
         tag.putByte("Page", pageNumber);
         tag.putByteArray("LastBeat", beat.getNotes());
-
-        // TODO
-        if (noteGridData != null) {
-            tag.put("NoteGridData", noteGridData.save(new CompoundTag()));
-        }
     }
 
     /**
@@ -148,7 +164,11 @@ public class NoteGridPlayer {
             return;
         }
         Beat lastBeat = beat;
-        beat = noteGridData.getPage(pageNumber).getBeat(beatNumber, EMPTY_BEAT);
+        try {
+            beat = noteGridData.getPage(pageNumber).getBeat(beatNumber, EMPTY_BEAT);
+        } catch (IndexOutOfBoundsException e) {
+            LISTENER.onFinish(level, blockPos, blockState);
+        }
         LISTENER.onBeat(level, blockPos, blockState, lastBeat, beat);
         if (level.isClientSide) {
             playBeat((ClientLevel) level, blockPos, blockState, beat);
@@ -162,7 +182,6 @@ public class NoteGridPlayer {
         beatNumber = 0;
         if (++pageNumber >= noteGridData.size()) {
             LISTENER.onFinish(level, blockPos, blockState);
-            // reset();
         }
     }
 

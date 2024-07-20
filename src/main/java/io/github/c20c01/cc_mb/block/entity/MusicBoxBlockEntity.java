@@ -1,216 +1,206 @@
-//package io.github.c20c01.cc_mb.block.entity;
-//
-//import io.github.c20c01.cc_mb.CCMain;
-//import io.github.c20c01.cc_mb.block.BlockUtil;
-//import io.github.c20c01.cc_mb.block.MusicBoxBlock;
-//import io.github.c20c01.cc_mb.data.Beat;
-//import io.github.c20c01.cc_mb.data.NoteGridData;
-//import io.github.c20c01.cc_mb.data.Page;
-//import net.minecraft.core.BlockPos;
-//import net.minecraft.core.Direction;
-//import net.minecraft.core.Holder;
-//import net.minecraft.core.Position;
-//import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
-//import net.minecraft.core.particles.ParticleTypes;
-//import net.minecraft.nbt.CompoundTag;
-//import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-//import net.minecraft.server.level.ServerLevel;
-//import net.minecraft.sounds.SoundEvent;
-//import net.minecraft.world.Container;
-//import net.minecraft.world.WorldlyContainer;
-//import net.minecraft.world.item.ItemStack;
-//import net.minecraft.world.level.Level;
-//import net.minecraft.world.level.block.entity.HopperBlockEntity;
-//import net.minecraft.world.level.block.state.BlockState;
-//import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-//import net.minecraft.world.phys.Vec3;
-//
-//public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity {
-//    public static final String NOTE_GRID = "NoteGrid";
-//    private byte delta = 0;
-//    private byte beat = 0;
-//    private byte page = 0;
-//    private byte note = -1;
-//    private byte lastNote = -2;
-//    private byte tickPerBeat = 10;
-//    private Page[] pages;
-//
-//    public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
-//        super(CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState, NOTE_GRID);
-//    }
-//
-//    private void reset() {
-//        delta = 0;
-//        beat = 0;
-//        page = 0;
-//        note = -1;
-//        lastNote = -2;
-//        pages = null;
-//        setChanged();
-//    }
-//
-//    public int getAnalogOutputSignal() {
-//        return note > 13 ? 15 : note + 2;
-//    }
-//
-//    public static void playTick(Level level, BlockPos blockPos, BlockState blockState, MusicBoxBlockEntity blockEntity) {
-//        if (blockState.getValue(MusicBoxBlock.POWERED) && blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID)) {
-//            blockEntity.playTick((ServerLevel) level, blockPos, blockState);
-//        }
-//    }
-//
-//    private void playTick(ServerLevel level, BlockPos blockPos, BlockState blockState) {
-//        if (pages == null) return;
-//        delta++;
-//        if (delta >= tickPerBeat) {
-//            delta = 0;
-//            tryToPlayOneBeat(level, blockPos, blockState);
-//        }
-//    }
-//
-//    public void tryToPlayOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
-//        if (pages == null) return;
-//
-//        try {
-//            Page nowPage = pages[page];
-//            Beat oneBeat = nowPage.getBeat(beat);
-//            note = playOneBeat(oneBeat, level, blockPos, blockState);
-//        } catch (ArrayIndexOutOfBoundsException e) {
-//            finishOneNoteGrid(level, blockPos, blockState);
-//            return;
-//        }
-//
-//        beat++;
-//        if (beat >= Page.BEATS_SIZE) {
-//            page++;
-//            if (page >= pages.length) {
-//                finishOneNoteGrid(level, blockPos, blockState);
-//            } else {
-//                beat = 0;
-//            }
-//        }
-//
-//        if (note != lastNote) {
-//            lastNote = note;
-//            level.updateNeighbourForOutputSignal(blockPos, blockState.getBlock());
-//        }
-//
-//        setChanged();
-//    }
-//
-//    private byte playOneBeat(Beat beat, ServerLevel level, BlockPos blockPos, BlockState blockState) {
-//        if (beat.isEmpty()) {
-//            return -1;
-//        }
-//
-//        NoteBlockInstrument instrument = blockState.getValue(MusicBoxBlock.INSTRUMENT);
-//        Holder<SoundEvent> holder;
-//        long soundSeed;
-//
-//        if (instrument.hasCustomSound() && level.getBlockEntity(blockPos.below()) instanceof SoundBoxBlockEntity soundBoxBlockEntity) {
-//            // 按声响盒的声音播放
-//            holder = soundBoxBlockEntity.getInstrument();
-//            if (holder == SoundBoxBlockEntity.EMPTY) {
-//                return beat.getMinNote();
-//            }
-//
-//            // 规定种子是为了保证每次播放的都是声音事件里的同一种声音
-//            // 这应该是在不mixin的情况下最方便的法子了
-//            soundSeed = soundBoxBlockEntity.getSoundSeed();
-//        } else {
-//            holder = instrument.getSoundEvent();
-//            soundSeed = level.random.nextLong();
-//        }
-//
-//        byte minNote = beat.play(level, blockPos, holder, soundSeed);
-//
-//        if (level.getBlockState(blockPos.above()).isAir()) {
-//            spawnMusicParticles(level, blockPos, minNote);
-//        }
-//
-//        return minNote;
-//    }
-//
-//    private void finishOneNoteGrid(ServerLevel level, BlockPos blockPos, BlockState blockState) {
-//        // 把用完的纸带往八音盒后面的容器存 不能就向前弹出来
-//        Direction direction = blockState.getValue(MusicBoxBlock.FACING);
-//        Container container = HopperBlockEntity.getContainerAt(level, blockPos.relative(direction.getOpposite()));
-//        ItemStack itemStack = removeItem();
-//
-//        if (container != null && !(container instanceof WorldlyContainer)) {
-//            int size = container.getContainerSize();
-//            for (int slot = 0; slot < size; ++slot) {
-//                if (container.getItem(slot).isEmpty()) {
-//                    container.setItem(slot, itemStack);
-//                    return;
-//                }
-//            }
-//        }
-//
-//        Position position = blockPos.getCenter().relative(direction, 0.7D);
-//        DefaultDispenseItemBehavior.spawnItem(level, itemStack, 2, direction, position);
-//    }
-//
-//    @Override
-//    public void setLevel(Level pLevel) {
-//        super.setLevel(pLevel);
-//        System.out.println(level + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//
-//        // 如果客户端调用且有谱子，就向服务器请求谱子数据
-//    }
-//
-//    @Override
-//    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-//
-//        System.out.println("getUpdatePacket");
-//
-//        return null;
-//    }
-//
-//    @Override
-//    public void load(CompoundTag compoundTag) {
-//        super.load(compoundTag);
-//        delta = compoundTag.getByte("Delta");
-//        beat = compoundTag.getByte("Beat");
-//        page = compoundTag.getByte("Page");
-//        note = compoundTag.getByte("Note");
-//    }
-//
-//    @Override
-//    protected void saveAdditional(CompoundTag compoundTag) {
-//        super.saveAdditional(compoundTag);
-//        compoundTag.putByte("Delta", delta);
-//        compoundTag.putShort("Beat", beat);
-//        compoundTag.putByte("Page", page);
-//        compoundTag.putByte("Note", note);
-//    }
-//
-//    @Override
-//    protected void loadItem(ItemStack item) {
-//        pages = NoteGridData.readFromTag(item);
-//        if (getLevel() != null) {
-//            BlockUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, true);
-//        }
-//        setChanged();
-//    }
-//
-//    @Override
-//    protected void unloadItem() {
-//        if (getLevel() != null) {
-//            BlockUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, false);
-//        }
-//        reset();
-//    }
-//
-//    @Override
-//    public boolean canPlaceItem(int slot, ItemStack itemStack) {
-//        return itemStack.is(CCMain.NOTE_GRID_ITEM.get()) && this.getItem(slot).isEmpty();
-//    }
-//
-//    private void spawnMusicParticles(Level level, BlockPos blockPos, byte note) {
-//        if (level instanceof ServerLevel serverlevel) {
-//            Vec3 vec3 = Vec3.atBottomCenterOf(blockPos).add(0.0D, 1.2F, 0.0D);
-//            serverlevel.sendParticles(ParticleTypes.NOTE, vec3.x(), vec3.y(), vec3.z(), 0, note / 24D, 0.0D, 0.0D, 1.0D);
-//        }
-//    }
-//}
+package io.github.c20c01.cc_mb.block.entity;
+
+import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.block.BlockUtil;
+import io.github.c20c01.cc_mb.block.MusicBoxBlock;
+import io.github.c20c01.cc_mb.data.Beat;
+import io.github.c20c01.cc_mb.data.NoteGridData$;
+import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.util.player.NoteGridPlayer;
+import io.github.c20c01.cc_mb.util.player.PlayerListener;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+
+import javax.annotation.Nullable;
+
+public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements PlayerListener {
+    public static final String NOTE_GRID = "NoteGrid";
+    private static final byte BEAT_PER_UPDATE = 20;
+    private final NoteGridPlayer PLAYER;
+    private byte beatSinceLastUpdate;
+    private Integer noteGridId = null;// cache the note grid id, to avoid unnecessary updates
+
+    public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
+        super(CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState, NOTE_GRID);
+        PLAYER = new NoteGridPlayer(this);
+    }
+
+    public static void tick(Level level, BlockPos blockPos, BlockState blockState, MusicBoxBlockEntity blockEntity) {
+        blockEntity.PLAYER.tick(level, blockPos, blockState);
+    }
+
+    @Override
+    public void load(CompoundTag compoundTag) {
+        super.load(compoundTag);
+        PLAYER.load(compoundTag);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag compoundTag) {
+        super.saveAdditional(compoundTag);
+        PLAYER.saveAdditional(compoundTag);
+    }
+
+    @Override
+    public void setLevel(Level pLevel) {
+        super.setLevel(pLevel);
+        // Initialize the note grid data.
+        setNoteGridId(NoteGrid.getId(getItem()));
+    }
+
+    /**
+     * Handle the update packet from the server.
+     * It will sync the note grid id and the player information.
+     */
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        CompoundTag tag = pkt.getTag();
+        if (tag != null) {
+            PLAYER.loadUpdateTag(tag);
+            setNoteGridId(tag.contains(NoteGrid.NOTE_GRID_ID) ? tag.getInt(NoteGrid.NOTE_GRID_ID) : null);
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        PLAYER.saveUpdateTag(tag);
+        Integer noteGridId = NoteGrid.getId(getItem());
+        if (noteGridId != null) {
+            tag.putInt(NoteGrid.NOTE_GRID_ID, noteGridId);
+        }
+        return tag;
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /**
+     * Set the note grid id. If the id is changed, load or request the note grid data.
+     */
+    private void setNoteGridId(@Nullable Integer id) {
+        Integer oldId = noteGridId;
+        noteGridId = id;
+        if (id == null || id.equals(oldId)) {
+            return;
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            // Load from the server's data storage.
+            NoteGridData$ noteGridData = NoteGridData$.ofId(serverLevel.getServer(), id);
+            PLAYER.setNoteGridData(noteGridData);
+        } else {
+            // Load from the client's cache and send a request to the server to get the latest data.
+            NoteGridData$ noteGridData = NoteGridData$.ofId(id, PLAYER::setNoteGridData);
+            PLAYER.setNoteGridData(noteGridData);
+        }
+    }
+
+    @Override
+    protected void loadItem(ItemStack noteGrid) {
+        Level level = getLevel();
+        if (level == null) {
+            return;
+        }
+        setNoteGridId(NoteGrid.getId(noteGrid));
+        BlockUtil.changeProperty(level, getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, true);
+        setChanged(level, getBlockPos(), getBlockState());
+    }
+
+    @Override
+    protected void unloadItem() {
+        Level level = getLevel();
+        if (level == null) {
+            return;
+        }
+        PLAYER.reset();
+        noteGridId = null;
+        BlockUtil.changeProperty(level, getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, false);
+        setChanged(level, getBlockPos(), getBlockState());
+    }
+
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack itemStack) {
+        return itemStack.is(CCMain.NOTE_GRID_ITEM.get()) && NoteGrid.getId(itemStack) != null && this.getItem(slot).isEmpty();
+    }
+
+    /**
+     * Eject the note grid item from the music box.
+     * If there is a container(NOT a worldly container) at the back of the music box, put the note grid item into it.
+     * Otherwise, spawn the note grid item.
+     */
+    private void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState) {
+        Direction direction = blockState.getValue(MusicBoxBlock.FACING);
+        Container container = HopperBlockEntity.getContainerAt(level, blockPos.relative(direction.getOpposite()));
+        ItemStack itemStack = removeItem();
+        if (container != null && !(container instanceof WorldlyContainer)) {
+            int size = container.getContainerSize();
+            for (int slot = 0; slot < size; ++slot) {
+                if (container.getItem(slot).isEmpty()) {
+                    container.setItem(slot, itemStack);
+                    container.setChanged();
+                    return;
+                }
+            }
+        }
+        Position position = blockPos.getCenter().relative(direction, 0.7D);
+        DefaultDispenseItemBehavior.spawnItem(level, itemStack, 2, direction, position);
+    }
+
+    public int getSignal() {
+        byte minNote = PLAYER.getMinNote();
+        return minNote > 13 ? 15 : minNote + 2;
+    }
+
+    public void setTickPerBeat(Level level, BlockPos blockPos, byte tickPerBeat) {
+        if (PLAYER.getTickPerBeat() == tickPerBeat) {
+            return;
+        }
+        PLAYER.setTickPerBeat(tickPerBeat);
+        // Sync the note grid player information to the client.
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.getChunkSource().blockChanged(blockPos);
+        }
+    }
+
+    public byte getTickPerBeat() {
+        return PLAYER.getTickPerBeat();
+    }
+
+    public void playOneBeat(Level level, BlockPos blockPos, BlockState blockState) {
+        if (blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID) && !blockState.getValue(MusicBoxBlock.POWERED)) {
+            PLAYER.nextBeat(level, blockPos, blockState);
+        }
+    }
+
+    @Override
+    public void onFinish(Level level, BlockPos blockPos, BlockState blockState) {
+        ejectNoteGrid(level, blockPos, blockState);
+    }
+
+    @Override
+    public void onBeat(Level level, BlockPos blockPos, BlockState blockState, Beat lastBeat, Beat currentBeat) {
+        level.blockEntityChanged(blockPos);
+        if (currentBeat.getMinNote() != lastBeat.getMinNote()) {
+            level.updateNeighbourForOutputSignal(blockPos, blockState.getBlock());
+        }
+        // Sync the note grid player information to the client every BEAT_PER_SYNC_ON_BEAT beats.
+        if (level instanceof ServerLevel serverLevel && beatSinceLastUpdate++ >= BEAT_PER_UPDATE) {
+            beatSinceLastUpdate = 0;
+            serverLevel.getChunkSource().blockChanged(blockPos);
+        }
+    }
+}

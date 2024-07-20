@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class UpdateSoundShard {
     public static void toServer(Player player, String sound) {
-        CCNetwork.CHANNEL_SOUND_SHARD_TO_S.sendToServer(new SoundShardPacket(player.getInventory().selected, sound));
+        CCNetwork.CHANNEL.sendToServer(new SoundShardPacket(player.getInventory().selected, sound));
     }
 
     public static void onServer(ServerPlayer player, int slot, String sound) {

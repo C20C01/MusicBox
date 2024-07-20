@@ -90,7 +90,7 @@ public class NoteGridEditWidget extends AbstractWidget {
             byte note = mousePosOnGird[1];
             if (screen.getMenu().punchGrid(page, beat, note)) {
                 var packet = new NoteGridPacket(screen.getMenu().containerId, page, beat, note);
-                CCNetwork.CHANNEL_GRID_TO_S.sendToServer(packet);
+                CCNetwork.CHANNEL.sendToServer(packet);
             }
         }
     }
