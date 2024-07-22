@@ -23,7 +23,7 @@ public class ClientNoteGridTooltip implements ClientTooltipComponent {
     private final String numberOfPages;
 
     public ClientNoteGridTooltip(NoteGrid.Tooltip tooltip) {
-        this.firstPage = tooltip.page();
+        this.firstPage = tooltip.data() == null ? new Page() : tooltip.data().getPage((byte) 0);
         this.numberOfPages = Component.translatable(CCMain.TEXT_NUMBER_OF_PAGES).getString() + tooltip.numberOfPages();
     }
 

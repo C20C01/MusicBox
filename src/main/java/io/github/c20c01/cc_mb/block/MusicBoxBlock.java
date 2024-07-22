@@ -2,8 +2,9 @@ package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
-import io.github.c20c01.cc_mb.data.NoteGridData$;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
+import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -81,7 +82,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos1, boolean b) {
-        BlockUtil.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), Block.UPDATE_CLIENTS);
+        BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), Block.UPDATE_CLIENTS);
     }
 
     @Override
@@ -120,12 +121,9 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
-        // TODO
-        if (!blockState.getValue(POWERED) && blockState.getValue(HAS_NOTE_GRID)) {
-            MusicBoxBlockEntity blockEntity = (MusicBoxBlockEntity) level.getBlockEntity(blockPos);
-            if (blockEntity != null) {
-                blockEntity.playOneBeat(level, blockPos, blockState);
-            }
+        MusicBoxBlockEntity blockEntity = (MusicBoxBlockEntity) level.getBlockEntity(blockPos);
+        if (blockEntity != null) {
+            blockEntity.playOneBeat(level, blockPos, blockState);
         }
         super.attack(blockState, level, blockPos, player);
     }
@@ -163,15 +161,16 @@ public class MusicBoxBlock extends BaseEntityBlock {
             }
         } else {
             // 放入纸带
-            if (musicBoxBlockEntity.canPlaceItem(itemStack)) {
-                musicBoxBlockEntity.setItem(itemStack);
-                itemStack.shrink(1);
+            if (musicBoxBlockEntity.canPlaceItem(0, itemStack)) {
+                if (!level.isClientSide && musicBoxBlockEntity.setItem(itemStack)) {
+                    itemStack.shrink(1);
+                }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
 
             // TODO REMOVE
             if (itemStack.is(Items.WRITABLE_BOOK)) {
-                var data = NoteGridData$.ofBook(itemStack);
+                var data = NoteGridData.ofBook(itemStack);
                 if (level instanceof ServerLevel serverLevel) {
                     data.save(serverLevel.getServer(), 0);
                     player.displayClientMessage(Component.literal("书本所存纸带数据已保存至世界数据中").withStyle(ChatFormatting.DARK_AQUA), true);
@@ -190,7 +189,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
         super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
         CompoundTag compoundTag = BlockItem.getBlockEntityData(itemStack);
         if (compoundTag != null && compoundTag.contains(MusicBoxBlockEntity.NOTE_GRID)) {
-            BlockUtil.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true);
+            BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true);
         }
     }
 

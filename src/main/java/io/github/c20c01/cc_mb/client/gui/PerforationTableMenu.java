@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.OldNoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -166,19 +166,19 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     private void superposeGrid(Level level, BlockPos blockPos, Player player) {
-        NoteGridData.saveToTag(noteGridSlot.getItem(), NoteGridData.superposeGrid(noteGridSlot.getItem(), otherGridSlot.getItem()));
+        OldNoteGridData.saveToTag(noteGridSlot.getItem(), OldNoteGridData.superposeGrid(noteGridSlot.getItem(), otherGridSlot.getItem()));
         afterSuperposeGrid(level, blockPos, player);
     }
 
     private void connectGrid(Level level, BlockPos blockPos) {
-        NoteGridData.saveToTag(noteGridSlot.getItem(), NoteGridData.connectGrid(noteGridSlot.getItem(), otherGridSlot.getItem()));
+        OldNoteGridData.saveToTag(noteGridSlot.getItem(), OldNoteGridData.connectGrid(noteGridSlot.getItem(), otherGridSlot.getItem()));
         otherGridSlot.getItem().shrink(1);
         toolSlot.getItem().shrink(1);
         level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1F, 1F);
     }
 
     private void superposeGridByBook(Level level, BlockPos blockPos, Player player) {
-        NoteGridData.saveToTag(noteGridSlot.getItem(), NoteGridData.superposeGridByBook(noteGridSlot.getItem(), otherGridSlot.getItem()));
+        OldNoteGridData.saveToTag(noteGridSlot.getItem(), OldNoteGridData.superposeGridByBook(noteGridSlot.getItem(), otherGridSlot.getItem()));
         afterSuperposeGrid(level, blockPos, player);
     }
 
@@ -225,10 +225,10 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         setMode();
         switch (mode) {
             case EMPTY -> pages = null;
-            case CHECK, PUNCH -> pages = NoteGridData.readFromTag(noteGridSlot.getItem());
-            case SUPERPOSE -> pages = NoteGridData.superposeGrid(noteGridSlot.getItem(), otherGridSlot.getItem());
-            case CONNECT -> pages = NoteGridData.connectGrid(noteGridSlot.getItem(), otherGridSlot.getItem());
-            case BOOK -> pages = NoteGridData.superposeGridByBook(noteGridSlot.getItem(), otherGridSlot.getItem());
+            case CHECK, PUNCH -> pages = OldNoteGridData.readFromTag(noteGridSlot.getItem());
+            case SUPERPOSE -> pages = OldNoteGridData.superposeGrid(noteGridSlot.getItem(), otherGridSlot.getItem());
+            case CONNECT -> pages = OldNoteGridData.connectGrid(noteGridSlot.getItem(), otherGridSlot.getItem());
+            case BOOK -> pages = OldNoteGridData.superposeGridByBook(noteGridSlot.getItem(), otherGridSlot.getItem());
         }
         isItemChanged = true;
     }

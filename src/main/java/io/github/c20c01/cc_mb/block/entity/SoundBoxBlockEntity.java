@@ -1,8 +1,8 @@
 package io.github.c20c01.cc_mb.block.entity;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.block.BlockUtil;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
+import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -47,7 +47,7 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
             if (location == null) return false;
             instrument = Holder.direct(SoundEvent.createVariableRangeEvent(location));
             if (getLevel() != null) {
-                BlockUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, false);
+                BlockUtils.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, false);
             }
             setChanged();
             return true;
@@ -61,7 +61,7 @@ public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleI
         instrument = EMPTY;
         soundSeed = 0;
         if (getLevel() != null) {
-            BlockUtil.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, true);
+            BlockUtils.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, true);
         }
         setChanged();
         return oldItemStack;

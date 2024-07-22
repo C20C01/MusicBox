@@ -12,4 +12,6 @@ public interface PlayerListener {
     void onFinish(Level level, BlockPos blockPos, BlockState blockState);
 
     void onBeat(Level level, BlockPos blockPos, BlockState blockState, Beat lastBeat, Beat currentBeat);
+
+    void onPageChange(Level level, BlockPos blockPos, BlockState blockState, byte pageNumber);
 }

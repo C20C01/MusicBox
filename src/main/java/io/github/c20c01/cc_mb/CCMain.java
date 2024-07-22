@@ -8,6 +8,7 @@ import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.SoundShard;
@@ -123,22 +124,21 @@ public class CCMain {
         PERFORATION_TABLE_MENU = MENU_TYPES.register(PERFORATION_TABLE_MENU_ID, () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
 
         CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
-                        .icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance())
-                        .displayItems((parameters, output) -> {
-                            output.accept(MUSIC_BOX_BLOCK_ITEM.get());
-                            output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
-                            output.accept(SOUND_BOX_BLOCK_ITEM.get());
-                            output.accept(AWL_ITEM.get());
-                            output.accept(SOUND_SHARD_ITEM.get());
-                            output.accept(Items.SLIME_BALL);
-                            output.accept(Items.WRITABLE_BOOK);
-                            output.accept(NOTE_GRID_ITEM.get());
-                            //TODO
-//                    output.accept(NoteGridData.getTestingGrid());
-                            output.acceptAll(InstrumentBlocksHelper.getItems());
-                        })
-                        .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))
-                        .build()
+                .icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance())
+                .displayItems((parameters, output) -> {
+                    output.accept(MUSIC_BOX_BLOCK_ITEM.get());
+                    output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
+                    output.accept(SOUND_BOX_BLOCK_ITEM.get());
+                    output.accept(AWL_ITEM.get());
+                    output.accept(SOUND_SHARD_ITEM.get());
+                    output.accept(Items.SLIME_BALL);
+                    output.accept(Items.WRITABLE_BOOK);
+                    output.accept(NOTE_GRID_ITEM.get());
+                    output.acceptAll(NoteGridData.getPredefinedSongs());
+                    output.acceptAll(InstrumentBlocksHelper.getItems());
+                })
+                .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))
+                .build()
         );
     }
 

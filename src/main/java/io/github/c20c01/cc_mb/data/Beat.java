@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.data;
 
+import io.github.c20c01.cc_mb.util.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -62,6 +63,10 @@ public class Beat {
         return note;
     }
 
+    public static boolean isAvailableNote(byte note) {
+        return note <= 24 && note >= 0;
+    }
+
     public Beat loadNotes(byte[] notes) {
         return setNotes(notes);
     }
@@ -113,16 +118,12 @@ public class Beat {
     }
 
     public Beat setNotes(Collection<Byte> notes) {
-        byte[] notesArray = ArrayUtils.toPrimitive(notes.toArray(new Byte[0]));
+        byte[] notesArray = CollectionUtils.toArray(notes);
         return setNotes(notesArray);
     }
 
     public byte getMinNote() {
         return notes.length == 0 ? -1 : minNote;
-    }
-
-    public static boolean isAvailableNote(byte note) {
-        return note <= 24 && note >= 0;
     }
 
     private boolean canAddToNotes(byte note) {

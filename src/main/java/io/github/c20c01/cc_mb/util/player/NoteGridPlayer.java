@@ -3,7 +3,7 @@ package io.github.c20c01.cc_mb.util.player;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.Beat;
-import io.github.c20c01.cc_mb.data.NoteGridData$;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.NoteBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -41,18 +43,16 @@ public class NoteGridPlayer {
     private byte beatNumber;
     private byte pageNumber;
     private Beat beat = new Beat();
-    private NoteGridData$ noteGridData = null;
+    private NoteGridData noteGridData = null;
 
     public NoteGridPlayer(PlayerListener listener) {
         LISTENER = listener;
     }
 
     /**
-     * Play the current beat on the local minecraft instance.
-     * SoundSeed is used to locate the specific sound from the sound event.
+     * Play the beat on the client or server side.
      */
-    @OnlyIn(Dist.CLIENT)
-    private static void playBeat(ClientLevel level, BlockPos blockPos, BlockState blockState, Beat beat) {
+    private static void playBeat(Level level, BlockPos blockPos, BlockState blockState, Beat beat) {
         if (beat.isEmpty()) {
             return;
         }
@@ -74,17 +74,39 @@ public class NoteGridPlayer {
             soundEvent = instrument.getSoundEvent();
             soundSeed = level.random.nextLong();
         }
-        double x = (double) blockPos.getX() + 0.5D;
-        double y = (double) blockPos.getY() + 0.5D;
-        double z = (double) blockPos.getZ() + 0.5D;
+        if (level.isClientSide) {
+            playBeatOnClient((ClientLevel) level, blockPos, soundEvent, soundSeed, beat);
+        } else {
+            playBeatOnServer((ServerLevel) level, blockPos, soundEvent, soundSeed, beat);
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void playBeatOnClient(ClientLevel level, BlockPos blockPos, Holder<SoundEvent> sound, long seed, Beat beat) {
+        Vec3 pos = Vec3.atCenterOf(blockPos);
         // Sound
         for (byte note : beat.getNotes()) {
             float pitch = getPitchFromNote(note);
-            level.playSeededSound(Minecraft.getInstance().player, x, y, z, soundEvent, SoundSource.RECORDS, 3.0F, pitch, soundSeed);
+            level.playSeededSound(Minecraft.getInstance().player, pos.x, pos.y, pos.z, sound, SoundSource.RECORDS, 3.0F, pitch, seed);
         }
         // Particle
         if (!level.getBlockState(blockPos.above()).canOcclude()) {
-            level.addParticle(ParticleTypes.NOTE, x, y + 0.7D, z, (double) beat.getMinNote() / 24.0D, 0.0D, 0.0D);
+            double d = (double) beat.getMinNote() / 24.0D;
+            level.addParticle(ParticleTypes.NOTE, pos.x, pos.y + 0.7D, pos.z, d, 0.0D, 0.0D);
+        }
+    }
+
+    private static void playBeatOnServer(ServerLevel level, BlockPos blockPos, Holder<SoundEvent> sound, long seed, Beat beat) {
+        Vec3 pos = Vec3.atCenterOf(blockPos);
+        // Sound
+        for (byte note : beat.getNotes()) {
+            float pitch = getPitchFromNote(note);
+            level.playSeededSound(null, pos.x, pos.y, pos.z, sound, SoundSource.RECORDS, 3.0F, pitch, seed);
+        }
+        // Particle
+        if (!level.getBlockState(blockPos.above()).canOcclude()) {
+            double d = (double) beat.getMinNote() / 24.0D;
+            level.sendParticles(ParticleTypes.NOTE, pos.x, pos.y + 0.7D, pos.z, 0, d, 0.0D, 0.0D, 1.0D);
         }
     }
 
@@ -99,7 +121,7 @@ public class NoteGridPlayer {
         return PITCHES[note];
     }
 
-    public void setNoteGridData(@Nullable NoteGridData$ noteGridData) {
+    public void setNoteGridData(@Nullable NoteGridData noteGridData) {
         this.noteGridData = noteGridData;
     }
 
@@ -111,25 +133,20 @@ public class NoteGridPlayer {
         this.tickPerBeat = (byte) Mth.clamp(tickPerBeat, MIN_TICK_PER_BEAT, MAX_TICK_PER_BEAT);
     }
 
-    public void loadUpdateTag(CompoundTag tag) {
+    public void handleUpdateTag(CompoundTag tag) {
         byte[] data = tag.getByteArray("PlayerData");
         setTickPerBeat(data[0]);
         tickSinceLastBeat = data[1];
         beatNumber = data[2];
         pageNumber = data[3];
-        byte[] beatData = new byte[data.length - 4];
-        System.arraycopy(data, 4, beatData, 0, beatData.length);
-        beat = Beat.ofNotes(beatData);
     }
 
-    public void saveUpdateTag(CompoundTag tag) {
-        byte[] notes = beat.getNotes();
-        byte[] data = new byte[notes.length + 4];
+    public void getUpdateTag(CompoundTag tag) {
+        byte[] data = new byte[4];
         data[0] = tickPerBeat;
         data[1] = tickSinceLastBeat;
         data[2] = beatNumber;
         data[3] = pageNumber;
-        System.arraycopy(notes, 0, data, 4, notes.length);
         tag.putByteArray("PlayerData", data);
     }
 
@@ -138,7 +155,6 @@ public class NoteGridPlayer {
         tickSinceLastBeat = tag.getByte("Interval");
         beatNumber = tag.getByte("Beat");
         pageNumber = tag.getByte("Page");
-        beat = Beat.ofNotes(tag.getByteArray("LastBeat"));
     }
 
     public void saveAdditional(CompoundTag tag) {
@@ -146,7 +162,6 @@ public class NoteGridPlayer {
         tag.putByte("Interval", tickSinceLastBeat);
         tag.putByte("Beat", beatNumber);
         tag.putByte("Page", pageNumber);
-        tag.putByteArray("LastBeat", beat.getNotes());
     }
 
     /**
@@ -154,11 +169,14 @@ public class NoteGridPlayer {
      */
     public void tick(Level level, BlockPos blockPos, BlockState blockState) {
         if (++tickSinceLastBeat >= tickPerBeat) {
-            nextBeat(level, blockPos, blockState);
+            nextBeat(level, blockPos, blockState, true);
         }
     }
 
-    public void nextBeat(Level level, BlockPos blockPos, BlockState blockState) {
+    /**
+     * @param onClient Whether the beat will be played on the client rather than the server.
+     */
+    public void nextBeat(Level level, BlockPos blockPos, BlockState blockState, boolean onClient) {
         tickSinceLastBeat = 0;
         if (noteGridData == null) {
             return;
@@ -166,12 +184,12 @@ public class NoteGridPlayer {
         Beat lastBeat = beat;
         try {
             beat = noteGridData.getPage(pageNumber).getBeat(beatNumber, EMPTY_BEAT);
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException | NullPointerException e) {
             LISTENER.onFinish(level, blockPos, blockState);
         }
         LISTENER.onBeat(level, blockPos, blockState, lastBeat, beat);
-        if (level.isClientSide) {
-            playBeat((ClientLevel) level, blockPos, blockState, beat);
+        if (level.isClientSide == onClient) {
+            playBeat(level, blockPos, blockState, beat);
         }
         if (++beatNumber >= Page.BEATS_SIZE) {
             nextPage(level, blockPos, blockState);
@@ -183,6 +201,7 @@ public class NoteGridPlayer {
         if (++pageNumber >= noteGridData.size()) {
             LISTENER.onFinish(level, blockPos, blockState);
         }
+        LISTENER.onPageChange(level, blockPos, blockState, pageNumber);
     }
 
     public void reset() {
@@ -190,6 +209,7 @@ public class NoteGridPlayer {
         pageNumber = 0;
         beatNumber = 0;
         tickSinceLastBeat = 0;
+        beat = new Beat();
     }
 
     public byte getMinNote() {

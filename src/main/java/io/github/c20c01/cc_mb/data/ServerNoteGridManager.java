@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -32,7 +33,7 @@ public class ServerNoteGridManager {
 
     @Nullable
     private static byte[] getNoteGridData(int noteGridId, ServerPlayer player) {
-        NoteGridData$ data = NoteGridData$.ofId(player.server, noteGridId);
+        NoteGridData data = NoteGridData.ofId(player.server, noteGridId);
         if (data == null) {
             LogUtils.getLogger().warn("{} requested note grid data with id {}, but it does not exist", player.getName().getString(), noteGridId);
             return null;
@@ -44,6 +45,12 @@ public class ServerNoteGridManager {
         if (LATEST_DATA_PLAYER_MAP.containsKey(noteGridId)) {
             LATEST_DATA_PLAYER_MAP.get(noteGridId).clear();
         }
+    }
+
+    @Nullable
+    public static NoteGridData getNoteGridData(MinecraftServer server, int noteGridId) {
+        String key = NoteGridData.makeKey(noteGridId);
+        return server.overworld().getDataStorage().get(NoteGridData::ofDataStorageTag, key);
     }
 
     @SubscribeEvent
