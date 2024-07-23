@@ -53,11 +53,16 @@ public class ServerNoteGridManager {
         return server.overworld().getDataStorage().get(NoteGridData::ofDataStorageTag, key);
     }
 
+    public static int getFreeNoteGridId(MinecraftServer server) {
+        NoteGridIndexData indexData = server.overworld().getDataStorage().computeIfAbsent(NoteGridIndexData::load, NoteGridIndexData::new, NoteGridIndexData.KEY);
+        return indexData.getNextId();
+    }
+
     @SubscribeEvent
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
-        if (player instanceof ServerPlayer) {
-            LATEST_DATA_PLAYER_MAP.values().forEach(players -> players.remove(player));
+        if (player instanceof ServerPlayer serverPlayer) {
+            LATEST_DATA_PLAYER_MAP.values().forEach(players -> players.remove(serverPlayer));
         }
     }
 }

@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.block;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.ServerNoteGridManager;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
@@ -172,8 +173,9 @@ public class MusicBoxBlock extends BaseEntityBlock {
             if (itemStack.is(Items.WRITABLE_BOOK)) {
                 var data = NoteGridData.ofBook(itemStack);
                 if (level instanceof ServerLevel serverLevel) {
-                    data.save(serverLevel.getServer(), 0);
-                    player.displayClientMessage(Component.literal("书本所存纸带数据已保存至世界数据中").withStyle(ChatFormatting.DARK_AQUA), true);
+                    int id = ServerNoteGridManager.getFreeNoteGridId(serverLevel.getServer());
+                    data.save(serverLevel.getServer(), id);
+                    player.displayClientMessage(Component.literal("书本所存纸带数据已保存至世界数据中, id: " + id).withStyle(ChatFormatting.DARK_AQUA), true);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }

@@ -179,6 +179,7 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         String key = makeKey(noteGridId);
         ServerNoteGridManager.makeDirty(noteGridId);
         server.overworld().getDataStorage().set(key, this);
+        setDirty();
     }
 
     @Override
@@ -187,7 +188,7 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
     }
 
     /**
-     * Call {@link #save(MinecraftServer, int)} after modifying the data.
+     * Call {@link #save(MinecraftServer, int)} or {@link #setDirty()} after modifying the data.
      */
     public Page getPage(byte index) {
         return pages.get(index);
