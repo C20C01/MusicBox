@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.data;
 
+import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.util.CollectionUtils;
@@ -21,7 +22,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-// TODO 实现纸带的拼接、裁剪...
+// TODO 纸带的连接
+// TODO 纸带自其他纸带、书本的复制
+// TODO 纸带的裁剪
 
 public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
     public static final String DATA_KEY = "Notes";
@@ -30,16 +33,24 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
 
     static {
         addPredefinedSong("Little Star", new byte[]{
-                -1, 6, -1, 6, -1, 13, -1, 13, -1, 15, -1, 15, -1, 13,
-                -2, 11, -1, 11, -1, 10, -1, 10, -1, 8, -1, 8, -1, 6,
-                -2, 13, -1, 13, -1, 11, -1, 11, -1, 10, -1, 10, -1, 8,
-                -2, 13, -1, 13, -1, 11, -1, 11, -1, 10, -1, 10, -1, 8,
-                -2, 6, -1, 6, -1, 13, -1, 13, -1, 15, -1, 15, -1, 13,
-                -2, 11, -1, 11, -1, 10, -1, 10, -1, 8, -1, 8, -1, 6, 0
+                -1, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
+                -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7,
+                -2, 14, -1, 14, -1, 12, -1, 12, -1, 11, -1, 11, -1, 9,
+                -2, 14, -1, 14, -1, 12, -1, 12, -1, 11, -1, 11, -1, 9,
+                -2, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
+                -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7, 0
         });
     }
 
     private ArrayList<Page> pages = new ArrayList<>(List.of(new Page()));
+
+    private NoteGridData() {
+
+    }
+
+    public NoteGridData(NoteGridData data) {
+        this.pages = new ArrayList<>(data.pages);
+    }
 
     public static ArrayList<ItemStack> getPredefinedSongs() {
         ArrayList<ItemStack> items = new ArrayList<>();
@@ -60,13 +71,17 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
      *                   {@code ofPredefinedId(5)} returns an empty note grid with 5 page.<p>
      *                   {@code ofPredefinedId(65)} returns the PREDEFINED_SONGS.get(0).
      */
-    @Nullable
-    private static NoteGridData ofPredefinedId(int noteGridId) {
+    protected static NoteGridData ofPredefinedId(int noteGridId) {
         if (noteGridId <= MAX_PAGES) {
             return ofPages(new Page[noteGridId]);
         } else {
             int index = noteGridId - MAX_PAGES - 1;
-            return index < PREDEFINED_SONGS.size() ? PREDEFINED_SONGS.get(index).get().data : null;
+            if (index >= PREDEFINED_SONGS.size()) {
+                LogUtils.getLogger().warn("Predefined song with id {} does not exist", noteGridId);
+                return ofPages(new Page[1]);
+            } else {
+                return PREDEFINED_SONGS.get(index).get().data;
+            }
         }
     }
 
@@ -128,6 +143,43 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
      */
     public static int getPredefinedId(int index) {
         return -(MAX_PAGES + index);
+    }
+
+    /**
+     * Connect two note grid data.
+     * The first note grid data will contain all pages of the second note grid data.
+     * The second note grid data will be empty.
+     * <p>
+     * Connected data can not bigger than {@link NoteGridData#MAX_PAGES}.
+     *
+     * @param a The first note grid data
+     * @param b The second note grid data
+     */
+    public static void connect(NoteGridData a, NoteGridData b) {
+        if (a.getPages().size() + b.getPages().size() > NoteGridData.MAX_PAGES) {
+            throw new IllegalArgumentException("The connected data can not bigger than " + NoteGridData.MAX_PAGES);
+        }
+        a.getPages().addAll(b.getPages());
+        b.getPages().clear();
+        a.setDirty();
+        b.setDirty();
+    }
+
+    /**
+     * Cut the note grid data at the end of specified page into two note grid data.
+     * <p>
+     * Example: cutAt(data, 3) will cut the data into two parts,
+     * the first part contains page [0,2], the second part contains page [3, data.size()].
+     */
+    public static int cutAt(MinecraftServer server, NoteGridData data, int pageIndex) {
+        if (pageIndex < 0 || pageIndex >= data.getPages().size()) {
+            throw new IllegalArgumentException("The page index is out of range.");
+        }
+        NoteGridData secondPart = new NoteGridData();
+        secondPart.getPages().addAll(data.getPages().subList(pageIndex, data.getPages().size()));
+        data.getPages().removeAll(secondPart.getPages());
+        data.setDirty();
+        return ServerNoteGridManager.saveNewData(server, secondPart);
     }
 
     public NoteGridData loadBook(ItemStack book) {
@@ -196,6 +248,10 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
 
     public byte size() {
         return (byte) pages.size();
+    }
+
+    protected ArrayList<Page> getPages() {
+        return pages;
     }
 
     private NoteGridData loadPages(Page[] pages) {

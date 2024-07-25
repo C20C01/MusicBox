@@ -16,10 +16,10 @@ public class CCNetwork {
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         // Tell the server to punch the note grid at specific position.
-        CHANNEL.messageBuilder(NoteGridPacket.class, 0, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(NoteGridPacket::encode)
-                .decoder(NoteGridPacket::decode)
-                .consumerMainThread(NoteGridPacket::handleOnServer)
+        CHANNEL.messageBuilder(NoteGridPunchPacket.class, 0, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(NoteGridPunchPacket::encode)
+                .decoder(NoteGridPunchPacket::decode)
+                .consumerMainThread(NoteGridPunchPacket::handleOnServer)
                 .add();
 
         // Tell the server to update the sound shard with specific sound event name.

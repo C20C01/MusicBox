@@ -58,6 +58,43 @@ public class ServerNoteGridManager {
         return indexData.getNextId();
     }
 
+    /**
+     * Save new note grid data to the server with a free id.
+     */
+    public static int saveNewData(MinecraftServer server, NoteGridData data) {
+        int freeId = getFreeNoteGridId(server);
+        data.save(server, freeId);
+        return freeId;
+    }
+
+    /**
+     * Change the note grid data on the server.
+     */
+    public static void handlePunchGrid(@Nullable ServerPlayer player, int noteGridId, byte page, byte beat, byte note) {
+        if (player != null) {
+            NoteGridData data = NoteGridData.ofId(player.server, noteGridId);
+            if (data == null) {
+                LogUtils.getLogger().warn("{} punched note grid with id {}, but it does not exist", player.getName().getString(), noteGridId);
+                return;
+            }
+            data.getPage(page).getBeat(beat).addOneNote(note);
+            data.setDirty();
+            makeDirty(noteGridId);
+        }
+    }
+
+    /**
+     * Create a new note grid data with predefined note grid data. To avoid edit on the predefined data.
+     */
+    public static int createDataByPredefinedId(MinecraftServer server, int predefinedId) {
+        if (predefinedId > 0) {
+            throw new IllegalArgumentException("Predefined id must be negative");
+        }
+        NoteGridData data = NoteGridData.ofPredefinedId(-predefinedId);
+        NoteGridData newData = new NoteGridData(data);
+        return saveNewData(server, newData);
+    }
+
     @SubscribeEvent
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();

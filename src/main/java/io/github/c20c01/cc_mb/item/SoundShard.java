@@ -4,6 +4,7 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.network.UpdateSoundShard;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -36,7 +37,8 @@ public class SoundShard extends Item {
     public SoundShard() {
         super(new Item.Properties().stacksTo(1));
 
-        CauldronInteraction.WATER.put(this, (blockState, level, blockPos, player, hand, itemStack) -> {
+        // Use the powder snow cauldron to clear the sound event and sound seed
+        CauldronInteraction.POWDER_SNOW.put(this, (blockState, level, blockPos, player, hand, itemStack) -> {
             if (itemStack.is(this)) {
                 CompoundTag tag = itemStack.getTag();
                 if (tag != null && tag.contains("SoundEvent")) {
@@ -55,6 +57,27 @@ public class SoundShard extends Item {
 
     public static boolean hasSound(ItemStack itemStack) {
         return itemStack.getTag() != null && itemStack.getTag().contains("SoundEvent");
+    }
+
+    @Nullable
+    public static Holder<SoundEvent> getSoundEvent(ItemStack itemStack) {
+        CompoundTag tag = itemStack.getTag();
+        if (tag != null && tag.contains("SoundEvent")) {
+            ResourceLocation location = ResourceLocation.tryParse(tag.getString("SoundEvent"));
+            if (location != null) {
+                return Holder.direct(SoundEvent.createVariableRangeEvent(location));
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static Long getSoundSeed(ItemStack itemStack) {
+        CompoundTag tag = itemStack.getTag();
+        if (tag != null && tag.contains("SoundSeed")) {
+            return tag.getLong("SoundSeed");
+        }
+        return null;
     }
 
     private static MutableComponent getSoundEventTitle(ResourceLocation location) {

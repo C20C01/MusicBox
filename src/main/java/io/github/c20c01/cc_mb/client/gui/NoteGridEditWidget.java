@@ -1,8 +1,5 @@
 package io.github.c20c01.cc_mb.client.gui;
 
-import io.github.c20c01.cc_mb.data.Beat;
-import io.github.c20c01.cc_mb.network.CCNetwork;
-import io.github.c20c01.cc_mb.network.NoteGridPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -30,7 +27,7 @@ public class NoteGridEditWidget extends AbstractWidget {
 
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        if (screen.pages == null) return;
+        if (screen.data == null) return;
         drawNoteGrid(guiGraphics);
         if (mousePosOnGird[0] != -1) {
             drawMousePosOnGird(guiGraphics);
@@ -50,12 +47,12 @@ public class NoteGridEditWidget extends AbstractWidget {
         // 竖线&音符
         for (byte beat = 0; beat < 64; beat++) {
             guiGraphics.vLine(leftLine + beat * 6, getY() + 12, noteGridBottom + 1, TRANSLUCENT_BLACK);
-            Beat oneBeat = screen.pages[screen.page].getBeat(beat);
+//            Beat oneBeat = screen.data[screen.page].getBeat(beat);
             int noteLeft = getX() + 12;
             int noteBottom = getY() + 156;
-            for (byte note : oneBeat.getNotes()) {
-                drawOneNote(guiGraphics, noteLeft, noteBottom, beat, note, PerforationTableScreen.BLACK);
-            }
+//            for (byte note : oneBeat.getNotes()) {
+//                drawOneNote(guiGraphics, noteLeft, noteBottom, beat, note, PerforationTableScreen.BLACK);
+//            }
         }
     }
 
@@ -89,8 +86,8 @@ public class NoteGridEditWidget extends AbstractWidget {
             byte beat = mousePosOnGird[0];
             byte note = mousePosOnGird[1];
             if (screen.getMenu().punchGrid(page, beat, note)) {
-                var packet = new NoteGridPacket(screen.getMenu().containerId, page, beat, note);
-                CCNetwork.CHANNEL.sendToServer(packet);
+//                var packet = new NoteGridPacket(screen.getMenu().noteGridId, page, beat, note);
+//                CCNetwork.CHANNEL.sendToServer(packet);
             }
         }
     }

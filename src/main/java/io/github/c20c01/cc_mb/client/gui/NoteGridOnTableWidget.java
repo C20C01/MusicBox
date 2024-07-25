@@ -42,8 +42,8 @@ public class NoteGridOnTableWidget extends AbstractWidget {
 
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        if (screen.pages == null) return;
-        renderNoteGrid(guiGraphics, screen.pages[screen.page], getX(), getY());
+        if (screen.data == null) return;
+        renderNoteGrid(guiGraphics, screen.data.getPage(screen.page), getX(), getY());
     }
 
     @Override

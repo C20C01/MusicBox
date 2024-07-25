@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.data.Page;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -16,7 +16,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected static final int BLACK = -16777216;
-    protected Page[] pages;
+    //    protected Page[] pages;
+    protected NoteGridData data;
     protected byte page = 0;
 
     private PageButton backButton;
@@ -57,19 +58,22 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
 
     @Override
     protected void containerTick() {
-        if (menu.shouldUpdate()) {
-            Page[] update = menu.getPages();
-            if (update == null || page >= update.length) {
-                page = 0;
-                changeEditMode(false);
-            }
-            if (editMode && menu.mode != PerforationTableMenu.Mode.PUNCH) {
-                changeEditMode(false);
-            }
-            pages = update;
-            updatePageButtonVisibility();
-            gridOnTableWidget.setTip(menu.mode);
-        }
+//        if (menu.shouldUpdate()) {
+//            Page[] update = menu.getData();
+//            if (update == null || page >= update.length) {
+//                page = 0;
+//                changeEditMode(false);
+//            }
+//            if (editMode && menu.mode != PerforationTableMenu.Mode.PUNCH) {
+//                changeEditMode(false);
+//            }
+//            pages = update;
+//            updatePageButtonVisibility();
+//            gridOnTableWidget.setTip(menu.mode);
+//        }
+        data = menu.getData();
+
+        System.out.println("data in screen: " + data);
     }
 
     @Override
@@ -81,6 +85,9 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+
+//        Minecraft.getInstance().pushGuiLayer(new NoteGridViewScreen(7, null, true));
+
         if (editMode) {
             editWidget.mouseClicked(mouseX, mouseY, button);
             editDoneButton.mouseClicked(mouseX, mouseY, button);
@@ -111,7 +118,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     }
 
     private int getPageSize() {
-        return pages == null ? 0 : pages.length;
+        return data == null ? 0 : data.size();
     }
 
     private void updatePageButtonVisibility() {

@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
-import io.github.c20c01.cc_mb.util.player.NoteGridPlayer;
+import io.github.c20c01.cc_mb.util.player.AbstractNoteGridPlayer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -26,7 +26,7 @@ public class Awl extends Item {
     }
 
     public static byte getTickPerBeatTag(CompoundTag tag) {
-        return tag.contains("TickPerBeat") ? tag.getByte("TickPerBeat") : NoteGridPlayer.getDefaultTickPerBeat();
+        return tag.contains("TickPerBeat") ? tag.getByte("TickPerBeat") : AbstractNoteGridPlayer.getDefaultTickPerBeat();
     }
 
     @Override
@@ -35,10 +35,10 @@ public class Awl extends Item {
         CompoundTag tag = awl.getOrCreateTag();
 
         byte nextTickPerBeat = (byte) (getTickPerBeatTag(tag) + (player.isSecondaryUseActive() ? -1 : 1));
-        if (nextTickPerBeat < NoteGridPlayer.MIN_TICK_PER_BEAT) {
-            nextTickPerBeat = NoteGridPlayer.MAX_TICK_PER_BEAT;
-        } else if (nextTickPerBeat > NoteGridPlayer.MAX_TICK_PER_BEAT) {
-            nextTickPerBeat = NoteGridPlayer.MIN_TICK_PER_BEAT;
+        if (nextTickPerBeat < AbstractNoteGridPlayer.MIN_TICK_PER_BEAT) {
+            nextTickPerBeat = AbstractNoteGridPlayer.MAX_TICK_PER_BEAT;
+        } else if (nextTickPerBeat > AbstractNoteGridPlayer.MAX_TICK_PER_BEAT) {
+            nextTickPerBeat = AbstractNoteGridPlayer.MIN_TICK_PER_BEAT;
         }
         setTickPerBeatTag(tag, nextTickPerBeat);
         player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(String.valueOf(nextTickPerBeat)).withStyle(ChatFormatting.GOLD), true);

@@ -6,7 +6,7 @@ import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.util.BlockUtils;
-import io.github.c20c01.cc_mb.util.player.NoteGridPlayer;
+import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
 import io.github.c20c01.cc_mb.util.player.PlayerListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,12 +28,12 @@ import java.util.Objects;
 
 public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements PlayerListener {
     public static final String NOTE_GRID = "NoteGrid";
-    private final NoteGridPlayer PLAYER;
+    private final MusicBoxPlayer PLAYER;
     private Integer noteGridId = null;// cache the note grid id, to avoid unnecessary updates
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState, NOTE_GRID);
-        PLAYER = new NoteGridPlayer(this);
+        PLAYER = new MusicBoxPlayer(this);
     }
 
     public static void tick(Level level, BlockPos blockPos, BlockState blockState, MusicBoxBlockEntity blockEntity) {
@@ -216,7 +216,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    public void onPageChange(Level level, BlockPos blockPos, BlockState blockState, byte pageNumber) {
+    public void onPageChange(Level level, BlockPos blockPos, BlockState blockState, byte newPageNumber) {
         if (level instanceof ServerLevel serverLevel) {
             markForUpdate(serverLevel, blockPos);
         }

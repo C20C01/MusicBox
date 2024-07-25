@@ -55,13 +55,10 @@ public class ClientNoteGridManager {
 
     /**
      * {@code noteGridData} - Stores the holes of the note grid.<p>
-     * {@code noteGridIdeaData} - Made in player's mind, not saved in the server.
-     * It can be edited and played in player's mind, which guides the player to punch the holes on the real note grid.<p>
      * {@code updater} - The consumer to update the note grid data in note grid player.
      */
     private static class NoteGridDataHolder {
         NoteGridData noteGridData;
-        NoteGridData noteGridIdeaData;
         Consumer<NoteGridData> updater;
 
         public void update() {
