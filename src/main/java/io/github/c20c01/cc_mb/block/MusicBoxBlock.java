@@ -2,8 +2,6 @@ package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
-import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.data.ServerNoteGridManager;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
@@ -11,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -19,19 +16,19 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.*;
-import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.items.ItemHandlerHelper;
 
@@ -43,8 +40,8 @@ public class MusicBoxBlock extends BaseEntityBlock {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final EnumProperty<NoteBlockInstrument> INSTRUMENT = BlockStateProperties.NOTEBLOCK_INSTRUMENT;
 
-    public MusicBoxBlock() {
-        super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
+    public MusicBoxBlock(Properties properties) {
+        super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(HAS_NOTE_GRID, false)
@@ -54,12 +51,12 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     /**
-     * 类似于音符盒，根据下方方块的乐器类型设置当前乐器类型，头颅（需要放在音符盒上面才能生效的）无效。
+     * Only support instruments that {@link NoteBlockInstrument#isTunable()}
      */
     private BlockState setInstrument(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState) {
         BlockState blockBelow = levelAccessor.getBlockState(blockPos.below());
         NoteBlockInstrument instrument = blockBelow.instrument();
-        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get());
+        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get());// is head
         return blockState.setValue(INSTRUMENT, flag ? NoteBlockInstrument.HARP : instrument);
     }
 
@@ -83,7 +80,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos1, boolean b) {
-        BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), Block.UPDATE_CLIENTS);
+        BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), UPDATE_CLIENTS);
     }
 
     @Override
@@ -139,16 +136,16 @@ public class MusicBoxBlock extends BaseEntityBlock {
         }
 
         if (itemStack.is(CCMain.AWL_ITEM.get())) {
-            // 调节每拍所用的tick数
+            // modify tick per beat
             byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
             musicBoxBlockEntity.setTickPerBeat(level, blockPos, tickPerBeat);
-            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(musicBoxBlockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), Boolean.TRUE);
+            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(musicBoxBlockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
-                // 取出纸带
+                // take out note grid
                 ItemStack out = musicBoxBlockEntity.removeItem();
                 if (!out.isEmpty()) {
                     ItemHandlerHelper.giveItemToPlayer(player, out);
@@ -156,31 +153,18 @@ public class MusicBoxBlock extends BaseEntityBlock {
                 }
 
             } else if (!blockState.getValue(POWERED)) {
-                // 演奏一拍
+                // play one beat
                 musicBoxBlockEntity.playOneBeat(level, blockPos, blockState);
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
         } else {
-            // 放入纸带
+            // put in note grid
             if (musicBoxBlockEntity.canPlaceItem(0, itemStack)) {
                 if (!level.isClientSide && musicBoxBlockEntity.setItem(itemStack)) {
                     itemStack.shrink(1);
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
-
-            // TODO REMOVE
-            if (itemStack.is(Items.WRITABLE_BOOK)) {
-                var data = NoteGridData.ofBook(itemStack);
-                if (level instanceof ServerLevel serverLevel) {
-                    int id = ServerNoteGridManager.getFreeNoteGridId(serverLevel.getServer());
-                    data.save(serverLevel.getServer(), id);
-                    player.displayClientMessage(Component.literal("书本所存纸带数据已保存至世界数据中, id: " + id).withStyle(ChatFormatting.DARK_AQUA), true);
-                }
-                return InteractionResult.sidedSuccess(level.isClientSide);
-            }
-            // TODO REMOVE
-
         }
 
         return super.use(blockState, level, blockPos, player, hand, hitResult);

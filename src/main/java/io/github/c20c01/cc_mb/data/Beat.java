@@ -15,9 +15,6 @@ public class Beat {
     private byte[] notes = ArrayUtils.EMPTY_BYTE_ARRAY;
     private byte minNote = Byte.MAX_VALUE;
 
-    public static Beat ofNotes(byte... notes) {
-        return new Beat().loadNotes(notes);
-    }
 
     public static Beat ofNotes(Collection<Byte> notes) {
         return new Beat().loadNotes(notes);
@@ -65,10 +62,6 @@ public class Beat {
 
     public static boolean isAvailableNote(byte note) {
         return note <= 24 && note >= 0;
-    }
-
-    public Beat loadNotes(byte[] notes) {
-        return setNotes(notes);
     }
 
     public Beat loadNotes(Collection<Byte> notes) {
@@ -127,7 +120,7 @@ public class Beat {
     }
 
     private boolean canAddToNotes(byte note) {
-        return isAvailableNote(note) && !ArrayUtils.contains(notes, note);
+        return !ArrayUtils.contains(notes, note) && isAvailableNote(note);
     }
 
     public boolean addOneNote(byte note) {

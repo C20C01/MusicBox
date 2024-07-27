@@ -8,20 +8,12 @@ public class Page {
     public static final byte BEATS_SIZE = 64;
     private final Beat[] BEATS = new Beat[BEATS_SIZE];
 
-    public static Page ofBeats(Beat... beats) {
-        return new Page().loadBeats(beats);
-    }
-
     public static Page ofBeats(Collection<Beat> beats) {
         return new Page().loadBeats(beats);
     }
 
     public static Page ofCode(String codeOfPage) {
         return new Page().loadCode(codeOfPage);
-    }
-
-    public Page loadBeats(Beat[] beats) {
-        return setBeats(beats);
     }
 
     public Page loadBeats(Collection<Beat> beats) {

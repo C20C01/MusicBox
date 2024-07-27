@@ -77,6 +77,9 @@ public abstract class AbstractNoteGridPlayer {
         if (noteGridData == null) {
             return;
         }
+        if (beatNumber >= Page.BEATS_SIZE) {
+            nextPage(level, blockPos, blockState);
+        }
         Beat lastBeat = beat;
         try {
             beat = noteGridData.getPage(pageNumber).getBeat(beatNumber, EMPTY_BEAT);
@@ -84,13 +87,14 @@ public abstract class AbstractNoteGridPlayer {
             listener.onFinish(level, blockPos, blockState);
             reset();
         }
-        listener.onBeat(level, blockPos, blockState, lastBeat, beat);
+        if (listener.onBeat(level, blockPos, blockState, lastBeat, beat)) {
+            // fake pause
+            return;
+        }
         if (level.isClientSide == onClient) {
             playBeat(level, blockPos, blockState, beat);
         }
-        if (++beatNumber >= Page.BEATS_SIZE) {
-            nextPage(level, blockPos, blockState);
-        }
+        beatNumber++;
     }
 
     private void nextPage(Level level, BlockPos blockPos, BlockState blockState) {
@@ -99,7 +103,7 @@ public abstract class AbstractNoteGridPlayer {
             listener.onFinish(level, blockPos, blockState);
             reset();
         }
-        listener.onPageChange(level, blockPos, blockState, pageNumber);
+        listener.onPageChange(level, blockPos);
     }
 
     public void reset() {

@@ -8,7 +8,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface PlayerListener {
     void onFinish(Level level, BlockPos blockPos, BlockState blockState);
 
-    void onBeat(Level level, BlockPos blockPos, BlockState blockState, Beat lastBeat, Beat currentBeat);
+    /**
+     * @return Pause the player
+     */
+    boolean onBeat(Level level, BlockPos blockPos, BlockState blockState, Beat lastBeat, Beat currentBeat);
 
-    void onPageChange(Level level, BlockPos blockPos, BlockState blockState, byte newPageNumber);
+    void onPageChange(Level level, BlockPos blockPos);
 }

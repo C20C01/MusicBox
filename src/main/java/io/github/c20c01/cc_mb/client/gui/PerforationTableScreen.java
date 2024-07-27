@@ -1,9 +1,9 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.data.NoteGridData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.Component;
@@ -15,20 +15,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
-    protected static final int BLACK = -16777216;
-    //    protected Page[] pages;
-    protected NoteGridData data;
-    protected byte page = 0;
-
+    protected NoteGridScreen noteGridScreen;
+    protected byte currentPage = 0;
     private PageButton backButton;
     private PageButton forwardButton;
-    private NoteGridOnTableWidget gridOnTableWidget;
-    private NoteGridEditWidget editWidget;
-    private Button editDoneButton;
-    private boolean editMode = false;
+    private NoteGridWidget gridOnTableWidget;
 
     public PerforationTableScreen(PerforationTableMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
+        menu.screen = this;
     }
 
     @Override
@@ -37,43 +32,29 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         int top = this.topPos + 57;
         this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, false, (button) -> pageBack(), true));
         this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, true, (button) -> pageForward(), true));
-        this.gridOnTableWidget = this.addRenderableWidget(new NoteGridOnTableWidget(this.leftPos + 79, this.topPos + 15, this));
-        this.editWidget = this.addRenderableWidget(new NoteGridEditWidget(this.width, this.height, this));
-        this.editDoneButton = this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (button) -> changeEditMode(false)).pos(this.width / 2 - 80, this.height / 2 + 70).width(160).build());
-        changeEditMode(editMode);
+        this.gridOnTableWidget = this.addRenderableWidget(new NoteGridWidget(this.leftPos + 79, this.topPos + 15, this));
         updatePageButtonVisibility();
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(guiGraphics);
-        if (editMode) {
-            editWidget.render(guiGraphics, mouseX, mouseY, partialTicks);
-            editDoneButton.render(guiGraphics, mouseX, mouseY, partialTicks);
-        } else {
+        if (Minecraft.getInstance().screen == this) {
+            this.renderBackground(guiGraphics);
             super.render(guiGraphics, mouseX, mouseY, partialTicks);
             this.renderTooltip(guiGraphics, mouseX, mouseY);
         }
     }
 
-    @Override
-    protected void containerTick() {
-//        if (menu.shouldUpdate()) {
-//            Page[] update = menu.getData();
-//            if (update == null || page >= update.length) {
-//                page = 0;
-//                changeEditMode(false);
-//            }
-//            if (editMode && menu.mode != PerforationTableMenu.Mode.PUNCH) {
-//                changeEditMode(false);
-//            }
-//            pages = update;
-//            updatePageButtonVisibility();
-//            gridOnTableWidget.setTip(menu.mode);
-//        }
-        data = menu.getData();
-
-        System.out.println("data in screen: " + data);
+    /**
+     * Called when the item in the {@link PerforationTableMenu} changes.
+     */
+    protected void onItemChanged() {
+        gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
+        currentPage = 0;
+        updatePageButtonVisibility();
+        if (noteGridScreen != null && menu.mode != MenuMode.PUNCH) {
+            noteGridScreen.exitEditMode();
+        }
     }
 
     @Override
@@ -83,57 +64,41 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         guiGraphics.blit(GUI_BACKGROUND, left, up, 0, 0, this.imageWidth, this.imageHeight);
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-
-//        Minecraft.getInstance().pushGuiLayer(new NoteGridViewScreen(7, null, true));
-
-        if (editMode) {
-            editWidget.mouseClicked(mouseX, mouseY, button);
-            editDoneButton.mouseClicked(mouseX, mouseY, button);
-            return true;
-        } else {
-            return super.mouseClicked(mouseX, mouseY, button);
-        }
-    }
-
-    @Override
-    public void mouseMoved(double x, double y) {
-        super.mouseMoved(x, y);
-        if (editMode) editWidget.setMousePosOnGird(x, y);
+    protected void openNoteGridScreen() {
+        noteGridScreen = new NoteGridScreen(this);
+        Minecraft.getInstance().pushGuiLayer(noteGridScreen);
     }
 
     private void pageBack() {
-        if (page > 0) {
-            --page;
+        if (currentPage > 0) {
+            --currentPage;
         }
         updatePageButtonVisibility();
     }
 
     private void pageForward() {
-        if (page < getPageSize() - 1) {
-            ++this.page;
+        if (currentPage < getPageSize() - 1) {
+            ++this.currentPage;
         }
         updatePageButtonVisibility();
     }
 
     private int getPageSize() {
-        return data == null ? 0 : data.size();
+        switch (menu.mode) {
+            case PUNCH, CHECK -> {
+                return menu.data == null ? 0 : menu.data.size();
+            }
+            case CONNECT -> {
+                return menu.displayData == null ? 0 : menu.displayData.size();
+            }
+            default -> {
+                return 0;
+            }
+        }
     }
 
     private void updatePageButtonVisibility() {
-        backButton.visible = page > 0;
-        forwardButton.visible = page < getPageSize() - 1;
-    }
-
-    protected void changeEditMode(boolean isEditMode) {
-        editMode = isEditMode;
-        editWidget.visible = isEditMode;
-        editDoneButton.visible = isEditMode;
-        gridOnTableWidget.visible = !isEditMode;
-    }
-
-    protected boolean isEditMode() {
-        return editMode;
+        backButton.visible = currentPage > 0;
+        forwardButton.visible = currentPage < getPageSize() - 1;
     }
 }

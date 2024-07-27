@@ -2,11 +2,9 @@ package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.data.OldNoteGridData;
-import io.github.c20c01.cc_mb.data.ServerNoteGridManager;
-import io.github.c20c01.cc_mb.item.NoteGrid;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import io.github.c20c01.cc_mb.util.NoteGridUtils;
+import io.github.c20c01.cc_mb.util.SlotBuilder;
+import io.github.c20c01.cc_mb.util.punch.PunchDataReceiver;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -19,19 +17,24 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-
-import javax.annotation.Nullable;
 
 public class PerforationTableMenu extends AbstractContainerMenu {
-    private final ContainerLevelAccess access;
-    private final Container container = new SimpleContainer(3);
-    private final Slot noteGridSlot;
-    private final Slot toolSlot;
-    private final Slot otherGridSlot;
-    protected Mode mode = Mode.EMPTY;
-    private NoteGridData data;
-    private boolean isItemChanged = false;
+    public static final byte CODE_SAVE_NOTE_GRID = -1;
+    public static final byte CODE_CONNECT_NOTE_GRID = -2;
+    public static final byte CODE_PUNCH_FAIL = -3;// player punched at the wrong moment
+
+    private final ContainerLevelAccess ACCESS;
+    private final Container CONTAINER = new SimpleContainer(3);
+    private final PunchDataReceiver PUNCH_DATA_RECEIVER;
+    private final Slot NOTE_GRID_SLOT;
+    private final Slot TOOL_SLOT;
+    private final Slot OTHER_GRID_SLOT;
+    private final Inventory INVENTORY;
+    protected PerforationTableScreen screen;
+    protected MenuMode mode = MenuMode.EMPTY;
+    protected NoteGridData data;
+    protected NoteGridData helpData;
+    protected NoteGridData displayData;// display result of connect
 
     public PerforationTableMenu(int id, Inventory inventory) {
         this(id, inventory, ContainerLevelAccess.NULL);
@@ -39,62 +42,35 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     public PerforationTableMenu(int id, Inventory inventory, final ContainerLevelAccess access) {
         super(CCMain.PERFORATION_TABLE_MENU.get(), id);
-        this.access = access;
+        this.ACCESS = access;
+        this.INVENTORY = inventory;
+        this.PUNCH_DATA_RECEIVER = new PunchDataReceiver(() -> data);
 
-        this.noteGridSlot = this.addSlot(new Slot(this.container, 0, 15, 22) {
-            @Override
-            public boolean mayPlace(ItemStack itemStack) {
-                return itemStack.is(CCMain.NOTE_GRID_ITEM.get());
-            }
+        this.NOTE_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 0, 15, 22)
+                .accept(CCMain.NOTE_GRID_ITEM.get())
+                .maxStackSize(1)
+                .onChanged(this::itemChanged)
+                .build()
+        );
 
-            @Override
-            public int getMaxStackSize() {
-                return 1;
-            }
+        this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
+                .accept(Items.SLIME_BALL, CCMain.AWL_ITEM.get())
+                .maxStackSize(64)
+                .onChanged(this::itemChanged)
+                .build()
+        );
 
-            @Override
-            public void setChanged() {
-                super.setChanged();
-                itemChanged();
-            }
-        });
+        this.OTHER_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 2, 35, 22)
+                .accept(CCMain.NOTE_GRID_ITEM.get(), Items.WRITABLE_BOOK)
+                .maxStackSize(1)
+                .onChanged(this::itemChanged)
+                .build()
+        );
 
-        this.toolSlot = this.addSlot(new Slot(this.container, 1, 25, 42) {
-            @Override
-            public boolean mayPlace(ItemStack itemStack) {
-                return itemStack.is(Items.SLIME_BALL) || itemStack.is(CCMain.AWL_ITEM.get());
-            }
+        this.addPlayerSlots(inventory);
+    }
 
-            @Override
-            public int getMaxStackSize() {
-                return 64;
-            }
-
-            @Override
-            public void setChanged() {
-                super.setChanged();
-                itemChanged();
-            }
-        });
-
-        this.otherGridSlot = this.addSlot(new Slot(this.container, 2, 35, 22) {
-            @Override
-            public boolean mayPlace(ItemStack itemStack) {
-                return itemStack.is(CCMain.NOTE_GRID_ITEM.get()) || itemStack.is(Items.WRITABLE_BOOK);
-            }
-
-            @Override
-            public int getMaxStackSize() {
-                return 1;
-            }
-
-            @Override
-            public void setChanged() {
-                super.setChanged();
-                itemChanged();
-            }
-        });
-
+    private void addPlayerSlots(Inventory inventory) {
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 9; ++j) {
                 this.addSlot(new Slot(inventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
@@ -108,13 +84,13 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(this.access, player, CCMain.PERFORATION_TABLE_BLOCK.get());
+        return stillValid(this.ACCESS, player, CCMain.PERFORATION_TABLE_BLOCK.get());
     }
 
     @Override
     public void removed(Player player) {
         super.removed(player);
-        this.access.execute((level, blockPos) -> this.clearContainer(player, container));
+        this.ACCESS.execute((level, blockPos) -> this.clearContainer(player, CONTAINER));
     }
 
     @Override
@@ -143,151 +119,74 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean clickMenuButton(Player player, int i) {
-//        if (i == 0 && mode == Mode.SUPERPOSE) {
-//            access.execute((level, blockPos) -> superposeGrid(level, blockPos, player));
-//            return true;
-//        }
-//        if (i == 1 && mode == Mode.CONNECT) {
-//            access.execute(this::connectGrid);
-//            return true;
-//        }
-//        if (i == 2 && mode == Mode.BOOK) {
-//            access.execute((level, blockPos) -> superposeGridByBook(level, blockPos, player));
-//            return true;
-//        }
-
-
-        return super.clickMenuButton(player, i);
-    }
-
-    private void hurtTool(ServerPlayer player, int cost) {
-        ItemStack tool = toolSlot.getItem();
-        if (!player.getAbilities().instabuild && tool.hurt(cost, player.level().random, player)) {
-            tool.shrink(1);
-            player.level().playSound(null, player.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1F, 1F);
-        }
-    }
-
-    private void superposeGrid(Level level, BlockPos blockPos, Player player) {
-        OldNoteGridData.saveToTag(noteGridSlot.getItem(), OldNoteGridData.superposeGrid(noteGridSlot.getItem(), otherGridSlot.getItem()));
-        afterSuperposeGrid(level, blockPos, player);
-    }
-
-    private void connectGrid(Level level, BlockPos blockPos) {
-        OldNoteGridData.saveToTag(noteGridSlot.getItem(), OldNoteGridData.connectGrid(noteGridSlot.getItem(), otherGridSlot.getItem()));
-        otherGridSlot.getItem().shrink(1);
-        toolSlot.getItem().shrink(1);
-        level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1F, 1F);
-    }
-
-    private void superposeGridByBook(Level level, BlockPos blockPos, Player player) {
-        OldNoteGridData.saveToTag(noteGridSlot.getItem(), OldNoteGridData.superposeGridByBook(noteGridSlot.getItem(), otherGridSlot.getItem()));
-        afterSuperposeGrid(level, blockPos, player);
-    }
-
-    private void afterSuperposeGrid(Level level, BlockPos blockPos, Player player) {
-        if (player instanceof ServerPlayer serverPlayer) {
-            hurtTool(serverPlayer, 10);
-            serverPlayer.getInventory().placeItemBackInInventory(container.removeItemNoUpdate(noteGridSlot.getSlotIndex()));
-        }
-        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 1F, 1F);
-    }
-
-    public void punchGridOnServer(ServerPlayer player, byte page, byte beat, byte note) {
-        punchGrid(page, beat, note);
-        hurtTool(player, 1);
-    }
-
-    protected boolean punchGrid(byte page, byte beat, byte note) {
-//        try {
-//            if (data[page].getBeat(beat).addOneNote(note)) {
-////                NoteGridData.saveToTag(noteGridSlot.getItem(), pages);
-//                noteGridSlot.setChanged();
-//                return true;
-//            }
-//        } catch (ArrayIndexOutOfBoundsException ignore) {
-//        }
-        return false;
-    }
-
-    @Nullable
-    protected NoteGridData getData() {
-        return data;
-    }
-
-    protected boolean shouldUpdate() {
-        if (isItemChanged) {
-            isItemChanged = false;
-            return true;
+    public boolean clickMenuButton(Player player, int code) {
+        if (code < 0) {
+            // handel flags
+            switch (code) {
+                case CODE_SAVE_NOTE_GRID -> {
+                    data.saveToNoteGrid(NOTE_GRID_SLOT.getItem());
+                    PUNCH_DATA_RECEIVER.reset();
+                }
+                case CODE_CONNECT_NOTE_GRID -> {
+                    NoteGridUtils.connect(data, helpData).saveToNoteGrid(NOTE_GRID_SLOT.getItem());
+                    ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1.0F, 1.0F));
+                    TOOL_SLOT.getItem().shrink(1);
+                    OTHER_GRID_SLOT.getItem().shrink(1);
+                }
+                case CODE_PUNCH_FAIL -> hurtTool(8);
+            }
         } else {
-            return false;
+            // handle punch
+            if (PUNCH_DATA_RECEIVER.receive((byte) code)) {
+                hurtTool(1);
+            }
+        }
+        return true;
+    }
+
+    private void hurtTool(int damage) {
+        ItemStack tool = TOOL_SLOT.getItem();
+        Player player = INVENTORY.player;
+        if (player.getAbilities().instabuild) {
+            return;
+        }
+        if (tool.hurt(damage, player.getRandom(), (ServerPlayer) player)) {
+            tool.shrink(1);
+            ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F));
         }
     }
 
     protected void itemChanged() {
-        setMode();
-        switch (mode) {
-            case EMPTY -> data = null;
-//            case CHECK, PUNCH -> pages = OldNoteGridData.readFromTag(noteGridSlot.getItem());
-            case CHECK, PUNCH -> {
-                Integer id = NoteGrid.getId(noteGridSlot.getItem());
-//                data = id == null ? null : ClientNoteGridManager.getNoteGridData(id, null);
-                access.execute((l, b) -> {
-                    data = id == null ? null : ServerNoteGridManager.getNoteGridData(((ServerLevel) l).getServer(), id);
-                    System.out.println(data);
-                });
-            }
-//            case SUPERPOSE -> data = OldNoteGridData.superposeGrid(noteGridSlot.getItem(), otherGridSlot.getItem());
-//            case CONNECT -> data = OldNoteGridData.connectGrid(noteGridSlot.getItem(), otherGridSlot.getItem());
-//            case BOOK -> data = OldNoteGridData.superposeGridByBook(noteGridSlot.getItem(), otherGridSlot.getItem());
+        updateMode();
+        updateData();
+        if (screen != null) {
+            screen.onItemChanged();
         }
-        isItemChanged = true;
-    }
-
-    private void setMode() {
-        ItemStack noteGrid = noteGridSlot.getItem();
-        ItemStack otherGrid = otherGridSlot.getItem();
-        ItemStack tool = toolSlot.getItem();
-
-        if (noteGrid.isEmpty()) {
-            mode = Mode.EMPTY;
-            return;
-        }
-
-        if (tool.is(CCMain.AWL_ITEM.get())) {
-            ItemStack other = otherGridSlot.getItem();
-            if (other.isEmpty()) {
-                mode = Mode.PUNCH;
-                return;
-            }
-            if (other.is(CCMain.NOTE_GRID_ITEM.get())) {
-                mode = Mode.SUPERPOSE;
-            }
-            if (other.is(Items.WRITABLE_BOOK)) {
-                mode = Mode.BOOK;
-                return;
-            }
-            return;
-        }
-
-        if (tool.is(Items.SLIME_BALL) && !otherGrid.isEmpty()) {
-            mode = Mode.CONNECT;
-            return;
-        }
-
-        mode = Mode.CHECK;
     }
 
     /**
-     * EMPTY: 空
-     * CHECK: 查看
-     * PUNCH: 打孔
-     * SUPERPOSE: 叠加
-     * CONNECT: 连接
-     * BOOK: 从书中读取
+     * Update the mode of the table with the current items in the slots.
      */
-    public enum Mode {
-        EMPTY, CHECK, PUNCH, SUPERPOSE, CONNECT, BOOK
+    private void updateMode() {
+        final ItemStack NOTE_GRID = NOTE_GRID_SLOT.getItem();
+        final ItemStack OTHER_GRID = OTHER_GRID_SLOT.getItem();
+        final ItemStack TOOL = TOOL_SLOT.getItem();
+        mode = MenuMode.update(NOTE_GRID, OTHER_GRID, TOOL);
+    }
+
+    private void updateData() {
+        final ItemStack NOTE_GRID = NOTE_GRID_SLOT.getItem();
+        this.data = NOTE_GRID.isEmpty() ? null : NoteGridData.ofNoteGrid(NOTE_GRID);
+        final ItemStack OTHER_GRID = OTHER_GRID_SLOT.getItem();
+        if (OTHER_GRID.isEmpty()) {
+            this.helpData = null;
+        } else if (OTHER_GRID.getItem() == Items.WRITABLE_BOOK) {
+            this.helpData = NoteGridData.ofBook(OTHER_GRID);
+        } else {
+            this.helpData = NoteGridData.ofNoteGrid(OTHER_GRID);
+        }
+        if (mode == MenuMode.CONNECT) {
+            this.displayData = NoteGridUtils.connect(data.deepCopy(), helpData);
+        }
     }
 }

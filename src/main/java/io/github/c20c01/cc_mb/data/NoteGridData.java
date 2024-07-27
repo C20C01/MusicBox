@@ -1,16 +1,10 @@
 package io.github.c20c01.cc_mb.data;
 
-import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.item.NoteGrid;
-import io.github.c20c01.cc_mb.util.CollectionUtils;
-import io.github.c20c01.cc_mb.util.TagData;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -19,77 +13,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-// TODO 纸带的连接
-// TODO 纸带自其他纸带、书本的复制
-// TODO 纸带的裁剪
-
-public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
+public class NoteGridData extends SavedData {
     public static final String DATA_KEY = "Notes";
-    public static final byte MAX_PAGES = 64;
-    private static final ArrayList<Supplier<PredefinedSong>> PREDEFINED_SONGS = new ArrayList<>();
-
-    static {
-        addPredefinedSong("Little Star", new byte[]{
-                -1, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
-                -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7,
-                -2, 14, -1, 14, -1, 12, -1, 12, -1, 11, -1, 11, -1, 9,
-                -2, 14, -1, 14, -1, 12, -1, 12, -1, 11, -1, 11, -1, 9,
-                -2, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
-                -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7, 0
-        });
-    }
-
+    public static final byte MAX_SIZE = 64;
     private ArrayList<Page> pages = new ArrayList<>(List.of(new Page()));
 
-    private NoteGridData() {
-
-    }
-
-    public NoteGridData(NoteGridData data) {
-        this.pages = new ArrayList<>(data.pages);
-    }
-
-    public static ArrayList<ItemStack> getPredefinedSongs() {
-        ArrayList<ItemStack> items = new ArrayList<>();
-        for (Supplier<PredefinedSong> song : PREDEFINED_SONGS) {
-            items.add(song.get().toItemStack());
-        }
-        return items;
-    }
-
-    public static void addPredefinedSong(String name, byte[] data) {
-        PREDEFINED_SONGS.add(() -> new PredefinedSong(PREDEFINED_SONGS.size(), name, NoteGridData.ofBytes(data)));
-    }
-
-    /**
-     * Get the predefined note grid data by its id.
-     *
-     * @param noteGridId 1~64 for empty pages, 65~ for predefined songs.<p>
-     *                   {@code ofPredefinedId(5)} returns an empty note grid with 5 page.<p>
-     *                   {@code ofPredefinedId(65)} returns the PREDEFINED_SONGS.get(0).
-     */
-    protected static NoteGridData ofPredefinedId(int noteGridId) {
-        if (noteGridId <= MAX_PAGES) {
-            return ofPages(new Page[noteGridId]);
-        } else {
-            int index = noteGridId - MAX_PAGES - 1;
-            if (index >= PREDEFINED_SONGS.size()) {
-                LogUtils.getLogger().warn("Predefined song with id {} does not exist", noteGridId);
-                return ofPages(new Page[1]);
-            } else {
-                return PREDEFINED_SONGS.get(index).get().data;
-            }
-        }
-    }
-
     public static NoteGridData ofPages(Page... pages) {
-        return new NoteGridData().loadPages(pages);
-    }
-
-    public static NoteGridData ofPages(Collection<Page> pages) {
         return new NoteGridData().loadPages(pages);
     }
 
@@ -101,85 +31,16 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         return new NoteGridData().loadBook(book);
     }
 
-    /**
-     * Get the note grid data by its id from ServerNoteGridManager.
-     *
-     * @param noteGridId 1~ for custom songs data, -64~-1 for empty pages, ~-65 for predefined songs.
-     */
-    @Nullable
-    public static NoteGridData ofId(MinecraftServer server, int noteGridId) {
-        if (noteGridId < 0) {
-            return ofPredefinedId(-noteGridId);
-        } else {
-            return ServerNoteGridManager.getNoteGridData(server, noteGridId);
+    public static NoteGridData ofNoteGrid(ItemStack noteGrid) {
+        return new NoteGridData().loadNoteGrid(noteGrid);
+    }
+
+    private NoteGridData loadNoteGrid(ItemStack noteGrid) {
+        CompoundTag tag = noteGrid.getTag();
+        if (tag == null || !tag.contains(DATA_KEY)) {
+            return this;
         }
-    }
-
-    /**
-     * Get the note grid data by its id from ClientNoteGridManager.
-     *
-     * @param noteGridId 1~ for custom songs data, -64~-1 for empty pages, ~-65 for predefined songs.
-     */
-    @Nullable
-    public static NoteGridData ofId(int noteGridId, @Nullable Consumer<NoteGridData> updater) {
-        if (noteGridId < 0) {
-            return ofPredefinedId(-noteGridId);
-        } else {
-            return ClientNoteGridManager.getNoteGridData(noteGridId, updater);
-        }
-    }
-
-    public static NoteGridData ofDataStorageTag(CompoundTag noteGridDataTag) {
-        return new NoteGridData().loadTag((ByteArrayTag) noteGridDataTag.get(DATA_KEY));
-    }
-
-    public static String makeKey(Integer noteGridId) {
-        return "NoteGrid_" + noteGridId;
-    }
-
-    /**
-     * @param index The index of the predefined song.
-     * @return The id of the predefined song.
-     */
-    public static int getPredefinedId(int index) {
-        return -(MAX_PAGES + index);
-    }
-
-    /**
-     * Connect two note grid data.
-     * The first note grid data will contain all pages of the second note grid data.
-     * The second note grid data will be empty.
-     * <p>
-     * Connected data can not bigger than {@link NoteGridData#MAX_PAGES}.
-     *
-     * @param a The first note grid data
-     * @param b The second note grid data
-     */
-    public static void connect(NoteGridData a, NoteGridData b) {
-        if (a.getPages().size() + b.getPages().size() > NoteGridData.MAX_PAGES) {
-            throw new IllegalArgumentException("The connected data can not bigger than " + NoteGridData.MAX_PAGES);
-        }
-        a.getPages().addAll(b.getPages());
-        b.getPages().clear();
-        a.setDirty();
-        b.setDirty();
-    }
-
-    /**
-     * Cut the note grid data at the end of specified page into two note grid data.
-     * <p>
-     * Example: cutAt(data, 3) will cut the data into two parts,
-     * the first part contains page [0,2], the second part contains page [3, data.size()].
-     */
-    public static int cutAt(MinecraftServer server, NoteGridData data, int pageIndex) {
-        if (pageIndex < 0 || pageIndex >= data.getPages().size()) {
-            throw new IllegalArgumentException("The page index is out of range.");
-        }
-        NoteGridData secondPart = new NoteGridData();
-        secondPart.getPages().addAll(data.getPages().subList(pageIndex, data.getPages().size()));
-        data.getPages().removeAll(secondPart.getPages());
-        data.setDirty();
-        return ServerNoteGridManager.saveNewData(server, secondPart);
+        return loadTag((ByteArrayTag) tag.get(DATA_KEY));
     }
 
     public NoteGridData loadBook(ItemStack book) {
@@ -191,7 +52,7 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         if (codeOfPages.isEmpty()) {
             return this;
         }
-        int size = Math.min(codeOfPages.size(), MAX_PAGES);
+        int size = Math.min(codeOfPages.size(), MAX_SIZE);
         Page[] pages = new Page[size];
         for (int i = 0; i < size; i++) {
             pages[i] = Page.ofCode(codeOfPages.getString(i));
@@ -207,12 +68,22 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         return loadPages(new Decoder().decode(data));
     }
 
+    public NoteGridData deepCopy() {
+        NoteGridData temp = NoteGridData.ofPages(new Page[size()]);
+        for (byte page = 0; page < size(); page++) {
+            for (byte beat = 0; beat < Page.BEATS_SIZE; beat++) {
+                temp.getPage(page).getBeat(beat).addNotes(getPage(page).getBeat(beat).getNotes());
+            }
+        }
+        return temp;
+    }
+
     public ByteArrayTag toTag() {
         return new ByteArrayTag(new Encoder().encode(pages));
     }
 
-    public byte[] toBytes() {
-        return CollectionUtils.toArray(new Encoder().encode(pages));
+    public ItemStack toNoteGrid() {
+        return saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
     }
 
     @Override
@@ -221,17 +92,12 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         return tag;
     }
 
-    /**
-     * Save this data to the over world's data storage.
-     */
-    public void save(MinecraftServer server, int noteGridId) {
-        if (noteGridId < 0) {
-            throw new IllegalArgumentException("Id must be positive");
+    public ItemStack saveToNoteGrid(ItemStack noteGrid) {
+        if (noteGrid.is(CCMain.NOTE_GRID_ITEM.get())) {
+            CompoundTag tag = noteGrid.getOrCreateTag();
+            tag.put(DATA_KEY, toTag());
         }
-        String key = makeKey(noteGridId);
-        ServerNoteGridManager.makeDirty(noteGridId);
-        server.overworld().getDataStorage().set(key, this);
-        setDirty();
+        return noteGrid;
     }
 
     @Override
@@ -239,9 +105,6 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         return "NoteGrid:" + pages;
     }
 
-    /**
-     * Call {@link #save(MinecraftServer, int)} or {@link #setDirty()} after modifying the data.
-     */
     public Page getPage(byte index) {
         return pages.get(index);
     }
@@ -250,7 +113,7 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         return (byte) pages.size();
     }
 
-    protected ArrayList<Page> getPages() {
+    public ArrayList<Page> getPages() {
         return pages;
     }
 
@@ -262,15 +125,6 @@ public class NoteGridData extends SavedData implements TagData<ByteArrayTag> {
         this.pages = new ArrayList<>(pages);
         this.pages.replaceAll(page -> page == null ? new Page() : page);
         return this;
-    }
-
-    private record PredefinedSong(int index, String name, NoteGridData data) {
-        public ItemStack toItemStack() {
-            ItemStack itemStack = new ItemStack(CCMain.NOTE_GRID_ITEM.get());
-            NoteGrid.setId(itemStack, getPredefinedId(index));
-            itemStack.setHoverName(Component.literal(name));
-            return itemStack;
-        }
     }
 
     private static class Decoder {

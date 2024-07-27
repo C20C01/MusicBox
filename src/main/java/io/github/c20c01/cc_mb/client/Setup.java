@@ -13,16 +13,11 @@ public class Setup {
     @SubscribeEvent
     public static void setupEvent(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            // 注册菜单页面
+            // register the perforation table menu and screen
             MenuScreens.register(CCMain.PERFORATION_TABLE_MENU.get(), PerforationTableScreen::new);
 
-            // 更新乐器方块列表
+            // preload the music instrument blocks
             CCMain.InstrumentBlocksHelper.updateBlockList();
         });
     }
-//
-//    @SubscribeEvent
-//    public static void TooltipComponentFactoriesEvent(RegisterClientTooltipComponentFactoriesEvent event) {
-//        event.register(NoteGrid.Tooltip.class, (Function<NoteGrid.Tooltip, ClientNoteGridTooltip>) ClientNoteGridTooltip::new);
-//    }
 }

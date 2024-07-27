@@ -34,8 +34,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class SoundShard extends Item {
-    public SoundShard() {
-        super(new Item.Properties().stacksTo(1));
+    public SoundShard(Properties properties) {
+        super(properties);
 
         // Use the powder snow cauldron to clear the sound event and sound seed
         CauldronInteraction.POWDER_SNOW.put(this, (blockState, level, blockPos, player, hand, itemStack) -> {

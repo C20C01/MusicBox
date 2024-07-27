@@ -70,15 +70,15 @@ public class CCLanguageProvider extends LanguageProvider {
             case EN_US -> "Connect the right note grid to the end of the left one";
             case ZH_CN -> "将右面的纸带连接到左面的纸带的末尾";
         });
-        this.add(CCMain.TEXT_SUPERPOSE, switch (this.locale) {
+        this.add(CCMain.TEXT_EMPTY, switch (this.locale) {
             default -> throw new IllegalStateException();
-            case EN_US -> "Superpose the right note grid to the left one";
-            case ZH_CN -> "将右面的纸带叠加到左面的纸带";
+            case EN_US -> "Put the note grid in to operate";
+            case ZH_CN -> "放入纸带以进行操作";
         });
-        this.add(CCMain.TEXT_BOOK, switch (this.locale) {
+        this.add(CCMain.TEXT_CHECK, switch (this.locale) {
             default -> throw new IllegalStateException();
-            case EN_US -> "Read from book and superpose to the left note grid";
-            case ZH_CN -> "从书中读取并叠加到左面的纸带";
+            case EN_US -> "Check the note grid";
+            case ZH_CN -> "查看当前纸带";
         });
 
         this.add(CCMain.TEXT_SET_TICK_PER_BEAT, switch (this.locale) {
@@ -90,16 +90,6 @@ public class CCLanguageProvider extends LanguageProvider {
             default -> throw new IllegalStateException();
             case EN_US -> "Ticks per beat has been set to: ";
             case ZH_CN -> "八音盒每拍所用刻数已设为: ";
-        });
-        this.add(CCMain.TEXT_SHIFT_TO_PREVIEW, switch (this.locale) {
-            default -> throw new IllegalStateException();
-            case EN_US -> "[Shift to preview]";
-            case ZH_CN -> "[按住Shift键预览]";
-        });
-        this.add(CCMain.TEXT_NUMBER_OF_PAGES, switch (this.locale) {
-            default -> throw new IllegalStateException();
-            case EN_US -> "Page count: ";
-            case ZH_CN -> "总页数: ";
         });
         this.add(CCMain.TEXT_SHARD_WITHOUT_SOUND, switch (this.locale) {
             default -> throw new IllegalStateException();

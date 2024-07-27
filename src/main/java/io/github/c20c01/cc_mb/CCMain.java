@@ -8,7 +8,7 @@ import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
-import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.PresetNoteGrids;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.SoundShard;
@@ -20,8 +20,11 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -35,18 +38,16 @@ import java.util.HashMap;
 public class CCMain {
     public static final String ID = "cc_mb";
 
-    // 提示文本
+    // text
+    public static final String TEXT_EMPTY = "text." + ID + ".empty";
     public static final String TEXT_PUNCH = "text." + ID + ".punch";
-    public static final String TEXT_SUPERPOSE = "text." + ID + ".superpose";
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
-    public static final String TEXT_BOOK = "text." + ID + ".book";
+    public static final String TEXT_CHECK = "text." + ID + ".check";
     public static final String TEXT_SET_TICK_PER_BEAT = "text." + ID + ".set_tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
-    public static final String TEXT_SHIFT_TO_PREVIEW = "text." + ID + ".shift_to_preview";
-    public static final String TEXT_NUMBER_OF_PAGES = "text." + ID + ".number_of_pages";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
 
-    // 音色文本
+    // text-sound
     public static final String TEXT_SOUND_BASS = "text." + ID + ".bass";
     public static final String TEXT_SOUND_SNARE = "text." + ID + ".snare";
     public static final String TEXT_SOUND_HAT = "text." + ID + ".hat";
@@ -64,11 +65,11 @@ public class CCMain {
     public static final String TEXT_SOUND_PLING = "text." + ID + ".pling";
     public static final String TEXT_SOUND_HARP = "text." + ID + ".harp";
 
-    // 网络相关
+    // network
     public static final String NETWORK_VERSION = "1";
     public static final ResourceLocation CHANNEL_ID = new ResourceLocation(ID, "network");
 
-    // 注册器
+    // register
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, ID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ID);
@@ -76,7 +77,7 @@ public class CCMain {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
 
 
-    // 物品
+    // item
     public static final String NOTE_GRID_ITEM_ID = "note_grid";
     public static final RegistryObject<NoteGrid> NOTE_GRID_ITEM;
     public static final String AWL_ITEM_ID = "awl";
@@ -84,7 +85,7 @@ public class CCMain {
     public static final String SOUND_SHARD_ITEM_ID = "sound_shard";
     public static final RegistryObject<Item> SOUND_SHARD_ITEM;
 
-    // 方块
+    // block
     public static final String MUSIC_BOX_BLOCK_ID = "music_box_block";
     public static final RegistryObject<MusicBoxBlock> MUSIC_BOX_BLOCK;
     public static final RegistryObject<BlockItem> MUSIC_BOX_BLOCK_ITEM;
@@ -106,18 +107,18 @@ public class CCMain {
 
 
     static {
-        NOTE_GRID_ITEM = ITEMS.register(NOTE_GRID_ITEM_ID, NoteGrid::new);
-        AWL_ITEM = ITEMS.register(AWL_ITEM_ID, Awl::new);
-        SOUND_SHARD_ITEM = ITEMS.register(SOUND_SHARD_ITEM_ID, SoundShard::new);
+        NOTE_GRID_ITEM = ITEMS.register(NOTE_GRID_ITEM_ID, () -> new NoteGrid(new Item.Properties().stacksTo(1)));
+        AWL_ITEM = ITEMS.register(AWL_ITEM_ID, () -> new Awl(new Item.Properties().durability(512)));
+        SOUND_SHARD_ITEM = ITEMS.register(SOUND_SHARD_ITEM_ID, () -> new SoundShard(new Item.Properties().stacksTo(1)));
 
-        MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, MusicBoxBlock::new);
+        MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, () -> new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
         MUSIC_BOX_BLOCK_ITEM = ITEMS.register(MUSIC_BOX_BLOCK_ID, () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
         MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(MUSIC_BOX_BLOCK_ID, () -> BlockEntityType.Builder.of(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
 
-        PERFORATION_TABLE_BLOCK = BLOCKS.register(PERFORATION_TABLE_BLOCK_ID, PerforationTableBlock::new);
+        PERFORATION_TABLE_BLOCK = BLOCKS.register(PERFORATION_TABLE_BLOCK_ID, () -> new PerforationTableBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava()));
         PERFORATION_TABLE_BLOCK_ITEM = ITEMS.register(PERFORATION_TABLE_BLOCK_ID, () -> new BlockItem(PERFORATION_TABLE_BLOCK.get(), new Item.Properties()));
 
-        SOUND_BOX_BLOCK = BLOCKS.register(SOUND_BOX_BLOCK_ID, SoundBoxBlock::new);
+        SOUND_BOX_BLOCK = BLOCKS.register(SOUND_BOX_BLOCK_ID, () -> new SoundBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
         SOUND_BOX_BLOCK_ITEM = ITEMS.register(SOUND_BOX_BLOCK_ID, () -> new BlockItem(SOUND_BOX_BLOCK.get(), new Item.Properties()));
         SOUND_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(SOUND_BOX_BLOCK_ID, () -> BlockEntityType.Builder.of(SoundBoxBlockEntity::new, SOUND_BOX_BLOCK.get()).build(DSL.remainderType()));
 
@@ -134,7 +135,7 @@ public class CCMain {
                     output.accept(Items.SLIME_BALL);
                     output.accept(Items.WRITABLE_BOOK);
                     output.accept(NOTE_GRID_ITEM.get());
-                    output.acceptAll(NoteGridData.getPredefinedSongs());
+                    output.acceptAll(new PresetNoteGrids().get());
                     output.acceptAll(InstrumentBlocksHelper.getItems());
                 })
                 .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))

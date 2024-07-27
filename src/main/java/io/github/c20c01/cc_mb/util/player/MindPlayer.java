@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.util.player;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.client.gui.NoteGridScreen;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
@@ -21,12 +22,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * A player that plays music in the player's mind.
- * Used in the {@link io.github.c20c01.cc_mb.client.newgui.NoteGridViewScreen}.
+ * Used in the {@link NoteGridScreen}.
  */
 @OnlyIn(Dist.CLIENT)
 public class MindPlayer extends AbstractNoteGridPlayer {
     private static MindPlayer instance;
-    private static boolean locked = false; // Has been used in another screen, avoid reinitialization.
     private LocalPlayer player;
     private Holder<SoundEvent> sound;
     private boolean noSpecificSeed;
@@ -48,11 +48,10 @@ public class MindPlayer extends AbstractNoteGridPlayer {
 
     public void init(NoteGridData data, PlayerListener listener) {
         player = Minecraft.getInstance().player;
-        if (player != null && !locked) {
+        if (player != null) {
             this.noteGridData = data;
             this.listener = listener;
             loadSound();
-            locked = true;
         }
     }
 
@@ -77,11 +76,6 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         }
     }
 
-    public void close() {
-        locked = false;
-        reset();
-    }
-
     @Override
     public void reset() {
         pageNumber = 0;
@@ -97,6 +91,14 @@ public class MindPlayer extends AbstractNoteGridPlayer {
 
     public byte getBeat() {
         return beatNumber;
+    }
+
+    public void skipWaiting() {
+        tickSinceLastBeat = tickPerBeat;
+    }
+
+    public byte tickToNextBeat() {
+        return (byte) (tickPerBeat - tickSinceLastBeat);
     }
 
     @Override

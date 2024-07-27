@@ -1,5 +1,7 @@
 package io.github.c20c01.cc_mb.util;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Collection;
 
 public class CollectionUtils {
@@ -10,5 +12,17 @@ public class CollectionUtils {
             array[i++] = b == null ? -1 : b;
         }
         return array;
+    }
+
+    /**
+     * @return true if a contains all elements in b
+     */
+    public static boolean containsAll(byte[] a, byte[] b) {
+        for (byte bb : b) {
+            if (!ArrayUtils.contains(a, bb)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
