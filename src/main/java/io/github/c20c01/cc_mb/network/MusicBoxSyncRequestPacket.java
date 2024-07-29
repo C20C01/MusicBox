@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
 
 import javax.annotation.Nullable;
@@ -20,16 +19,14 @@ public record MusicBoxSyncRequestPacket(BlockPos pos) {
         return new MusicBoxSyncRequestPacket(friendlyByteBuf.readBlockPos());
     }
 
-    private static void syncMusicBox(@Nullable ServerPlayer player, BlockPos pos) {
+    private static void syncData(@Nullable ServerPlayer player, BlockPos pos) {
         if (player != null) {
             // When the player sends the packet, the music box is already loaded.
-            player.level().getBlockEntity(pos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get()).ifPresent(blockEntity -> sendSyncData(player, blockEntity));
+            player.level().getBlockEntity(pos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get()).ifPresent(blockEntity -> {
+                ClientboundBlockEntityDataPacket packet = ClientboundBlockEntityDataPacket.create(blockEntity, b -> blockEntity.getLazyUpdateTag());
+                player.connection.send(packet);
+            });
         }
-    }
-
-    private static void sendSyncData(ServerPlayer player, MusicBoxBlockEntity blockEntity) {
-        ClientboundBlockEntityDataPacket packet = ClientboundBlockEntityDataPacket.create(blockEntity, BlockEntity::saveWithoutMetadata);
-        player.connection.send(packet);
     }
 
     public void encode(FriendlyByteBuf friendlyByteBuf) {
@@ -38,7 +35,7 @@ public record MusicBoxSyncRequestPacket(BlockPos pos) {
 
     public void handleOnServer(Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> syncMusicBox(context.getSender(), pos));
+        context.enqueueWork(() -> syncData(context.getSender(), pos));
         context.setPacketHandled(true);
     }
 }

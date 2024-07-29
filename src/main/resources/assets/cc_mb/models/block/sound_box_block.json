@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/cube_top",
   "textures": {
-    "side": "cc_mb:block/sound_box_block",
+    "side": "cc_mb:block/music_box_block_top",
     "top": "cc_mb:block/sound_box_block_top"
   }
 }

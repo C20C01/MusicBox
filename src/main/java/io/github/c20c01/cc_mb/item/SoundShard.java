@@ -1,9 +1,12 @@
 package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.network.UpdateSoundShard;
+import io.github.c20c01.cc_mb.network.CCNetwork;
+import io.github.c20c01.cc_mb.network.SoundShardPacket;
+import io.github.c20c01.cc_mb.util.Listener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -22,112 +27,99 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class SoundShard extends Item {
+    public static final String SOUND_EVENT = "SoundEvent";
+    public static final String SOUND_SEED = "SoundSeed";
+    private static final int DEFAULT_COOL_DOWN = 55;
+
     public SoundShard(Properties properties) {
         super(properties);
-
-        // Use the powder snow cauldron to clear the sound event and sound seed
-        CauldronInteraction.POWDER_SNOW.put(this, (blockState, level, blockPos, player, hand, itemStack) -> {
-            if (itemStack.is(this)) {
-                CompoundTag tag = itemStack.getTag();
-                if (tag != null && tag.contains("SoundEvent")) {
-                    if (!level.isClientSide) {
-                        tag.remove("SoundEvent");
-                        tag.remove("SoundSeed");
-                        LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
-                        level.playSound(null, blockPos, SoundEvents.PLAYER_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
-                    }
-                    return InteractionResult.sidedSuccess(level.isClientSide);
-                }
-            }
-            return InteractionResult.PASS;
-        });
+        CauldronInteraction.POWDER_SNOW.put(this, new ResetSoundShard());
     }
 
-    public static boolean hasSound(ItemStack itemStack) {
-        return itemStack.getTag() != null && itemStack.getTag().contains("SoundEvent");
+    /**
+     * @return True if the item has a sound event. (The sound seed is not necessary)
+     */
+    public static boolean containSound(ItemStack itemStack) {
+        return containSound(itemStack.getTag());
     }
 
-    @Nullable
-    public static Holder<SoundEvent> getSoundEvent(ItemStack itemStack) {
-        CompoundTag tag = itemStack.getTag();
-        if (tag != null && tag.contains("SoundEvent")) {
-            ResourceLocation location = ResourceLocation.tryParse(tag.getString("SoundEvent"));
-            if (location != null) {
-                return Holder.direct(SoundEvent.createVariableRangeEvent(location));
-            }
-        }
-        return null;
+    /**
+     * @return True if the item has a sound event. (The sound seed is not necessary)
+     */
+    public static boolean containSound(@Nullable CompoundTag tag) {
+        return tag != null && tag.contains(SOUND_EVENT);
     }
 
-    @Nullable
-    public static Long getSoundSeed(ItemStack itemStack) {
-        CompoundTag tag = itemStack.getTag();
-        if (tag != null && tag.contains("SoundSeed")) {
-            return tag.getLong("SoundSeed");
-        }
-        return null;
-    }
-
+    @OnlyIn(Dist.CLIENT)
     private static MutableComponent getSoundEventTitle(ResourceLocation location) {
         var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
-        MutableComponent result = Component.literal("???");
-
-        if (sound != null) {
-            Component subtitle = sound.getSubtitle();
-            if (subtitle != null) {
-                result = MutableComponent.create(subtitle.getContents());
-            }
+        if (sound != null && sound.getSubtitle() != null) {
+            return MutableComponent.create(sound.getSubtitle().getContents());
         }
-        return result;
+        return Component.literal("? ? ?");
+    }
+
+    /**
+     * Change the sound seed of the sound shard.
+     *
+     * @return The new sound seed or null.
+     */
+    @Nullable
+    public static Long tryToChangeSoundSeed(ItemStack soundShard, RandomSource random) {
+        CompoundTag tag = soundShard.getTag();
+        if (tag != null) {
+            long newSeed = random.nextLong();
+            tag.putLong(SOUND_SEED, newSeed);
+            return newSeed;
+        }
+        return null;
+    }
+
+    /**
+     * Add the cooldown to the player after using the sound shard.
+     * <p>
+     * Efficiency level will affect the cooldown time.
+     */
+    private void addCooldown(Player player, ItemStack soundShard) {
+        int cd = DEFAULT_COOL_DOWN - 10 * Mth.clamp(soundShard.getEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY), 0, 5);
+        player.getCooldowns().addCooldown(this, cd);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack soundShard = player.getItemInHand(hand);
-        CompoundTag tag = soundShard.getOrCreateTag();
-
-        player.getCooldowns().addCooldown(this, 20);
-
-        if (tag.contains("SoundEvent")) {
-            long soundSeed;
-            // 按下shift从声音事件的多种声音里再重新抽取一种
-            if (player.isShiftKeyDown()) {
-                soundSeed = level.random.nextLong();
-                tag.putLong("SoundSeed", soundSeed);
-            } else {
-                soundSeed = tag.getLong("SoundSeed");
+        addCooldown(player, soundShard);
+        Info info = Info.ofItemStack(soundShard);
+        if (info.sound() == null) {
+            // start listening to the sound event
+            if (level.isClientSide) {
+                Listener.start();
             }
-
-            // 播放储存的声音
-            ResourceLocation location = ResourceLocation.tryParse(tag.getString("SoundEvent"));
-            if (location != null) {
-                level.playSeededSound((null), player.getX(), player.getY(), player.getZ(), SoundEvent.createVariableRangeEvent(location), player.getSoundSource(), 1.0F, 1.0F, soundSeed);
-                if (level.isClientSide) {
-                    MutableComponent title = getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN);
-                    player.displayClientMessage(title, true);
-                }
-                return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
-            }
-        } else {
-            // 开始收音
-            if (level.isClientSide) Listener.start();
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(soundShard);
+        } else if (player.getAbilities().instabuild && player.isSecondaryUseActive()) {
+            // creative mode only: shift+use to change the sound seed.
+            Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
+            if (newSeed != null) {
+                level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
+            }
+            return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
+        } else {
+            // play the sound event that saved in the sound shard
+            level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
+            return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
         }
-
-        return super.use(level, player, hand);
     }
 
     @Override
@@ -135,6 +127,7 @@ public class SoundShard extends Item {
         if (level.isClientSide && livingEntity instanceof Player player) {
             ResourceLocation location = Listener.getLocation();
             if (location != null) {
+                // Display the sound event that the player is listening to.
                 player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.GOLD), true);
             }
         }
@@ -143,10 +136,12 @@ public class SoundShard extends Item {
 
     @Override
     public void releaseUsing(ItemStack itemStack, Level level, LivingEntity livingEntity, int tick) {
-        if (livingEntity instanceof Player player && level.isClientSide) {
+        if (level.isClientSide && livingEntity instanceof Player player) {
             ResourceLocation location = Listener.getFinalResult();
             if (location != null) {
-                UpdateSoundShard.toServer(player, location.toString());
+                player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
+                // Send the sound event to the server to save it in the sound shard.
+                CCNetwork.CHANNEL.sendToServer(new SoundShardPacket(player.getInventory().selected, location.toString()));
             }
         }
         super.releaseUsing(itemStack, level, livingEntity, tick);
@@ -154,11 +149,14 @@ public class SoundShard extends Item {
 
     @Override
     public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> components, TooltipFlag flag) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        if (tag.contains("SoundEvent")) {
-            ResourceLocation location = ResourceLocation.tryParse(tag.getString("SoundEvent"));
+        CompoundTag tag = itemStack.getTag();
+        if (containSound(tag)) {
+            ResourceLocation location = ResourceLocation.tryParse(tag.getString(SOUND_EVENT));
             if (location != null) {
-                components.add(getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN));
+                // Display the sound event that saved in the sound shard.
+                // Green for the fixed seed, yellow for the random seed.
+                ChatFormatting color = tag.contains(SOUND_SEED) ? ChatFormatting.DARK_GREEN : ChatFormatting.GOLD;
+                components.add(getSoundEventTitle(location).withStyle(color));
             }
         }
         super.appendHoverText(itemStack, level, components, flag);
@@ -166,7 +164,7 @@ public class SoundShard extends Item {
 
     @Override
     public boolean isFoil(ItemStack itemStack) {
-        return hasSound(itemStack) || super.isFoil(itemStack);
+        return containSound(itemStack);
     }
 
     @Override
@@ -179,47 +177,41 @@ public class SoundShard extends Item {
         return UseAnim.BOW;
     }
 
-    @Mod.EventBusSubscriber(modid = CCMain.ID, value = Dist.CLIENT)
-    private static class Listener {
-        private static Listener listener;
-        private boolean changed = false;
-        private ResourceLocation soundLocation = null;
-
-        public Listener() {
-            listener = this;
+    /**
+     * Reset the sound shard with the sound event and the sound seed.
+     */
+    private static class ResetSoundShard implements CauldronInteraction {
+        @Override
+        public InteractionResult interact(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, ItemStack itemStack) {
+            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
+                CompoundTag tag = itemStack.getTag();
+                if (containSound(tag)) {
+                    tag.remove(SOUND_EVENT);
+                    tag.remove(SOUND_SEED);
+                    LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
+                    level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    return InteractionResult.sidedSuccess(level.isClientSide);
+                }
+            }
+            return InteractionResult.PASS;
         }
+    }
 
-        protected static void start() {
-            MinecraftForge.EVENT_BUS.register(new Listener());
+    public record Info(@Nullable Holder<SoundEvent> sound, @Nullable Long seed) {
+        public static Info ofItemStack(ItemStack soundShard) {
+            CompoundTag tag = soundShard.getTag();
+            if (tag == null) {
+                return new Info(null, null);
+            }
+            Holder<SoundEvent> sound = tag.contains(SOUND_EVENT) ? getSoundEvent(tag.getString(SOUND_EVENT)) : null;
+            Long seed = tag.contains(SOUND_SEED) ? tag.getLong(SOUND_SEED) : null;
+            return new Info(sound, seed);
         }
 
         @Nullable
-        protected static ResourceLocation getLocation() {
-            if (listener == null || !listener.changed) {
-                return null;
-            } else {
-                ResourceLocation location = listener.soundLocation;
-                listener.changed = false;
-                return location;
-            }
-        }
-
-        @Nullable
-        protected static ResourceLocation getFinalResult() {
-            if (listener == null) {
-                return null;
-            } else {
-                ResourceLocation location = listener.soundLocation;
-                MinecraftForge.EVENT_BUS.unregister(listener);
-                listener = null;
-                return location;
-            }
-        }
-
-        @SubscribeEvent
-        public void listen(PlaySoundSourceEvent event) {
-            changed = true;
-            soundLocation = event.getSound().getLocation();
+        private static Holder<SoundEvent> getSoundEvent(String event) {
+            ResourceLocation location = ResourceLocation.tryParse(event);
+            return location == null ? null : Holder.direct(SoundEvent.createVariableRangeEvent(location));
         }
     }
 }

@@ -77,8 +77,8 @@ public abstract class AbstractNoteGridPlayer {
         if (noteGridData == null) {
             return;
         }
-        if (beatNumber >= Page.BEATS_SIZE) {
-            nextPage(level, blockPos, blockState);
+        if (beatNumber >= Page.BEATS_SIZE && nextPage(level, blockPos, blockState)) {
+            return;
         }
         Beat lastBeat = beat;
         try {
@@ -97,13 +97,18 @@ public abstract class AbstractNoteGridPlayer {
         beatNumber++;
     }
 
-    private void nextPage(Level level, BlockPos blockPos, BlockState blockState) {
+    /**
+     * @return Whether the player has finished playing all the pages.
+     */
+    private boolean nextPage(Level level, BlockPos blockPos, BlockState blockState) {
         beatNumber = 0;
         if (++pageNumber >= noteGridData.size()) {
             listener.onFinish(level, blockPos, blockState);
             reset();
+            return true;
         }
         listener.onPageChange(level, blockPos);
+        return false;
     }
 
     public void reset() {

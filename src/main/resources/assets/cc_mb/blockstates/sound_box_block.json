@@ -1,9 +1,9 @@
 {
   "variants": {
-    "empty=true": {
+    "has_sound_shard=false": {
       "model": "cc_mb:block/sound_box_block_empty"
     },
-    "empty=false": {
+    "has_sound_shard=true": {
       "model": "cc_mb:block/sound_box_block"
     }
   }

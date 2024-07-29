@@ -20,29 +20,55 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     /**
      * @param itemTag The key to use when saving the item to NBT.
      */
-    public AbstractItemLoaderBlockEntity(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState, String itemTag) {
-        super(pType, pPos, pBlockState);
+    public AbstractItemLoaderBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState, String itemTag) {
+        super(blockEntityType, blockPos, blockState);
         ITEM_TAG = itemTag;
     }
 
-    abstract protected void loadItem(ItemStack item);
+    /**
+     * Triggered when the item is set by {@link #setItem(ItemStack)}.
+     * {@link #setChanged()} will be called after this method.
+     * <p>
+     * Usually used to load data from the item and change the block state.
+     */
+    abstract protected void loadItem(ItemStack itemStack);
 
+    /**
+     * Triggered when the item is removed by {@link #removeItem()}.
+     * {@link #setChanged()} will be called after this method.
+     * <p>
+     * Usually used to unload data and change the block state.
+     */
     abstract protected void unloadItem();
 
+    /**
+     * Check if the item can be placed in the container.
+     * <p>
+     * Empty is checked before this method is called.
+     */
+    abstract public boolean canPlaceItem(ItemStack pStack);
+
     @Override
-    public void load(CompoundTag pTag) {
-        super.load(pTag);
-        if (pTag.contains(ITEM_TAG)) {
-            setItem(ItemStack.of(pTag.getCompound(ITEM_TAG)));
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (!tag.contains(ITEM_TAG)) {
+            return;
+        }
+        ItemStack itemStack = ItemStack.of(tag.getCompound(ITEM_TAG));
+        if (itemStack.isEmpty()) {
+            if (!isEmpty()) {
+                removeItem();
+            }
+        } else {
+            setItem(itemStack);
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag pTag) {
-        super.saveAdditional(pTag);
-        if (!item.isEmpty()) {
-            pTag.put(ITEM_TAG, item.save(new CompoundTag()));
-        }
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        // EMPTY will be saved too for the sync
+        tag.put(ITEM_TAG, item.save(new CompoundTag()));
     }
 
     public ItemStack getItem() {
@@ -52,10 +78,10 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     /**
      * Set the item in the container then {@link #loadItem(ItemStack) load} it.
      *
-     * @param item The item to set, will be copied.
+     * @param itemStack The item to set, will be copied.
      */
-    public boolean setItem(ItemStack item) {
-        return handleSetItem(item.copy());
+    public void setItem(ItemStack itemStack) {
+        handleSetItem(itemStack.copy());
     }
 
     /**
@@ -65,13 +91,12 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
         return removeItem(0, 1);
     }
 
-    private boolean handleSetItem(ItemStack pStack) {
-        if (canPlaceItem(pStack)) {
-            item = pStack;
+    private void handleSetItem(ItemStack itemStack) {
+        if (canPlaceItem(0, itemStack)) {
+            item = itemStack;
             loadItem(item);
-            return true;
+            setChanged();
         }
-        return false;
     }
 
     @Override
@@ -101,11 +126,12 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
 
     @Override
     public ItemStack removeItem(int pSlot, int pAmount) {
-        if (item.isEmpty() || pSlot != 0) {
+        if (pSlot != 0) {
             return ItemStack.EMPTY;
         }
         ItemStack removed = item.copy();
         unloadItem();
+        setChanged();
         item = ItemStack.EMPTY;
         return removed;
     }
@@ -127,8 +153,9 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
         }
     }
 
-    public boolean canPlaceItem(ItemStack pStack) {
-        return canPlaceItem(0, pStack);
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack itemStack) {
+        return isEmpty() && canPlaceItem(itemStack);
     }
 
     @Override

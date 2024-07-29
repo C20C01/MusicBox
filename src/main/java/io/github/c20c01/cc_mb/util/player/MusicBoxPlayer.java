@@ -97,11 +97,12 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         // Sound event & Sound seed
         if (instrument.hasCustomSound()) {
             if (level.getBlockEntity(blockPos.below()) instanceof SoundBoxBlockEntity blockEntity) {
-                if (blockEntity.isSilent()) {
+                if (blockEntity.containSound()) {
+                    soundEvent = blockEntity.getSoundEvent();
+                    soundSeed = blockEntity.getSoundSeed(level.random);
+                } else {
                     return;
                 }
-                soundEvent = blockEntity.getInstrument();
-                soundSeed = blockEntity.getSoundSeed();
             } else {
                 return;
             }

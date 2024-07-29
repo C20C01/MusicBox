@@ -8,7 +8,7 @@ import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
-import io.github.c20c01.cc_mb.data.PresetNoteGrids;
+import io.github.c20c01.cc_mb.data.PresetNoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.SoundShard;
@@ -108,7 +108,7 @@ public class CCMain {
 
     static {
         NOTE_GRID_ITEM = ITEMS.register(NOTE_GRID_ITEM_ID, () -> new NoteGrid(new Item.Properties().stacksTo(1)));
-        AWL_ITEM = ITEMS.register(AWL_ITEM_ID, () -> new Awl(new Item.Properties().durability(512)));
+        AWL_ITEM = ITEMS.register(AWL_ITEM_ID, () -> new Awl(new Item.Properties().durability(1024)));
         SOUND_SHARD_ITEM = ITEMS.register(SOUND_SHARD_ITEM_ID, () -> new SoundShard(new Item.Properties().stacksTo(1)));
 
         MUSIC_BOX_BLOCK = BLOCKS.register(MUSIC_BOX_BLOCK_ID, () -> new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
@@ -135,7 +135,7 @@ public class CCMain {
                     output.accept(Items.SLIME_BALL);
                     output.accept(Items.WRITABLE_BOOK);
                     output.accept(NOTE_GRID_ITEM.get());
-                    output.acceptAll(new PresetNoteGrids().get());
+                    output.acceptAll(new PresetNoteGridData().getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());
                 })
                 .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))

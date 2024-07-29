@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.data;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -69,13 +70,7 @@ public class NoteGridData extends SavedData {
     }
 
     public NoteGridData deepCopy() {
-        NoteGridData temp = NoteGridData.ofPages(new Page[size()]);
-        for (byte page = 0; page < size(); page++) {
-            for (byte beat = 0; beat < Page.BEATS_SIZE; beat++) {
-                temp.getPage(page).getBeat(beat).addNotes(getPage(page).getBeat(beat).getNotes());
-            }
-        }
-        return temp;
+        return NoteGridUtils.join(NoteGridData.ofPages(new Page[size()]), this);
     }
 
     public ByteArrayTag toTag() {

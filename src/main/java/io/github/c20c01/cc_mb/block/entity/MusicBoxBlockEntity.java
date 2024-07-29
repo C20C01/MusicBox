@@ -7,6 +7,7 @@ import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.MusicBoxSyncRequestPacket;
 import io.github.c20c01.cc_mb.util.BlockUtils;
+import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
 import io.github.c20c01.cc_mb.util.player.PlayerListener;
 import net.minecraft.core.BlockPos;
@@ -14,8 +15,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
@@ -23,8 +24,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
-public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements PlayerListener {
+public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements PlayerListener, LazyUpdateBlockEntity {
     public static final String NOTE_GRID = "NoteGrid";
     private final MusicBoxPlayer PLAYER;
 
@@ -37,63 +39,68 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         blockEntity.PLAYER.tick(level, blockPos, blockState);
     }
 
-    public static void markForUpdate(ServerLevel serverLevel, BlockPos blockPos) {
-        serverLevel.getChunkSource().blockChanged(blockPos);
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        PLAYER.load(tag);
     }
 
     @Override
-    public void load(CompoundTag compoundTag) {
-        super.load(compoundTag);
-        PLAYER.load(compoundTag);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        PLAYER.saveAdditional(tag);
     }
 
-    @Override
-    protected void saveAdditional(CompoundTag compoundTag) {
-        super.saveAdditional(compoundTag);
-        PLAYER.saveAdditional(compoundTag);
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        CompoundTag compoundTag = pkt.getTag();
-        if (compoundTag != null) {
-            handleUpdateTag(compoundTag);
-        }
-    }
-
-    /**
-     * Handle the update tag. If the note grid data is not synced, request the note grid data from the server.
-     */
-    @Override
-    public void handleUpdateTag(CompoundTag compoundTag) {
-        boolean noteGridTag = compoundTag.contains(NOTE_GRID);
-        if (noteGridTag) {
-            setItem(ItemStack.of(compoundTag.getCompound(NOTE_GRID)));
-            return;
-        }
-        PLAYER.handleUpdateTag(compoundTag);
-        boolean emptyNoteGrid = getItem().isEmpty();
-        boolean shouldHaveNoteGrid = getBlockState().getValue(MusicBoxBlock.HAS_NOTE_GRID);
-        if (emptyNoteGrid == shouldHaveNoteGrid) {// The note grid data is not synced from the server.
-            CCNetwork.CHANNEL.sendToServer(new MusicBoxSyncRequestPacket(getBlockPos()));
-        }
-    }
-
-    /**
-     * Get the update tag. The note grid data is not synced in this method.
-     *
-     * @see #handleUpdateTag(CompoundTag)
-     */
     @Override
     public CompoundTag getUpdateTag() {
+        return getCommonUpdateTag();
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return createCommonUpdatePacket();
+    }
+
+    @Override
+    public CompoundTag getLazyUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        super.saveAdditional(tag);
+        return tag;
+    }
+
+    @Override
+    public boolean isLazyUpdateTag(CompoundTag tag) {
+        return tag.contains(NOTE_GRID);
+    }
+
+    @Override
+    public void handleLazyUpdateTag(CompoundTag tag) {
+        setItem(ItemStack.of(tag.getCompound(NOTE_GRID)));
+    }
+
+    @Override
+    public CompoundTag getCommonUpdateTag() {
         CompoundTag tag = new CompoundTag();
         PLAYER.getUpdateTag(tag);
         return tag;
     }
 
     @Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
+    public boolean shouldRequestLazyUpdate() {
+        boolean emptyNoteGrid = getItem().isEmpty();
+        boolean shouldHaveNoteGrid = getBlockState().getValue(MusicBoxBlock.HAS_NOTE_GRID);
+        return emptyNoteGrid == shouldHaveNoteGrid;
+    }
+
+    @Override
+    public void sendLazyUpdateRequest() {
+        CCNetwork.CHANNEL.sendToServer(new MusicBoxSyncRequestPacket(getBlockPos()));
+    }
+
+    @Override
+    public void handleCommonUpdateTag(CompoundTag tag) {
+        PLAYER.handleUpdateTag(tag);
     }
 
     @Override
@@ -101,7 +108,6 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         PLAYER.setNoteGridData(NoteGridData.ofNoteGrid(noteGrid));
         if (level != null) {
             BlockUtils.changeProperty(level, getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, true);
-            setChanged(level, getBlockPos(), getBlockState());
         }
     }
 
@@ -110,13 +116,12 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         PLAYER.reset();
         if (level != null) {
             BlockUtils.changeProperty(level, getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, false);
-            setChanged(level, getBlockPos(), getBlockState());
         }
     }
 
     @Override
-    public boolean canPlaceItem(int slot, ItemStack itemStack) {
-        return itemStack.is(CCMain.NOTE_GRID_ITEM.get()) && this.getItem(slot).isEmpty();
+    public boolean canPlaceItem(ItemStack itemStack) {
+        return itemStack.is(CCMain.NOTE_GRID_ITEM.get());
     }
 
     /**
@@ -154,7 +159,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         PLAYER.setTickPerBeat(tickPerBeat);
         // Sync the note grid player information to the client.
         if (level instanceof ServerLevel serverLevel) {
-            markForUpdate(serverLevel, blockPos);
+            BlockUtils.markForUpdate(serverLevel, blockPos);
         }
     }
 
@@ -172,8 +177,17 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         }
         if (level instanceof ServerLevel serverLevel) {
             PLAYER.nextBeat(serverLevel, blockPos, blockState, false);
-            markForUpdate(serverLevel, blockPos);
+            BlockUtils.markForUpdate(serverLevel, blockPos);
         }
+    }
+
+    /**
+     * For creative mode only. Join the note grid data with the given data and save it to the note grid item.
+     */
+    public void joinData(NoteGridData data) {
+        ItemStack noteGrid = removeItem();
+        NoteGridUtils.join(NoteGridData.ofNoteGrid(noteGrid), data).saveToNoteGrid(noteGrid);
+        setItem(noteGrid);
     }
 
     @Override
@@ -193,7 +207,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     @Override
     public void onPageChange(Level level, BlockPos blockPos) {
         if (level instanceof ServerLevel serverLevel) {
-            markForUpdate(serverLevel, blockPos);
+            BlockUtils.markForUpdate(serverLevel, blockPos);
         }
     }
 }

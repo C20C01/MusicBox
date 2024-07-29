@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.util;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,5 +16,9 @@ public class BlockUtils {
         if (!blockState.getValue(property).equals(value)) {
             level.setBlock(blockPos, blockState.setValue(property, value), flags);
         }
+    }
+
+    public static void markForUpdate(ServerLevel serverLevel, BlockPos blockPos) {
+        serverLevel.getChunkSource().blockChanged(blockPos);
     }
 }

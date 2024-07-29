@@ -7,10 +7,10 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 
-public class PresetNoteGrids {
+public class PresetNoteGridData {
     private final ArrayList<ItemStack> NOTE_GRIDS = new ArrayList<>();
 
-    public PresetNoteGrids() {
+    public PresetNoteGridData() {
         add(Component.literal("Little Star").withStyle(ChatFormatting.GOLD), NoteGridData.ofBytes(
                 new byte[]{
                         -1, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
@@ -34,7 +34,7 @@ public class PresetNoteGrids {
         add(name, NoteGridData.ofPages(new Page[size]));
     }
 
-    public ArrayList<ItemStack> get() {
+    public ArrayList<ItemStack> getItems() {
         return NOTE_GRIDS;
     }
 

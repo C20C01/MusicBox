@@ -133,7 +133,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                     TOOL_SLOT.getItem().shrink(1);
                     OTHER_GRID_SLOT.getItem().shrink(1);
                 }
-                case CODE_PUNCH_FAIL -> hurtTool(8);
+                case CODE_PUNCH_FAIL -> hurtTool(16);
             }
         } else {
             // handle punch

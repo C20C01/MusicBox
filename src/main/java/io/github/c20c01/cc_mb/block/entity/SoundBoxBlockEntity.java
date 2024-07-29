@@ -2,122 +2,117 @@ package io.github.c20c01.cc_mb.block.entity;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
+import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.ticks.ContainerSingleItem;
+import net.minecraft.world.phys.Vec3;
 
-public class SoundBoxBlockEntity extends BlockEntity implements ContainerSingleItem {
-    public static final Holder<SoundEvent> EMPTY = Holder.direct(SoundEvents.EMPTY);
-    private Holder<SoundEvent> instrument = EMPTY;
-    private long soundSeed = 0;
-    private ItemStack soundShard = ItemStack.EMPTY;
+import javax.annotation.Nullable;
+
+public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
+    public static final String SOUND_SHARD = "SoundShard";
+    private Holder<SoundEvent> soundEvent = null;
+    private Long soundSeed = null;
 
     public SoundBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
-        super(CCMain.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState);
+        super(CCMain.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState, SOUND_SHARD);
     }
 
-    public boolean isSilent() {
-        return soundShard.isEmpty();
+    public static void tryToPlaySound(Level level, BlockPos blockPos) {
+        if (!level.isClientSide && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {
+            blockEntity.playSound(level, blockPos);
+        }
     }
 
-    public Holder<SoundEvent> getInstrument() {
-        return instrument;
-    }
-
-    public long getSoundSeed() {
-        return soundSeed;
-    }
-
-    public boolean setSoundShard(ItemStack itemStack) {
-        if (soundShard.isEmpty()) {
-            soundShard = itemStack.copy();
-            CompoundTag tag = soundShard.getOrCreateTag();
-            ResourceLocation location = ResourceLocation.tryParse(tag.getString("SoundEvent"));
-            soundSeed = tag.getLong("SoundSeed");
-            if (location == null) return false;
-            instrument = Holder.direct(SoundEvent.createVariableRangeEvent(location));
-            if (getLevel() != null) {
-                BlockUtils.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, false);
+    /**
+     * Change the sound seed of the sound shard in the sound box.
+     *
+     * @return True if the sound seed is successfully changed.
+     */
+    public static boolean tryToChangeSoundSeed(Level level, BlockPos blockPos) {
+        if (!level.isClientSide && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity && blockEntity.containSound()) {
+            Long newSeed = SoundShard.tryToChangeSoundSeed(blockEntity.getItem(), level.random);
+            if (newSeed != null) {
+                blockEntity.soundSeed = newSeed;
+                blockEntity.setChanged();
+                return true;
             }
-            setChanged();
-            return true;
         }
         return false;
     }
 
-    public ItemStack outSoundShard() {
-        ItemStack oldItemStack = soundShard.copy();
-        soundShard = ItemStack.EMPTY;
-        instrument = EMPTY;
-        soundSeed = 0;
-        if (getLevel() != null) {
-            BlockUtils.changeProperty(getLevel(), getBlockPos(), getBlockState(), SoundBoxBlock.EMPTY, true);
-        }
-        setChanged();
-        return oldItemStack;
-    }
-
-    @Override
-    public void load(CompoundTag compoundTag) {
-        super.load(compoundTag);
-        ItemStack itemStack = ItemStack.of(compoundTag.getCompound("SoundShard"));
-        if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) setSoundShard(itemStack);
-    }
-
-    @Override
-    protected void saveAdditional(CompoundTag compoundTag) {
-        super.saveAdditional(compoundTag);
-        compoundTag.put("SoundShard", soundShard.save(new CompoundTag()));
-    }
-
-    @Override
-    public ItemStack getItem(int slot) {
-        return slot == 0 ? soundShard : ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack removeItem(int slot, int amount) {
-        return slot == 0 ? outSoundShard() : ItemStack.EMPTY;
-    }
-
-    @Override
-    public void setItem(int slot, ItemStack itemStack) {
-        if (slot != 0) return;
-
-        if (itemStack.isEmpty()) {
-            outSoundShard();
-        } else if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
-            setSoundShard(itemStack);
+    private void playSound(Level level, BlockPos blockPos) {
+        if (getSoundEvent() != null) {
+            Vec3 pos = blockPos.getCenter();
+            level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed(level.random));
         }
     }
 
     @Override
-    public boolean stillValid(Player player) {
-        return Container.stillValidBlockEntity(this, player);
+    protected void loadItem(ItemStack soundShard) {
+        SoundShard.Info info = SoundShard.Info.ofItemStack(soundShard);
+        soundEvent = info.sound();
+        soundSeed = info.seed();
+        if (level != null) {
+            BlockUtils.changeProperty(level, worldPosition, getBlockState(), SoundBoxBlock.HAS_SOUND_SHARD, true);
+        }
     }
 
     @Override
-    public int getMaxStackSize() {
-        return 1;
+    protected void unloadItem() {
+        soundEvent = null;
+        soundSeed = null;
+        if (level != null) {
+            BlockUtils.changeProperty(level, worldPosition, getBlockState(), SoundBoxBlock.HAS_SOUND_SHARD, false);
+        }
     }
 
     @Override
-    public boolean canPlaceItem(int slot, ItemStack itemStack) {
-        return itemStack.is(CCMain.SOUND_SHARD_ITEM.get()) && this.getItem(slot).isEmpty();
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        // Only send update packet when the sound box is under a music box.
+        return getBlockState().getValue(SoundBoxBlock.UNDER_MUSIC_BOX) ? ClientboundBlockEntityDataPacket.create(this) : super.getUpdatePacket();
     }
 
     @Override
-    public boolean canTakeItem(Container container, int slot, ItemStack itemStack) {
-        return false;
+    public CompoundTag getUpdateTag() {
+        // Only send update tag when the sound box is under a music box.
+        return getBlockState().getValue(SoundBoxBlock.UNDER_MUSIC_BOX) ? saveWithoutMetadata() : super.getUpdateTag();
+    }
+
+    @Override
+    public boolean canPlaceItem(ItemStack itemStack) {
+        return itemStack.is(CCMain.SOUND_SHARD_ITEM.get()) && SoundShard.containSound(itemStack);
+    }
+
+    /**
+     * @return Whether the block entity contains a sound shard with a sound event.
+     */
+    public boolean containSound() {
+        return soundEvent != null;
+    }
+
+    /**
+     * Check {@link #containSound()} before using this method.
+     * <p>
+     * SoundEvent should always not be null. Sound shard that can be put in the sound box must have a sound event.
+     */
+    @Nullable
+    public Holder<SoundEvent> getSoundEvent() {
+        return soundEvent;
+    }
+
+    public long getSoundSeed(RandomSource randomSource) {
+        return soundSeed == null ? randomSource.nextLong() : soundSeed;
     }
 }

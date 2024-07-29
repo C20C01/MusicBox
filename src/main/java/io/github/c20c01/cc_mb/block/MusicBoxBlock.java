@@ -2,6 +2,7 @@ package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
@@ -9,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -119,8 +122,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
-        MusicBoxBlockEntity blockEntity = (MusicBoxBlockEntity) level.getBlockEntity(blockPos);
-        if (blockEntity != null) {
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
             blockEntity.playOneBeat(level, blockPos, blockState);
         }
         super.attack(blockState, level, blockPos, player);
@@ -130,39 +132,50 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         ItemStack itemStack = player.getItemInHand(hand);
-        MusicBoxBlockEntity musicBoxBlockEntity = level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity be ? be : null;
-        if (musicBoxBlockEntity == null) {
+        MusicBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity be ? be : null;
+        if (blockEntity == null) {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
 
-        if (itemStack.is(CCMain.AWL_ITEM.get())) {
+        if (itemStack.is(CCMain.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
             // modify tick per beat
             byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
-            musicBoxBlockEntity.setTickPerBeat(level, blockPos, tickPerBeat);
-            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(musicBoxBlockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
+            blockEntity.setTickPerBeat(level, blockPos, tickPerBeat);
+            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
                 // take out note grid
-                ItemStack out = musicBoxBlockEntity.removeItem();
-                if (!out.isEmpty()) {
-                    ItemHandlerHelper.giveItemToPlayer(player, out);
-                    return InteractionResult.sidedSuccess(level.isClientSide);
+                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            if (!blockState.getValue(POWERED)) {
+                if (player.getAbilities().instabuild) {
+                    // creative only: join the new data to the note grid
+                    NoteGridData newData = null;
+                    if (itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
+                        newData = NoteGridData.ofNoteGrid(itemStack);
+                    } else if (itemStack.is(Items.WRITABLE_BOOK)) {
+                        newData = NoteGridData.ofBook(itemStack);
+                    }
+                    if (newData != null) {
+                        blockEntity.joinData(newData);
+                        level.levelEvent(3002, blockPos, -1);// show particles
+                        player.playSound(SoundEvents.ANVIL_USE);
+                        return InteractionResult.sidedSuccess(level.isClientSide);
+                    }
                 }
-
-            } else if (!blockState.getValue(POWERED)) {
                 // play one beat
-                musicBoxBlockEntity.playOneBeat(level, blockPos, blockState);
+                blockEntity.playOneBeat(level, blockPos, blockState);
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
         } else {
-            // put in note grid
-            if (musicBoxBlockEntity.canPlaceItem(0, itemStack)) {
-                if (!level.isClientSide && musicBoxBlockEntity.setItem(itemStack)) {
-                    itemStack.shrink(1);
-                }
+            if (blockEntity.canPlaceItem(itemStack)) {
+                // put in note grid
+                blockEntity.setItem(itemStack);
+                itemStack.shrink(1);// creative mode also need to shrink
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
         }
@@ -175,7 +188,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
         super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
         CompoundTag compoundTag = BlockItem.getBlockEntityData(itemStack);
         if (compoundTag != null && compoundTag.contains(MusicBoxBlockEntity.NOTE_GRID)) {
-            BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true);
+            BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true, UPDATE_CLIENTS);
         }
     }
 

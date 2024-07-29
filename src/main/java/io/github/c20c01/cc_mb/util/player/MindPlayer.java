@@ -10,13 +10,12 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -57,21 +56,17 @@ public class MindPlayer extends AbstractNoteGridPlayer {
 
     private void loadSound() {
         // Get the sound shard in the player's MAIN_HAND or OFF_HAND
-        ItemStack soundShard = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (!soundShard.is(CCMain.SOUND_SHARD_ITEM.get())) {
-            soundShard = player.getItemInHand(InteractionHand.OFF_HAND);
-            if (!soundShard.is(CCMain.SOUND_SHARD_ITEM.get())) {
-                soundShard = ItemStack.EMPTY;
-            }
-        }
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offHand = player.getOffhandItem();
+        ItemStack soundShard = mainHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? mainHand : offHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? offHand : ItemStack.EMPTY;
+
         // Load the sound event and seed from the sound shard
-        Holder<SoundEvent> sound = SoundShard.getSoundEvent(soundShard);
-        this.sound = sound == null ? NoteBlockInstrument.HARP.getSoundEvent() : sound;
-        Long seed = SoundShard.getSoundSeed(soundShard);
-        if (seed == null) {
+        SoundShard.Info info = SoundShard.Info.ofItemStack(soundShard);
+        this.sound = info.sound() == null ? SoundEvents.NOTE_BLOCK_HARP : info.sound();
+        if (info.seed() == null) {
             noSpecificSeed = true;
         } else {
-            this.seed = seed;
+            this.seed = info.seed();
             noSpecificSeed = false;
         }
     }

@@ -2,7 +2,7 @@
   "parent": "minecraft:block/cube_bottom_top",
   "textures": {
     "top": "cc_mb:block/perforation_table_block_top",
-    "bottom": "cc_mb:block/perforation_table_block_bottom",
-    "side": "cc_mb:block/perforation_table_block_side"
+    "bottom": "cc_mb:block/perforation_table_block",
+    "side": "cc_mb:block/perforation_table_block"
   }
 }

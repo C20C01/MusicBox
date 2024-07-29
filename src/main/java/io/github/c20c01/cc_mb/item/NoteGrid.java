@@ -28,6 +28,6 @@ public class NoteGrid extends Item {
             ItemStack itemStack = player.getItemInHand(hand);
             openGui(NoteGridData.ofNoteGrid(itemStack));
         }
-        return super.use(level, player, hand);
+        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }
 }
