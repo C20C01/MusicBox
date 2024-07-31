@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
-    public static final String SOUND_SHARD = "SoundShard";
+    public static final String SOUND_SHARD = "sound_shard";
     private Holder<SoundEvent> soundEvent = null;
     private Long soundSeed = null;
 

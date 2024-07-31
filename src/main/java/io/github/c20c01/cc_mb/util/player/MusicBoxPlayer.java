@@ -20,6 +20,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class MusicBoxPlayer extends AbstractNoteGridPlayer {
+    public static final String PLAYER_DATA = "player_data";
+
     public MusicBoxPlayer(PlayerListener listener) {
         super(listener);
     }
@@ -54,7 +56,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     }
 
     public void handleUpdateTag(CompoundTag tag) {
-        byte[] data = tag.getByteArray("PlayerData");
+        byte[] data = tag.getByteArray(PLAYER_DATA);
         setTickPerBeat(data[0]);
         tickSinceLastBeat = data[1];
         beatNumber = data[2];
@@ -67,21 +69,21 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         data[1] = tickSinceLastBeat;
         data[2] = beatNumber;
         data[3] = pageNumber;
-        tag.putByteArray("PlayerData", data);
+        tag.putByteArray(PLAYER_DATA, data);
     }
 
     public void load(CompoundTag tag) {
-        setTickPerBeat(tag.getByte("TickPerBeat"));
-        tickSinceLastBeat = tag.getByte("Interval");
-        beatNumber = tag.getByte("Beat");
-        pageNumber = tag.getByte("Page");
+        setTickPerBeat(tag.getByte("tick_per_beat"));
+        tickSinceLastBeat = tag.getByte("interval");
+        beatNumber = tag.getByte("beat");
+        pageNumber = tag.getByte("page");
     }
 
     public void saveAdditional(CompoundTag tag) {
-        tag.putByte("TickPerBeat", tickPerBeat);
-        tag.putByte("Interval", tickSinceLastBeat);
-        tag.putByte("Beat", beatNumber);
-        tag.putByte("Page", pageNumber);
+        tag.putByte("tick_per_beat", tickPerBeat);
+        tag.putByte("interval", tickSinceLastBeat);
+        tag.putByte("beat", beatNumber);
+        tag.putByte("page", pageNumber);
     }
 
     /**

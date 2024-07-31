@@ -52,23 +52,20 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     public void load(CompoundTag tag) {
         super.load(tag);
         if (!tag.contains(ITEM_TAG)) {
-            return;
-        }
-        ItemStack itemStack = ItemStack.of(tag.getCompound(ITEM_TAG));
-        if (itemStack.isEmpty()) {
             if (!isEmpty()) {
                 removeItem();
             }
         } else {
-            setItem(itemStack);
+            setItem(ItemStack.of(tag.getCompound(ITEM_TAG)));
         }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        // EMPTY will be saved too for the sync
-        tag.put(ITEM_TAG, item.save(new CompoundTag()));
+        if (!item.isEmpty()) {
+            tag.put(ITEM_TAG, item.save(new CompoundTag()));
+        }
     }
 
     public ItemStack getItem() {

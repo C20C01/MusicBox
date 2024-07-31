@@ -14,6 +14,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
@@ -50,6 +51,20 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(HAS_SOUND_SHARD, POWERED, UNDER_MUSIC_BOX);
+    }
+
+    /**
+     * Remove sound shard when the block state is changed to no sound shard.
+     * Use this method because the update tag with empty item will not be sent.
+     */
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        if (level.getBlockEntity(pos) instanceof SoundBoxBlockEntity blockEntity) {
+            if (!newState.getValue(HAS_SOUND_SHARD) && !blockEntity.isEmpty()) {
+                blockEntity.removeItem();
+            }
+        }
+        super.onBlockStateChange(level, pos, oldState, newState);
     }
 
     @Override
@@ -95,30 +110,36 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
         ItemStack itemStack = player.getItemInHand(hand);
         SoundBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity be ? be : null;
         if (blockEntity == null) {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
+
         if (blockState.getValue(HAS_SOUND_SHARD)) {
             if (player.isSecondaryUseActive()) {
                 // take out sound shard
                 ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(UNDER_MUSIC_BOX)) {
                 // play sound
                 SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.CONSUME;
             }
         } else {
             if (blockEntity.canPlaceItem(itemStack)) {
                 // put in sound shard
                 blockEntity.setItem(itemStack);
                 itemStack.shrink(1);// creative mode also need to shrink
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.CONSUME;
             }
         }
+
         return super.use(blockState, level, blockPos, player, hand, hitResult);
     }
 

@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements PlayerListener, LazyUpdateBlockEntity {
-    public static final String NOTE_GRID = "NoteGrid";
+    public static final String NOTE_GRID = "note_grid";
     private final MusicBoxPlayer PLAYER;
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
@@ -88,9 +88,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
 
     @Override
     public boolean shouldRequestLazyUpdate() {
-        boolean emptyNoteGrid = getItem().isEmpty();
-        boolean shouldHaveNoteGrid = getBlockState().getValue(MusicBoxBlock.HAS_NOTE_GRID);
-        return emptyNoteGrid == shouldHaveNoteGrid;
+        return getBlockState().getValue(MusicBoxBlock.HAS_NOTE_GRID) && isEmpty();
     }
 
     @Override
@@ -101,6 +99,12 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     @Override
     public void handleCommonUpdateTag(CompoundTag tag) {
         PLAYER.handleUpdateTag(tag);
+        // The block state is always be synced,
+        // so we can remove item if the block state says so,
+        // and there is no need to send a lazy update request.
+        if (!getBlockState().getValue(MusicBoxBlock.HAS_NOTE_GRID)) {
+            removeItem();
+        }
     }
 
     @Override
@@ -129,7 +133,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
      * If there is a container(NOT a worldly container) at the back of the music box, put the note grid item into it.
      * Otherwise, spawn the note grid item.
      */
-    private void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState) {
+    public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState) {
         Direction direction = blockState.getValue(MusicBoxBlock.FACING);
         Container container = HopperBlockEntity.getContainerAt(level, blockPos.relative(direction.getOpposite()));
         ItemStack itemStack = removeItem();
@@ -188,6 +192,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         ItemStack noteGrid = removeItem();
         NoteGridUtils.join(NoteGridData.ofNoteGrid(noteGrid), data).saveToNoteGrid(noteGrid);
         setItem(noteGrid);
+
     }
 
     @Override

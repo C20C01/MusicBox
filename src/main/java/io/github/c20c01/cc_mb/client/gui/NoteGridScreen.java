@@ -191,9 +191,9 @@ public class NoteGridScreen extends Screen implements PlayerListener {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
-        renderNoteGrid(graphics);
+        renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
+        renderNoteGrid(graphics);
     }
 
     protected void renderNoteGrid(GuiGraphics graphics) {

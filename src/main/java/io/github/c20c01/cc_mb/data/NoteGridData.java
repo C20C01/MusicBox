@@ -7,7 +7,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.saveddata.SavedData;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -15,8 +14,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class NoteGridData extends SavedData {
-    public static final String DATA_KEY = "Notes";
+public class NoteGridData {
+    public static final String DATA_KEY = "notes";
     public static final byte MAX_SIZE = 64;
     private ArrayList<Page> pages = new ArrayList<>(List.of(new Page()));
 
@@ -79,12 +78,6 @@ public class NoteGridData extends SavedData {
 
     public ItemStack toNoteGrid() {
         return saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
-    }
-
-    @Override
-    public CompoundTag save(CompoundTag tag) {
-        tag.put(DATA_KEY, toTag());
-        return tag;
     }
 
     public ItemStack saveToNoteGrid(ItemStack noteGrid) {

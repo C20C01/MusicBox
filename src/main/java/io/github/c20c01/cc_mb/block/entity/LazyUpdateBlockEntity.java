@@ -1,11 +1,14 @@
 package io.github.c20c01.cc_mb.block.entity;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.extensions.IForgeBlockEntity;
 
 /**
@@ -46,11 +49,19 @@ public interface LazyUpdateBlockEntity extends IForgeBlockEntity {
 
     /**
      * Get the tag that will be sent in every update.
-     * <p>
-     * Can NOT return a empty tag
+     * Empty tag will not be sent.
      */
     CompoundTag getCommonUpdateTag();
 
+    /**
+     * Handle the common update tag.
+     * <p>
+     * Do NOT use update tag to sync empty item, because the empty tag will not be sent.
+     * <p>
+     * You can set the item to empty (remove the item) by checking the block state in this method (if you sure the common update tag will always be sent) or
+     * {@link net.minecraftforge.common.extensions.IForgeBlock#onBlockStateChange(LevelReader, BlockPos, BlockState, BlockState) onBlockStateChange},
+     * then remove the item if the block state says so and there will be no need to send the lazy update request.
+     */
     void handleCommonUpdateTag(CompoundTag tag);
 
     default Packet<ClientGamePacketListener> createCommonUpdatePacket() {

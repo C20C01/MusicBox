@@ -10,9 +10,6 @@ public class PunchDataSender extends PunchDataHandler {
     }
 
     public void send(byte page, byte beat, byte note) {
-
-        System.out.println("punching page: " + page + " beat: " + beat + " note: " + note);
-
         if (page != this.page) {
             this.page = page;
             GuiUtils.sendCodeToMenu(CONTAINER_ID, mark(page));

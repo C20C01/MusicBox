@@ -38,8 +38,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class SoundShard extends Item {
-    public static final String SOUND_EVENT = "SoundEvent";
-    public static final String SOUND_SEED = "SoundSeed";
+    public static final String SOUND_EVENT = "sound_event";
+    public static final String SOUND_SEED = "sound_seed";
     private static final int DEFAULT_COOL_DOWN = 55;
 
     public SoundShard(Properties properties) {

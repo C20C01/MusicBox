@@ -16,7 +16,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 public class Awl extends Item {
-    private static final String TICK_PER_BEAT_KEY = "TickPerBeat";
+    private static final String TICK_PER_BEAT_KEY = "tick_per_beat";
 
     public Awl(Properties properties) {
         super(properties);

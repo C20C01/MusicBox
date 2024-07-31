@@ -131,6 +131,10 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
         ItemStack itemStack = player.getItemInHand(hand);
         MusicBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity be ? be : null;
         if (blockEntity == null) {
@@ -142,14 +146,14 @@ public class MusicBoxBlock extends BaseEntityBlock {
             byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
             blockEntity.setTickPerBeat(level, blockPos, tickPerBeat);
             player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return InteractionResult.CONSUME;
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
                 // take out note grid
                 ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(POWERED)) {
                 if (player.getAbilities().instabuild) {
@@ -162,21 +166,22 @@ public class MusicBoxBlock extends BaseEntityBlock {
                     }
                     if (newData != null) {
                         blockEntity.joinData(newData);
+                        blockEntity.ejectNoteGrid(level, blockPos, blockState);
                         level.levelEvent(3002, blockPos, -1);// show particles
-                        player.playSound(SoundEvents.ANVIL_USE);
-                        return InteractionResult.sidedSuccess(level.isClientSide);
+                        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, player.getSoundSource(), 1.0F, 1.0F);
+                        return InteractionResult.CONSUME;
                     }
                 }
                 // play one beat
                 blockEntity.playOneBeat(level, blockPos, blockState);
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.CONSUME;
             }
         } else {
             if (blockEntity.canPlaceItem(itemStack)) {
                 // put in note grid
                 blockEntity.setItem(itemStack);
                 itemStack.shrink(1);// creative mode also need to shrink
-                return InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.CONSUME;
             }
         }
 
