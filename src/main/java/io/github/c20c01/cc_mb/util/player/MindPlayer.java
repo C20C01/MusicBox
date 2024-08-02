@@ -1,60 +1,62 @@
 package io.github.c20c01.cc_mb.util.player;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.client.gui.NoteGridScreen;
-import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * A player that plays music in the player's mind.
- * Used in the {@link NoteGridScreen}.
+ * Used in the {@link io.github.c20c01.cc_mb.client.gui.NoteGridScreen}.
  */
 @OnlyIn(Dist.CLIENT)
 public class MindPlayer extends AbstractNoteGridPlayer {
     private static MindPlayer instance;
+    protected Level level;
+    private NoteGridData data;
+    private Listener listener;
     private LocalPlayer player;
-    private Holder<SoundEvent> sound;
     private boolean noSpecificSeed;
-    private long seed;
 
-    private MindPlayer() {
-        super(null);
+    private MindPlayer(NoteGridData data, Listener listener) {
+        this.data = data;
+        this.listener = listener;
     }
 
-    /**
-     * Call {@link #init(NoteGridData, PlayerListener)} before using the instance.
-     */
-    public static MindPlayer getInstance() {
+    public static MindPlayer getInstance(NoteGridData data, Listener listener) {
         if (instance == null) {
-            instance = new MindPlayer();
+            instance = new MindPlayer(data, listener);
         }
+        instance.data = data;
+        instance.listener = listener;
+        instance.player = Minecraft.getInstance().player;
+        instance.updateSound();
         return instance;
     }
 
-    public void init(NoteGridData data, PlayerListener listener) {
-        player = Minecraft.getInstance().player;
-        if (player != null) {
-            this.noteGridData = data;
-            this.listener = listener;
-            loadSound();
-        }
+    public void jumpPageTo(byte pageNumber) {
+        this.pageNumber = (byte) Mth.clamp(pageNumber, 0, dataSize());
+        this.beatNumber = 0;
+        this.tickSinceLastBeat = 0;
     }
 
-    private void loadSound() {
+    public int tickToNextBeat() {
+        return getTickPerBeat() - tickSinceLastBeat;
+    }
+
+    public void skipWaiting() {
+        tickSinceLastBeat = getTickPerBeat();
+    }
+
+    private void updateSound() {
         // Get the sound shard in the player's MAIN_HAND or OFF_HAND
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
@@ -72,41 +74,53 @@ public class MindPlayer extends AbstractNoteGridPlayer {
     }
 
     @Override
-    public void reset() {
-        pageNumber = 0;
-        beatNumber = 0;
-        tickSinceLastBeat = 0;
-    }
-
-    public void setPageNumber(byte pageNumber) {
-        this.pageNumber = (byte) Mth.clamp(pageNumber, 0, noteGridData == null ? 0 : noteGridData.size() - 1);
-        this.beatNumber = 0;
-        this.tickSinceLastBeat = 0;
-    }
-
-    public byte getBeat() {
-        return beatNumber;
-    }
-
-    public void skipWaiting() {
-        tickSinceLastBeat = tickPerBeat;
-    }
-
-    public byte tickToNextBeat() {
-        return (byte) (tickPerBeat - tickSinceLastBeat);
-    }
-
-    @Override
-    protected void playBeat(Level level, BlockPos blockPos, BlockState blockState, Beat beat) {
-        if (beat.isEmpty()) {
+    protected void playBeat() {
+        if (currentBeat.isEmpty()) {
+            return;
+        }
+        level = Minecraft.getInstance().level;
+        if (level == null) {
             return;
         }
         if (noSpecificSeed) {
             seed = level.random.nextLong();
         }
-        for (byte note : beat.getNotes()) {
+        for (byte note : currentBeat.getNotes()) {
             float pitch = getPitchFromNote(note);
             level.playSeededSound(player, player.getX(), player.getY(), player.getZ(), sound, SoundSource.RECORDS, 3.0F, pitch, seed);
         }
+    }
+
+    @Override
+    protected void updateCurrentBeat() {
+        currentBeat = data.getPage(pageNumber).readBeat(beatNumber);
+    }
+
+    @Override
+    protected byte dataSize() {
+        return data.size();
+    }
+
+    @Override
+    protected boolean onBeat() {
+        return listener.onBeat(beatNumber);
+    }
+
+    @Override
+    protected void onPageChange() {
+        listener.onPageChange();
+    }
+
+    @Override
+    protected void onFinish() {
+        listener.onFinish();
+    }
+
+    public interface Listener {
+        boolean onBeat(byte beatNumber);
+
+        void onPageChange();
+
+        void onFinish();
     }
 }

@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
-import io.github.c20c01.cc_mb.util.player.AbstractNoteGridPlayer;
+import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -23,7 +23,7 @@ public class Awl extends Item {
     }
 
     public static byte getTickPerBeatTag(CompoundTag tag) {
-        return tag.contains(TICK_PER_BEAT_KEY) ? tag.getByte(TICK_PER_BEAT_KEY) : AbstractNoteGridPlayer.getDefaultTickPerBeat();
+        return tag.contains(TICK_PER_BEAT_KEY) ? tag.getByte(TICK_PER_BEAT_KEY) : TickPerBeat.DEFAULT;
     }
 
     @Override
@@ -32,10 +32,10 @@ public class Awl extends Item {
         CompoundTag tag = awl.getOrCreateTag();
 
         byte nextTickPerBeat = (byte) (getTickPerBeatTag(tag) + (player.isSecondaryUseActive() ? -1 : 1));
-        if (nextTickPerBeat < AbstractNoteGridPlayer.MIN_TICK_PER_BEAT) {
-            nextTickPerBeat = AbstractNoteGridPlayer.MAX_TICK_PER_BEAT;
-        } else if (nextTickPerBeat > AbstractNoteGridPlayer.MAX_TICK_PER_BEAT) {
-            nextTickPerBeat = AbstractNoteGridPlayer.MIN_TICK_PER_BEAT;
+        if (nextTickPerBeat < TickPerBeat.MIN) {
+            nextTickPerBeat = TickPerBeat.MAX;
+        } else if (nextTickPerBeat > TickPerBeat.MAX) {
+            nextTickPerBeat = TickPerBeat.MIN;
         }
         tag.putByte(TICK_PER_BEAT_KEY, nextTickPerBeat);
         player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(String.valueOf(nextTickPerBeat)).withStyle(ChatFormatting.GOLD), true);
@@ -48,11 +48,12 @@ public class Awl extends Item {
         Level level = context.getLevel();
         if (level.getBlockEntity(context.getClickedPos()) instanceof MusicBoxBlockEntity blockEntity) {
             Player player = context.getPlayer();
-            if (player != null) {
+            if (player != null && !level.isClientSide) {
                 String tickPerBeat = String.valueOf(blockEntity.getTickPerBeat());
                 player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN), true);
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.CONSUME;
             }
+            return InteractionResult.SUCCESS;
         }
         return super.useOn(context);
     }

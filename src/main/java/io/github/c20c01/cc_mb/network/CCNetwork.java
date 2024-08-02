@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = CCMain.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCNetwork {
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_ID, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
 
@@ -24,11 +24,18 @@ public class CCNetwork {
                 .consumerMainThread(SoundShardPacket::handleOnServer)
                 .add();
 
-        // Ask the server to sync the music box's content at specific position.
-        CHANNEL.messageBuilder(MusicBoxSyncRequestPacket.class, ++id, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(MusicBoxSyncRequestPacket::encode)
-                .decoder(MusicBoxSyncRequestPacket::decode)
-                .consumerMainThread(MusicBoxSyncRequestPacket::handleOnServer)
+        // Ask the server to send the note grid data with specific hash code.
+        CHANNEL.messageBuilder(NoteGridDataPacket.ToServer.class, ++id, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(NoteGridDataPacket.ToServer::encode)
+                .decoder(NoteGridDataPacket.ToServer::decode)
+                .consumerMainThread(NoteGridDataPacket.ToServer::handleOnServer)
+                .add();
+
+        // Send the note grid data to the client with specific hash code.
+        CHANNEL.messageBuilder(NoteGridDataPacket.ToClient.class, ++id, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(NoteGridDataPacket.ToClient::encode)
+                .decoder(NoteGridDataPacket.ToClient::decode)
+                .consumerMainThread(NoteGridDataPacket.ToClient::handleOnClient)
                 .add();
     }
 }

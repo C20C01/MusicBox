@@ -12,13 +12,13 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     public static final String SOUND_SHARD = "sound_shard";
@@ -55,7 +55,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     private void playSound(Level level, BlockPos blockPos) {
         if (getSoundEvent() != null) {
             Vec3 pos = blockPos.getCenter();
-            level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed(level.random));
+            level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
         }
     }
 
@@ -86,8 +86,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
 
     @Override
     public CompoundTag getUpdateTag() {
-        // Only send update tag when the sound box is under a music box.
-        return getBlockState().getValue(SoundBoxBlock.UNDER_MUSIC_BOX) ? saveWithoutMetadata() : super.getUpdateTag();
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -95,24 +94,16 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
         return itemStack.is(CCMain.SOUND_SHARD_ITEM.get()) && SoundShard.containSound(itemStack);
     }
 
-    /**
-     * @return Whether the block entity contains a sound shard with a sound event.
-     */
     public boolean containSound() {
         return soundEvent != null;
     }
 
-    /**
-     * Check {@link #containSound()} before using this method.
-     * <p>
-     * SoundEvent should always not be null. Sound shard that can be put in the sound box must have a sound event.
-     */
     @Nullable
     public Holder<SoundEvent> getSoundEvent() {
         return soundEvent;
     }
 
-    public long getSoundSeed(RandomSource randomSource) {
-        return soundSeed == null ? randomSource.nextLong() : soundSeed;
+    public Optional<Long> getSoundSeed() {
+        return Optional.ofNullable(soundSeed);
     }
 }

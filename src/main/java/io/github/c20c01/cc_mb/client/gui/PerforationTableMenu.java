@@ -18,6 +18,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import javax.annotation.Nonnull;
+
 public class PerforationTableMenu extends AbstractContainerMenu {
     public static final byte CODE_SAVE_NOTE_GRID = -1;
     public static final byte CODE_CONNECT_NOTE_GRID = -2;
@@ -83,18 +85,18 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean stillValid(Player player) {
+    public boolean stillValid(@Nonnull Player player) {
         return stillValid(this.ACCESS, player, CCMain.PERFORATION_TABLE_BLOCK.get());
     }
 
     @Override
-    public void removed(Player player) {
+    public void removed(@Nonnull Player player) {
         super.removed(player);
         this.ACCESS.execute((level, blockPos) -> this.clearContainer(player, CONTAINER));
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int i) {
+    public @Nonnull ItemStack quickMoveStack(@Nonnull Player player, int i) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(i);
         if (slot.hasItem()) {
@@ -119,7 +121,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean clickMenuButton(Player player, int code) {
+    public boolean clickMenuButton(@Nonnull Player player, int code) {
         if (code < 0) {
             // handel flags
             switch (code) {

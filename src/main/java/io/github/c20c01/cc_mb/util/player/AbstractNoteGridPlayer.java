@@ -1,20 +1,12 @@
 package io.github.c20c01.cc_mb.util.player;
 
 import io.github.c20c01.cc_mb.data.Beat;
-import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
+import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.NoteBlock;
-import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractNoteGridPlayer {
-    public static final byte MIN_TICK_PER_BEAT = 1;
-    public static final byte MAX_TICK_PER_BEAT = 20;
-    private static final Beat EMPTY_BEAT = new Beat();// Read only, used to avoid creating new object
     private static final float[] PITCHES = new float[25];
 
     static {
@@ -23,21 +15,13 @@ public abstract class AbstractNoteGridPlayer {
         }
     }
 
-    protected PlayerListener listener;
-    protected byte tickPerBeat = getDefaultTickPerBeat();
     protected byte tickSinceLastBeat;
     protected byte beatNumber;
     protected byte pageNumber;
-    protected NoteGridData noteGridData = null;
-    private Beat beat = new Beat();
-
-    public AbstractNoteGridPlayer(PlayerListener listener) {
-        this.listener = listener;
-    }
-
-    public static byte getDefaultTickPerBeat() {
-        return (MIN_TICK_PER_BEAT + MAX_TICK_PER_BEAT) / 2;
-    }
+    protected Beat currentBeat = Beat.EMPTY_BEAT;
+    protected long seed;
+    protected Holder<SoundEvent> sound;
+    private byte tickPerBeat = TickPerBeat.DEFAULT;
 
     /**
      * @param note must be in the range of 0~24, or use {@link NoteBlock#getPitchFromNote(int)}
@@ -46,80 +30,63 @@ public abstract class AbstractNoteGridPlayer {
         return PITCHES[note];
     }
 
-    protected abstract void playBeat(Level level, BlockPos blockPos, BlockState blockState, Beat beat);
+    protected abstract void playBeat();
 
-    public void setNoteGridData(@Nullable NoteGridData noteGridData) {
-        this.noteGridData = noteGridData;
-    }
+    protected abstract void updateCurrentBeat();
+
+    protected abstract byte dataSize();
+
+    /**
+     * @return Whether the player should pause
+     */
+    protected abstract boolean onBeat();
+
+    protected abstract void onPageChange();
+
+    protected abstract void onFinish();
 
     public byte getTickPerBeat() {
         return tickPerBeat;
     }
 
-    public void setTickPerBeat(byte tickPerBeat) {
-        this.tickPerBeat = (byte) Mth.clamp(tickPerBeat, MIN_TICK_PER_BEAT, MAX_TICK_PER_BEAT);
+    public void setTickPerBeat(int tickPerBeat) {
+        this.tickPerBeat = TickPerBeat.clamp(tickPerBeat);
     }
 
-    /**
-     * Called every tick when the player is playing.
-     */
-    public void tick(Level level, BlockPos blockPos, BlockState blockState) {
+    public void tick() {
         if (++tickSinceLastBeat >= tickPerBeat) {
-            nextBeat(level, blockPos, blockState, true);
+            nextBeat();
         }
     }
 
-    /**
-     * @param onClient Whether the beat will be played on the client rather than the server.
-     */
-    public void nextBeat(Level level, BlockPos blockPos, BlockState blockState, boolean onClient) {
+    protected void nextBeat() {
         tickSinceLastBeat = 0;
-        if (noteGridData == null) {
+        if (beatNumber >= Page.BEATS_SIZE && nextPage()) {
             return;
         }
-        if (beatNumber >= Page.BEATS_SIZE && nextPage(level, blockPos, blockState)) {
+        updateCurrentBeat();
+        if (onBeat()) {
             return;
         }
-        Beat lastBeat = beat;
-        try {
-            beat = noteGridData.getPage(pageNumber).getBeat(beatNumber, EMPTY_BEAT);
-        } catch (IndexOutOfBoundsException | NullPointerException e) {
-            listener.onFinish(level, blockPos, blockState);
-            reset();
-        }
-        if (listener.onBeat(level, blockPos, blockState, lastBeat, beat)) {
-            // fake pause
-            return;
-        }
-        if (level.isClientSide == onClient) {
-            playBeat(level, blockPos, blockState, beat);
-        }
+        playBeat();
         beatNumber++;
     }
 
-    /**
-     * @return Whether the player has finished playing all the pages.
-     */
-    private boolean nextPage(Level level, BlockPos blockPos, BlockState blockState) {
+    private boolean nextPage() {
         beatNumber = 0;
-        if (++pageNumber >= noteGridData.size()) {
-            listener.onFinish(level, blockPos, blockState);
+        if (++pageNumber >= dataSize()) {
+            onFinish();
             reset();
             return true;
         }
-        listener.onPageChange(level, blockPos);
+        onPageChange();
         return false;
     }
 
     public void reset() {
-        noteGridData = null;
         pageNumber = 0;
         beatNumber = 0;
         tickSinceLastBeat = 0;
-        beat = new Beat();
-    }
-
-    public byte getMinNote() {
-        return beat.getMinNote();
+        currentBeat = Beat.EMPTY_BEAT;
     }
 }

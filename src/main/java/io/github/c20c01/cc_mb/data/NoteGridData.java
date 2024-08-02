@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.data;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.util.CollectionUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
@@ -80,6 +81,10 @@ public class NoteGridData {
         return saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
     }
 
+    public byte[] toBytes() {
+        return CollectionUtils.toArray(new Encoder().encode(pages));
+    }
+
     public ItemStack saveToNoteGrid(ItemStack noteGrid) {
         if (noteGrid.is(CCMain.NOTE_GRID_ITEM.get())) {
             CompoundTag tag = noteGrid.getOrCreateTag();
@@ -91,6 +96,11 @@ public class NoteGridData {
     @Override
     public String toString() {
         return "NoteGrid:" + pages;
+    }
+
+    @Override
+    public int hashCode() {
+        return pages.hashCode();
     }
 
     public Page getPage(byte index) {

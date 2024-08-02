@@ -3,8 +3,10 @@ package io.github.c20c01.cc_mb.block;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.BlockUtils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -110,10 +112,6 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-
         ItemStack itemStack = player.getItemInHand(hand);
         SoundBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity be ? be : null;
         if (blockEntity == null) {
@@ -123,20 +121,36 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         if (blockState.getValue(HAS_SOUND_SHARD)) {
             if (player.isSecondaryUseActive()) {
                 // take out sound shard
+                if (level.isClientSide) {
+                    return InteractionResult.SUCCESS;
+                }
                 ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(UNDER_MUSIC_BOX)) {
                 // play sound
+                if (level.isClientSide) {
+                    return InteractionResult.SUCCESS;
+                }
                 SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
                 return InteractionResult.CONSUME;
             }
         } else {
-            if (blockEntity.canPlaceItem(itemStack)) {
-                // put in sound shard
-                blockEntity.setItem(itemStack);
-                itemStack.shrink(1);// creative mode also need to shrink
-                return InteractionResult.CONSUME;
+            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
+                if (blockEntity.canPlaceItem(itemStack)) {
+                    // put in sound shard
+                    if (level.isClientSide) {
+                        return InteractionResult.SUCCESS;
+                    }
+                    blockEntity.setItem(itemStack);
+                    itemStack.shrink(1);// creative mode also need to shrink
+                    SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
+                    return InteractionResult.CONSUME;
+                } else {
+                    // show message
+                    player.displayClientMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED), true);
+                    return InteractionResult.sidedSuccess(level.isClientSide);
+                }
             }
         }
 

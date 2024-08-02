@@ -12,6 +12,7 @@ import java.util.Set;
  * A beat is a set of notes that can be played together.
  */
 public class Beat {
+    public static final Beat EMPTY_BEAT = new Beat();// Read only
     private byte[] notes = ArrayUtils.EMPTY_BYTE_ARRAY;
     private byte minNote = Byte.MAX_VALUE;
 
@@ -145,5 +146,10 @@ public class Beat {
             System.arraycopy(availableNewNotes, 0, noteArray, notes.length, len);
             setNotes(noteArray);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(notes);
     }
 }

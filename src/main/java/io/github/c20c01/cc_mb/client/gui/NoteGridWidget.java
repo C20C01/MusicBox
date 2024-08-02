@@ -10,6 +10,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
+
 /**
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
  * And the {@link #onClick(double, double) button} to trigger note grid handling.
@@ -28,7 +30,7 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         switch (MENU.mode) {
             case PUNCH, CHECK -> renderPunch(guiGraphics);
             case CONNECT -> renderConnect(guiGraphics);
@@ -66,7 +68,7 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput output) {
+    protected void updateWidgetNarration(@Nonnull NarrationElementOutput output) {
         defaultButtonNarrationText(output);
     }
 

@@ -44,8 +44,8 @@ public class Page {
     /**
      * Read only! If you want to modify the beat, use {@link #getBeat(byte)} instead.
      */
-    public Beat getBeat(byte index, Beat defaultBeat) {
-        return BEATS[index] == null ? defaultBeat : BEATS[index];
+    public Beat readBeat(byte index) {
+        return BEATS[index] == null ? Beat.EMPTY_BEAT : BEATS[index];
     }
 
     public boolean isEmptyBeat(byte index) {
@@ -59,5 +59,10 @@ public class Page {
 
     public Page setBeats(Collection<Beat> beats) {
         return setBeats(beats.toArray(new Beat[0]));
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(BEATS);
     }
 }

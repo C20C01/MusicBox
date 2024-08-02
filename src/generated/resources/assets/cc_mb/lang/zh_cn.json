@@ -22,6 +22,7 @@
   "text.cc_mb.harp": "竖琴",
   "text.cc_mb.hat": "击鼓沿",
   "text.cc_mb.iron_xylophone": "铁木琴（颤音琴）",
+  "text.cc_mb.page_size": "页数: %1$s",
   "text.cc_mb.pling": "扣弦（电钢琴）",
   "text.cc_mb.punch": "使用锥子为纸带打孔",
   "text.cc_mb.set_tick_per_beat": "每拍所用刻数: ",

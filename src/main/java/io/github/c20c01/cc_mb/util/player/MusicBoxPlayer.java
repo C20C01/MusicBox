@@ -3,6 +3,9 @@ package io.github.c20c01.cc_mb.util.player;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.Beat;
+import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.sync.DataHolder;
+import io.github.c20c01.cc_mb.data.sync.NoteGridDataManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -20,10 +23,14 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 public class MusicBoxPlayer extends AbstractNoteGridPlayer {
-    public static final String PLAYER_DATA = "player_data";
+    private final Listener LISTENER;
+    public DataHolder<NoteGridData> dataHolder = DataHolder.empty();
+    private Level level;
+    private BlockPos blockPos;
+    private BlockState blockState;
 
-    public MusicBoxPlayer(PlayerListener listener) {
-        super(listener);
+    public MusicBoxPlayer(Listener listener) {
+        this.LISTENER = listener;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -55,67 +62,111 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         }
     }
 
-    public void handleUpdateTag(CompoundTag tag) {
-        byte[] data = tag.getByteArray(PLAYER_DATA);
-        setTickPerBeat(data[0]);
-        tickSinceLastBeat = data[1];
-        beatNumber = data[2];
-        pageNumber = data[3];
-    }
-
-    public void getUpdateTag(CompoundTag tag) {
-        byte[] data = new byte[4];
-        data[0] = tickPerBeat;
-        data[1] = tickSinceLastBeat;
-        data[2] = beatNumber;
-        data[3] = pageNumber;
-        tag.putByteArray(PLAYER_DATA, data);
-    }
-
     public void load(CompoundTag tag) {
         setTickPerBeat(tag.getByte("tick_per_beat"));
         tickSinceLastBeat = tag.getByte("interval");
         beatNumber = tag.getByte("beat");
         pageNumber = tag.getByte("page");
+        if (tag.contains("note_grid_hash")) {
+            dataHolder = NoteGridDataManager.INSTANCE.get(tag.getInt("note_grid_hash"));
+        } else {
+            dataHolder.clear();
+        }
     }
 
     public void saveAdditional(CompoundTag tag) {
-        tag.putByte("tick_per_beat", tickPerBeat);
+        tag.putByte("tick_per_beat", getTickPerBeat());
         tag.putByte("interval", tickSinceLastBeat);
         tag.putByte("beat", beatNumber);
         tag.putByte("page", pageNumber);
+        dataHolder.getHashCode().ifPresent(hash -> tag.putInt("note_grid_hash", hash));
     }
 
     /**
-     * Play the beat on the client or server side.
+     * Client side only. The player will not play the beat on the server side by ticking.
      */
-    protected void playBeat(Level level, BlockPos blockPos, BlockState blockState, Beat beat) {
-        if (beat.isEmpty()) {
-            return;
+    public void update(Level level, BlockPos blockPos, BlockState blockState) {
+        this.level = level;
+        this.blockPos = blockPos;
+        this.blockState = blockState;
+    }
+
+    /**
+     * The only way to play the beat on the server side.
+     */
+    public void hitOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+        nextBeat();
+        if (shouldPlay(level, blockPos, blockState)) {
+            playBeatOnServer(level, blockPos, sound, seed, currentBeat);
+        }
+    }
+
+    private boolean shouldPlay(Level level, BlockPos blockPos, BlockState blockState) {
+        if (currentBeat.isEmpty()) {
+            return false;
         }
         NoteBlockInstrument instrument = blockState.getValue(MusicBoxBlock.INSTRUMENT);
-        Holder<SoundEvent> soundEvent;
-        long soundSeed;
-        // Sound event & Sound seed
-        if (instrument.hasCustomSound()) {
-            if (level.getBlockEntity(blockPos.below()) instanceof SoundBoxBlockEntity blockEntity) {
-                if (blockEntity.containSound()) {
-                    soundEvent = blockEntity.getSoundEvent();
-                    soundSeed = blockEntity.getSoundSeed(level.random);
-                } else {
-                    return;
-                }
-            } else {
-                return;
+        if (instrument.hasCustomSound() && level.getBlockEntity(blockPos.below()) instanceof SoundBoxBlockEntity blockEntity) {
+            sound = blockEntity.getSoundEvent();
+            if (sound == null) {
+                return false;
             }
+            seed = blockEntity.getSoundSeed().orElse(level.random.nextLong());
         } else {
-            soundEvent = instrument.getSoundEvent();
-            soundSeed = level.random.nextLong();
+            sound = instrument.getSoundEvent();
+            seed = level.random.nextLong();
         }
-        if (level.isClientSide) {
-            playBeatOnClient((ClientLevel) level, blockPos, soundEvent, soundSeed, beat);
-        } else {
-            playBeatOnServer((ServerLevel) level, blockPos, soundEvent, soundSeed, beat);
+        return true;
+    }
+
+    public byte getMinNote() {
+        return currentBeat.getMinNote();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        dataHolder.clear();
+    }
+
+    @Override
+    protected void playBeat() {
+        if (level != null && shouldPlay(level, blockPos, blockState)) {
+            playBeatOnClient((ClientLevel) level, blockPos, sound, seed, currentBeat);
         }
+    }
+
+    @Override
+    protected void updateCurrentBeat() {
+        dataHolder.get().ifPresentOrElse(data -> currentBeat = data.getPage(pageNumber).readBeat(beatNumber), () -> currentBeat = Beat.EMPTY_BEAT);
+    }
+
+    @Override
+    protected byte dataSize() {
+        return dataHolder.get().map(NoteGridData::size).orElse((byte) 1);
+    }
+
+    @Override
+    protected boolean onBeat() {
+        LISTENER.onBeat();
+        return false;
+    }
+
+    @Override
+    protected void onPageChange() {
+        LISTENER.onPageChange();
+    }
+
+    @Override
+    protected void onFinish() {
+        LISTENER.onFinish();
+    }
+
+    public interface Listener {
+        void onBeat();
+
+        void onPageChange();
+
+        void onFinish();
     }
 }

@@ -96,6 +96,11 @@ public class CCLanguageProvider extends LanguageProvider {
             case EN_US -> "The shard doesn't have a sound";
             case ZH_CN -> "碎片还没有记录声音";
         });
+        this.add(CCMain.TEXT_PAGE_SIZE, switch (this.locale) {
+            default -> throw new IllegalStateException();
+            case EN_US -> "Page size: %1$s";
+            case ZH_CN -> "页数: %1$s";
+        });
 
         this.add(CCMain.TEXT_SOUND_BASS, switch (this.locale) {
             default -> throw new IllegalStateException();

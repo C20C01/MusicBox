@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.function.Consumer;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = CCMain.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCRecipeProvider extends RecipeProvider {
     public CCRecipeProvider(DataGenerator generator) {
         super(generator.getPackOutput());

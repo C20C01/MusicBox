@@ -12,6 +12,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
+
 @OnlyIn(Dist.CLIENT)
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
@@ -37,7 +39,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (Minecraft.getInstance().screen == this) {
             this.renderBackground(guiGraphics);
             super.render(guiGraphics, mouseX, mouseY, partialTicks);

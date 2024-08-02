@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = CCMain.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCLootTableProvider extends LootTableProvider {
     private CCLootTableProvider(DataGenerator gen) {
         super(gen.getPackOutput(), Set.of(), List.of(new SubProviderEntry(CCBlockLoot::new, LootContextParamSets.BLOCK)));

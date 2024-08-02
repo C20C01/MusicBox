@@ -5,9 +5,7 @@ import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import io.github.c20c01.cc_mb.util.GuiUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
-import io.github.c20c01.cc_mb.util.player.AbstractNoteGridPlayer;
 import io.github.c20c01.cc_mb.util.player.MindPlayer;
-import io.github.c20c01.cc_mb.util.player.PlayerListener;
 import io.github.c20c01.cc_mb.util.punch.PunchDataSender;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
@@ -15,17 +13,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nonnull;
+
 @OnlyIn(Dist.CLIENT)
-public class NoteGridScreen extends Screen implements PlayerListener {
+public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private static final int PAPER_COLOR = 0xFFFDF7EA;
     private static final int LINE_COLOR = 0x33000000;
     private static final int SELECTION_COLOR = 0x69000000;
@@ -44,10 +41,11 @@ public class NoteGridScreen extends Screen implements PlayerListener {
     private final PunchDataSender PUNCH_DATA_SENDER;
     private final NoteGridData MAIN_DATA;// play or edit on this data
     private final NoteGridData HELP_DATA;// show a translucent note grid to help player to copy notes from this data
+    private final MindPlayer PLAYER;
     private PerforationTableScreen tableScreen = null;
     private Component tip = CommonComponents.EMPTY;
     private byte currentPage;
-    private byte beat;
+    private byte beatNumber;
     private int playProgressLineColor = SELECTION_COLOR;
     private PageButton forwardButton;
     private PageButton backButton;
@@ -64,7 +62,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
         MAIN_DATA = mainData;
         HELP_DATA = null;
         PUNCH_DATA_SENDER = null;
-        MindPlayer.getInstance().init(mainData, this);
+        PLAYER = MindPlayer.getInstance(mainData, this);
     }
 
     /**
@@ -79,13 +77,13 @@ public class NoteGridScreen extends Screen implements PlayerListener {
         currentPage = (byte) Math.min(screen.currentPage, getNumPages() - 1);
         canEdit = screen.getMenu().mode == MenuMode.PUNCH;
         playProgressLineColor = canEdit ? EDIT_PROGRESS_COLOR : SELECTION_COLOR;
-        MindPlayer.getInstance().init(MAIN_DATA, this);
+        PLAYER = MindPlayer.getInstance(MAIN_DATA, this);
     }
 
     @Override
     public void onClose() {
         playing = false;
-        MindPlayer.getInstance().reset();
+        PLAYER.reset();
         if (tableScreen != null) {
             GuiUtils.sendCodeToMenu(tableScreen.getMenu().containerId, PerforationTableMenu.CODE_SAVE_NOTE_GRID);
             tableScreen.noteGridScreen = null;
@@ -190,7 +188,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderNoteGrid(graphics);
@@ -229,7 +227,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
 
         if (playing) {
             // playing progress line
-            graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + beat * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, playProgressLineColor);
+            graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + beatNumber * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, playProgressLineColor);
         } else if (canEdit && MOUSE_POS[0] != -1) {
             // selection lines
             graphics.hLine(GRID_CENTER_X - HALF_GRID_WIDTH, GRID_CENTER_X + HALF_GRID_WIDTH, GRID_CENTER_Y + HALF_GRID_HEIGHT - MOUSE_POS[1] * GRID_SIZE, SELECTION_COLOR);
@@ -246,8 +244,8 @@ public class NoteGridScreen extends Screen implements PlayerListener {
      */
     private void setPlaying(boolean playing) {
         this.playing = playing;
-        beat = 0;
-        MindPlayer.getInstance().setPageNumber(currentPage);
+        beatNumber = 0;
+        PLAYER.jumpPageTo(currentPage);
     }
 
     @Override
@@ -281,10 +279,10 @@ public class NoteGridScreen extends Screen implements PlayerListener {
         if (playing) {
             if (pDelta > 0) {
                 // roll up: speed up
-                MindPlayer.getInstance().setTickPerBeat((byte) Math.max(AbstractNoteGridPlayer.MIN_TICK_PER_BEAT, MindPlayer.getInstance().getTickPerBeat() - 1));
+                PLAYER.setTickPerBeat(PLAYER.getTickPerBeat() - 1);
             } else {
                 // roll down: speed down
-                MindPlayer.getInstance().setTickPerBeat((byte) Math.min(AbstractNoteGridPlayer.MAX_TICK_PER_BEAT, MindPlayer.getInstance().getTickPerBeat() + 1));
+                PLAYER.setTickPerBeat(PLAYER.getTickPerBeat() + 1);
             }
         } else {
             if (pDelta > 0) {
@@ -302,7 +300,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
     public void tick() {
         super.tick();
         if (playing && !paused) {
-            MindPlayer.getInstance().tick(Minecraft.getInstance().level, null, null);
+            PLAYER.tick();
         }
     }
 
@@ -321,6 +319,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
             // punch a note on client and send the punch to server
             if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
                 PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
+                GuiUtils.playSound(SoundEvents.BOOK_PUT);
             }
         }
     }
@@ -341,7 +340,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
      */
     private boolean punchWithHelpData() {
         final byte PAGE = currentPage;
-        final byte BEAT = beat;
+        final byte BEAT = beatNumber;
         if (HELP_DATA.size() <= PAGE) {
             // no help data
             return false;
@@ -350,7 +349,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
             // filled successfully at current beat
             return true;
         }
-        if (MindPlayer.getInstance().tickToNextBeat() > JUDGMENT_INTERVAL_TICK) {
+        if (PLAYER.tickToNextBeat() > JUDGMENT_INTERVAL_TICK) {
             // out of judgment interval
             return false;
         }
@@ -364,8 +363,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
      * @return True if player punched successfully at beat in judgment interval.
      */
     private boolean punchWithHelpDataInInterval(byte page, byte beat) {
-        MindPlayer player = MindPlayer.getInstance();
-        int beatsInInterval = 1 + (JUDGMENT_INTERVAL_TICK - player.tickToNextBeat()) / player.getTickPerBeat();
+        int beatsInInterval = 1 + (JUDGMENT_INTERVAL_TICK - PLAYER.tickToNextBeat()) / PLAYER.getTickPerBeat();
         // check next several beats
         for (int i = 0; i < beatsInInterval; i++) {
             if (++beat >= Page.BEATS_SIZE) {
@@ -408,7 +406,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
         if (punchNewNote) {
             // punched successfully or !canEdit
             if (skipWaiting) {
-                MindPlayer.getInstance().skipWaiting();
+                PLAYER.skipWaiting();
             }
             paused = false;
             return true;
@@ -422,7 +420,7 @@ public class NoteGridScreen extends Screen implements PlayerListener {
             return;
         }
         punchFail = false;
-        paused = canEdit && !NoteGridUtils.containsAll(MAIN_DATA, HELP_DATA, currentPage, beat);
+        paused = canEdit && !NoteGridUtils.containsAll(MAIN_DATA, HELP_DATA, currentPage, beatNumber);
     }
 
     /**
@@ -439,20 +437,20 @@ public class NoteGridScreen extends Screen implements PlayerListener {
     }
 
     @Override
-    public void onFinish(Level level, BlockPos blockPos, BlockState blockState) {
+    public void onFinish() {
         setPlaying(false);
         updateTip();
     }
 
     @Override
-    public boolean onBeat(Level level, BlockPos blockPos, BlockState blockState, Beat lastBeat, Beat currentBeat) {
-        beat = MindPlayer.getInstance().getBeat();
+    public boolean onBeat(byte beatNumber) {
+        this.beatNumber = beatNumber;
         updatePauseState();
         return paused;
     }
 
     @Override
-    public void onPageChange(Level level, BlockPos blockPos) {
+    public void onPageChange() {
         pageForward(false);
     }
 }

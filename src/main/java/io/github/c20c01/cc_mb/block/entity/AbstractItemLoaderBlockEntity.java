@@ -51,11 +51,7 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (!tag.contains(ITEM_TAG)) {
-            if (!isEmpty()) {
-                removeItem();
-            }
-        } else {
+        if (tag.contains(ITEM_TAG)) {
             setItem(ItemStack.of(tag.getCompound(ITEM_TAG)));
         }
     }
