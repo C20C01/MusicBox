@@ -3,7 +3,7 @@ package io.github.c20c01.cc_mb.block.entity;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.data.sync.NoteGridDataManager;
+import io.github.c20c01.cc_mb.data.NoteGridDataManager;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -23,8 +24,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements MusicBoxPlayer.Listener {
     public static final String NOTE_GRID = "note_grid";
@@ -55,9 +59,39 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        CompoundTag tag = pkt.getTag();
+        if (tag != null) {
+            handleUpdateTag(tag);
+        }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        PLAYER.loadUpdateTag(tag);
+        if (tag.contains("note_grid_hash")) {
+            NoteGridDataManager.getInstance().getNoteGridData(tag.getInt("note_grid_hash"), getBlockPos(), PLAYER::setData);
+        } else {
+            NoteGridData data = PLAYER.getData();
+            if (data != null) {
+                NoteGridDataManager.getInstance().markRemovable(data.hashCode());
+                PLAYER.setData(null);
+            }
+        }
+    }
+
+    public Optional<NoteGridData> getPlayerData() {
+        return Optional.ofNullable(PLAYER.getData());
+    }
+
+    @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        PLAYER.saveAdditional(tag);
+        PLAYER.saveUpdateTag(tag);
+        NoteGridData data = PLAYER.getData();
+        if (data != null) {
+            tag.putInt("note_grid_hash", data.hashCode());
+        }
         return tag;
     }
 
@@ -68,11 +102,17 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
+    public void setRemoved() {
+        super.setRemoved();
+        if (PLAYER.getData() != null) {
+            NoteGridDataManager.getInstance().markRemovable(PLAYER.getData().hashCode());
+        }
+    }
+
+    @Override
     protected void loadItem(ItemStack noteGrid) {
-        NoteGridData noteGridData = NoteGridData.ofNoteGrid(noteGrid);
-        int hash = noteGridData.hashCode();
-        NoteGridDataManager.INSTANCE.put(hash, noteGridData);
-        PLAYER.dataHolder.set(hash, noteGridData);
+        PLAYER.setData(NoteGridData.ofNoteGrid(noteGrid));
         if (level != null) {
             BlockUtils.changeProperty(level, getBlockPos(), getBlockState(), MusicBoxBlock.HAS_NOTE_GRID, true);
         }

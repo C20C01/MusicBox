@@ -4,8 +4,6 @@ import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.data.sync.DataHolder;
-import io.github.c20c01.cc_mb.data.sync.NoteGridDataManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -22,9 +20,12 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import javax.annotation.Nullable;
+
 public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     private final Listener LISTENER;
-    public DataHolder<NoteGridData> dataHolder = DataHolder.empty();
+    @Nullable
+    private NoteGridData data;
     private Level level;
     private BlockPos blockPos;
     private BlockState blockState;
@@ -67,11 +68,6 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         tickSinceLastBeat = tag.getByte("interval");
         beatNumber = tag.getByte("beat");
         pageNumber = tag.getByte("page");
-        if (tag.contains("note_grid_hash")) {
-            dataHolder = NoteGridDataManager.INSTANCE.get(tag.getInt("note_grid_hash"));
-        } else {
-            dataHolder.clear();
-        }
     }
 
     public void saveAdditional(CompoundTag tag) {
@@ -79,7 +75,32 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         tag.putByte("interval", tickSinceLastBeat);
         tag.putByte("beat", beatNumber);
         tag.putByte("page", pageNumber);
-        dataHolder.getHashCode().ifPresent(hash -> tag.putInt("note_grid_hash", hash));
+    }
+
+    public void loadUpdateTag(CompoundTag tag) {
+        byte[] data = tag.getByteArray("player_data");
+        setTickPerBeat(data[0]);
+        tickSinceLastBeat = data[1];
+        beatNumber = data[2];
+        pageNumber = data[3];
+    }
+
+    public void saveUpdateTag(CompoundTag tag) {
+        byte[] data = new byte[4];
+        data[0] = getTickPerBeat();
+        data[1] = tickSinceLastBeat;
+        data[2] = beatNumber;
+        data[3] = pageNumber;
+        tag.putByteArray("player_data", data);
+    }
+
+    @Nullable
+    public NoteGridData getData() {
+        return this.data;
+    }
+
+    public void setData(@Nullable NoteGridData data) {
+        this.data = data;
     }
 
     /**
@@ -101,6 +122,9 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         }
     }
 
+    /**
+     * Update the sound and seed, and return whether the player should play the beat.
+     */
     private boolean shouldPlay(Level level, BlockPos blockPos, BlockState blockState) {
         if (currentBeat.isEmpty()) {
             return false;
@@ -126,7 +150,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     @Override
     public void reset() {
         super.reset();
-        dataHolder.clear();
+        data = null;
     }
 
     @Override
@@ -138,12 +162,16 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     @Override
     protected void updateCurrentBeat() {
-        dataHolder.get().ifPresentOrElse(data -> currentBeat = data.getPage(pageNumber).readBeat(beatNumber), () -> currentBeat = Beat.EMPTY_BEAT);
+        if (data == null) {
+            currentBeat = Beat.EMPTY_BEAT;
+        } else {
+            currentBeat = data.getPage(pageNumber).readBeat(beatNumber);
+        }
     }
 
     @Override
     protected byte dataSize() {
-        return dataHolder.get().map(NoteGridData::size).orElse((byte) 1);
+        return data == null ? 0 : data.size();
     }
 
     @Override
