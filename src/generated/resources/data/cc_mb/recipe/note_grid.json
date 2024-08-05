@@ -12,7 +12,7 @@
     "PPP"
   ],
   "result": {
-    "item": "cc_mb:note_grid"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "cc_mb:note_grid"
+  }
 }

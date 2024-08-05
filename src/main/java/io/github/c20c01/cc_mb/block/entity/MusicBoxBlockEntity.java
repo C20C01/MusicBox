@@ -9,7 +9,9 @@ import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Position;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -24,8 +26,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -47,27 +49,27 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        super.loadAdditional(tag, lookupProvider);
         PLAYER.load(tag);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        super.saveAdditional(tag, lookupProvider);
         PLAYER.saveAdditional(tag);
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         CompoundTag tag = pkt.getTag();
-        if (tag != null) {
-            handleUpdateTag(tag);
+        if (!tag.isEmpty()) {
+            handleUpdateTag(tag, lookupProvider);
         }
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
         PLAYER.loadUpdateTag(tag);
         if (tag.contains("note_grid_hash")) {
             NoteGridDataManager.getInstance().getNoteGridData(tag.getInt("note_grid_hash"), getBlockPos(), PLAYER::setData);
@@ -85,7 +87,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         PLAYER.saveUpdateTag(tag);
         NoteGridData data = PLAYER.getData();
@@ -207,8 +209,8 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
             return false;
         }
         ItemStack noteGrid = removeItem();
-        if (itemStack.hasCustomHoverName()) {
-            noteGrid.setHoverName(itemStack.getHoverName());
+        if (itemStack.has(DataComponents.CUSTOM_NAME)) {
+            noteGrid.set(DataComponents.CUSTOM_NAME, itemStack.getHoverName());
         }
         NoteGridUtils.join(NoteGridData.ofNoteGrid(noteGrid), newData).saveToNoteGrid(noteGrid);
         setItem(noteGrid);

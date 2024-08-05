@@ -1,128 +1,125 @@
 package io.github.c20c01.cc_mb.data;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.util.CollectionUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.WritableBookContent;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class NoteGridData {
-    public static final String DATA_KEY = "notes";
     public static final byte MAX_SIZE = 64;
-    private ArrayList<Page> pages = new ArrayList<>(List.of(new Page()));
+    public static final Codec<NoteGridData> CODEC = new PrimitiveCodec<>() {
+        @Override
+        public <T> DataResult<NoteGridData> read(DynamicOps<T> ops, T input) {
+            return ops.getByteBuffer(input).map(byteBuffer -> NoteGridData.ofBytes(byteBuffer.array()));
+        }
 
-    public static NoteGridData ofPages(Page... pages) {
-        return new NoteGridData().loadPages(pages);
+        @Override
+        public <T> T write(DynamicOps<T> ops, NoteGridData value) {
+            return ops.createByteList(ByteBuffer.wrap(ByteBuffer.wrap(new Encoder().encode(value)).array()));
+        }
+    };
+    public static final StreamCodec<ByteBuf, NoteGridData> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public @Nonnull NoteGridData decode(@Nonnull ByteBuf buffer) {
+            return new Decoder().decode(ByteBufCodecs.BYTE_ARRAY.decode(buffer));
+        }
+
+        @Override
+        public void encode(@Nonnull ByteBuf buffer, @Nonnull NoteGridData value) {
+            ByteBufCodecs.BYTE_ARRAY.encode(buffer, new Encoder().encode(value));
+        }
+    };
+    private final ArrayList<Page> PAGES;
+
+    private NoteGridData() {
+        this.PAGES = new ArrayList<>(List.of(new Page()));
     }
 
-    public static NoteGridData ofBytes(byte[] data) {
-        return new NoteGridData().loadPages(new Decoder().decode(data));
+    private NoteGridData(ArrayList<Page> pages) {
+        this.PAGES = pages;
+        this.PAGES.replaceAll(page -> page == null ? new Page() : page);
+    }
+
+    public static NoteGridData empty() {
+        return new NoteGridData();
+    }
+
+    public static NoteGridData ofBytes(byte[] bytes) {
+        return new Decoder().decode(bytes);
+    }
+
+    public static NoteGridData ofPages(Page... pages) {
+        return new NoteGridData(new ArrayList<>(Arrays.asList(pages)));
     }
 
     public static NoteGridData ofBook(ItemStack book) {
-        return new NoteGridData().loadBook(book);
+        Stream<String> codes = book.getOrDefault(DataComponents.WRITABLE_BOOK_CONTENT, WritableBookContent.EMPTY).getPages(true);
+        ArrayList<Page> pages = new ArrayList<>();
+        codes.limit(MAX_SIZE).forEach(code -> pages.add(Page.ofCode(code)));
+        return new NoteGridData(pages);
     }
 
     public static NoteGridData ofNoteGrid(ItemStack noteGrid) {
-        return new NoteGridData().loadNoteGrid(noteGrid);
-    }
-
-    private NoteGridData loadNoteGrid(ItemStack noteGrid) {
-        CompoundTag tag = noteGrid.getTag();
-        if (tag == null || !tag.contains(DATA_KEY)) {
-            return this;
-        }
-        return loadTag((ByteArrayTag) tag.get(DATA_KEY));
-    }
-
-    public NoteGridData loadBook(ItemStack book) {
-        CompoundTag tag = book.getTag();
-        if (tag == null) {
-            return this;
-        }
-        ListTag codeOfPages = tag.getList("pages", Tag.TAG_STRING);
-        if (codeOfPages.isEmpty()) {
-            return this;
-        }
-        int size = Math.min(codeOfPages.size(), MAX_SIZE);
-        Page[] pages = new Page[size];
-        for (int i = 0; i < size; i++) {
-            pages[i] = Page.ofCode(codeOfPages.getString(i));
-        }
-        return loadPages(pages);
-    }
-
-    public NoteGridData loadTag(@Nullable ByteArrayTag noteGridTag) {
-        if (noteGridTag == null) {
-            return this;
-        }
-        byte[] data = noteGridTag.getAsByteArray();
-        return loadPages(new Decoder().decode(data));
+        return noteGrid.getOrDefault(CCMain.NOTE_GRID_DATA.get(), empty());
     }
 
     public NoteGridData deepCopy() {
-        return NoteGridUtils.join(NoteGridData.ofPages(new Page[size()]), this);
-    }
-
-    public ByteArrayTag toTag() {
-        return new ByteArrayTag(new Encoder().encode(pages));
-    }
-
-    public ItemStack toNoteGrid() {
-        return saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
+        return NoteGridUtils.join(NoteGridData.ofPages(new Page[this.size()]), this);
     }
 
     public byte[] toBytes() {
-        return CollectionUtils.toArray(new Encoder().encode(pages));
+        return new Encoder().encode(this);
     }
 
     public ItemStack saveToNoteGrid(ItemStack noteGrid) {
-        if (noteGrid.is(CCMain.NOTE_GRID_ITEM.get())) {
-            CompoundTag tag = noteGrid.getOrCreateTag();
-            tag.put(DATA_KEY, toTag());
-        }
+        noteGrid.set(CCMain.NOTE_GRID_DATA.get(), this);
         return noteGrid;
     }
 
     @Override
     public String toString() {
-        return "NoteGrid:" + pages;
+        return "NoteGrid:" + PAGES;
     }
 
     @Override
     public int hashCode() {
-        return pages.hashCode();
+        return PAGES.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NoteGridData noteGridData) {
+            return PAGES.equals(noteGridData.PAGES);
+        }
+        return super.equals(obj);
     }
 
     public Page getPage(byte index) {
-        return pages.get(index);
-    }
-
-    public byte size() {
-        return (byte) pages.size();
+        return PAGES.get(index);
     }
 
     public ArrayList<Page> getPages() {
-        return pages;
+        return PAGES;
     }
 
-    private NoteGridData loadPages(Page[] pages) {
-        return loadPages(Arrays.asList(pages));
-    }
-
-    private NoteGridData loadPages(Collection<Page> pages) {
-        this.pages = new ArrayList<>(pages);
-        this.pages.replaceAll(page -> page == null ? new Page() : page);
-        return this;
+    public byte size() {
+        return (byte) PAGES.size();
     }
 
     private static class Decoder {
@@ -130,7 +127,7 @@ public class NoteGridData {
         final ArrayList<Beat> BEATS = new ArrayList<>(Page.BEATS_SIZE);
         final ArrayList<Byte> NOTES = new ArrayList<>(5);
 
-        ArrayList<Page> decode(byte[] data) {
+        NoteGridData decode(byte[] data) {
             for (byte b : data) {
                 if (b > 0) {
                     handleNote(b);
@@ -138,7 +135,7 @@ public class NoteGridData {
                     handleFlag(b);
                 }
             }
-            return PAGES;
+            return new NoteGridData(PAGES);
         }
 
         void handleFlag(byte b) {
@@ -177,8 +174,8 @@ public class NoteGridData {
         final ArrayList<Byte> DATA = new ArrayList<>(1024);
         byte emptyBeats = 0;
 
-        ArrayList<Byte> encode(ArrayList<Page> pages) {
-            for (Page page : pages) {
+        byte[] encode(NoteGridData data) {
+            for (Page page : data.PAGES) {
                 for (byte i = 0; i < Page.BEATS_SIZE; i++) {
                     if (page.isEmptyBeat(i)) {
                         emptyBeats++;
@@ -189,7 +186,7 @@ public class NoteGridData {
                 }
                 finishPage();
             }
-            return DATA;
+            return CollectionUtils.toArray(DATA);
         }
 
         void addBeat(Beat beat) {

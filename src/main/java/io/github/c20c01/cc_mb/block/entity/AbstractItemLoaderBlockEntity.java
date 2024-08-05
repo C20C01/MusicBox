@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -49,18 +50,18 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     abstract public boolean canPlaceItem(ItemStack pStack);
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         if (tag.contains(ITEM_TAG)) {
-            setItem(ItemStack.of(tag.getCompound(ITEM_TAG)));
+            setItem(ItemStack.parseOptional(registries, tag.getCompound(ITEM_TAG)));
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         if (!item.isEmpty()) {
-            tag.put(ITEM_TAG, item.save(new CompoundTag()));
+            tag.put(ITEM_TAG, item.save(registries));
         }
     }
 

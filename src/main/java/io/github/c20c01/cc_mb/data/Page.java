@@ -65,4 +65,12 @@ public class Page {
     public int hashCode() {
         return Arrays.hashCode(BEATS);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Page page) {
+            return Arrays.equals(BEATS, page.BEATS);
+        }
+        return super.equals(obj);
+    }
 }

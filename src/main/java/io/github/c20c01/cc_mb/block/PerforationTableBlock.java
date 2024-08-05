@@ -4,7 +4,6 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
@@ -23,19 +22,17 @@ public class PerforationTableBlock extends Block {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult blockHitResult) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
-            player.openMenu(blockState.getMenuProvider(level, blockPos));
+            player.openMenu(state.getMenuProvider(level, pos));
             return InteractionResult.CONSUME;
         }
     }
 
     @Override
     @Nullable
-    @SuppressWarnings("deprecation")
     public MenuProvider getMenuProvider(BlockState blockState, Level level, BlockPos blockPos) {
         return new SimpleMenuProvider((containerId, inventory, player) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.translatable(CCMain.PERFORATION_TABLE_BLOCK.get().getDescriptionId()));
     }

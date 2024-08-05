@@ -7,14 +7,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
 /**
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
- * And the {@link #onClick(double, double) button} to trigger note grid handling.
+ * And the {@link #onClick(double, double, int) button} to trigger note grid handling.
  */
 @OnlyIn(Dist.CLIENT)
 public class NoteGridWidget extends AbstractWidget {
@@ -73,8 +73,8 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double x, double y) {
-        super.onClick(x, y);
+    public void onClick(double x, double y, int button) {
+        super.onClick(x, y, button);
         switch (SCREEN.getMenu().mode) {
             case PUNCH, CHECK -> SCREEN.openNoteGridScreen();
             case CONNECT -> GuiUtils.sendCodeToMenu(MENU.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);

@@ -152,4 +152,12 @@ public class Beat {
     public int hashCode() {
         return Arrays.hashCode(notes);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Beat beat) {
+            return Arrays.equals(notes, beat.notes);
+        }
+        return super.equals(obj);
+    }
 }

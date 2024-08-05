@@ -16,8 +16,8 @@ import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
@@ -189,7 +189,6 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
 
     @Override
     public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderNoteGrid(graphics);
     }
@@ -275,9 +274,9 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
-    public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (playing) {
-            if (pDelta > 0) {
+            if (scrollY > 0) {
                 // roll up: speed up
                 PLAYER.setTickPerBeat(PLAYER.getTickPerBeat() - 1);
             } else {
@@ -285,7 +284,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
                 PLAYER.setTickPerBeat(PLAYER.getTickPerBeat() + 1);
             }
         } else {
-            if (pDelta > 0) {
+            if (scrollY > 0) {
                 // roll up: page back
                 pageBack();
             } else {

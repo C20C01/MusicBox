@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "H": {
-      "tag": "minecraft:noteblock_top_instruments"
+    "N": {
+      "item": "cc_mb:note_grid"
     },
     "P": {
       "tag": "minecraft:planks"
     }
   },
   "pattern": [
-    "PPP",
-    "PHP",
-    "PPP"
+    "NN",
+    "PP",
+    "PP"
   ],
   "result": {
-    "item": "cc_mb:sound_box_block"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "cc_mb:perforation_table_block"
+  }
 }

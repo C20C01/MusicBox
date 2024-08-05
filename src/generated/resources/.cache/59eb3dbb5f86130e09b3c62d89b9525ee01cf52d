@@ -1,4 +1,4 @@
-// 1.20.1	2024-07-13T12:19:41.5170457	Loot Tables
-ebf2365665c8a860bf3613acec528c444425fffd data/cc_mb/loot_tables/blocks/music_box_block.json
-af471eec0c6c028ad0b7b9f60212a96480ab82fe data/cc_mb/loot_tables/blocks/perforation_table_block.json
-1d0c507a8f880ec72768f2a1ead93e5e3468dadc data/cc_mb/loot_tables/blocks/sound_box_block.json
+// 1.21	2024-08-06T01:11:33.1948317	Loot Tables
+ebf2365665c8a860bf3613acec528c444425fffd data/cc_mb/loot_table/blocks/music_box_block.json
+af471eec0c6c028ad0b7b9f60212a96480ab82fe data/cc_mb/loot_table/blocks/perforation_table_block.json
+1d0c507a8f880ec72768f2a1ead93e5e3468dadc data/cc_mb/loot_table/blocks/sound_box_block.json

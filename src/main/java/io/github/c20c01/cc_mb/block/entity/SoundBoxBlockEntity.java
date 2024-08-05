@@ -6,6 +6,7 @@ import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -61,9 +62,10 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
 
     @Override
     protected void loadItem(ItemStack soundShard) {
-        SoundShard.Info info = SoundShard.Info.ofItemStack(soundShard);
-        soundEvent = info.sound();
-        soundSeed = info.seed();
+        SoundShard.SoundInfo.ofItemStack(soundShard).ifPresent(soundInfo -> {
+            soundEvent = soundInfo.soundEvent();
+            soundSeed = soundInfo.soundSeed().orElse(null);
+        });
         if (level != null) {
             BlockUtils.changeProperty(level, worldPosition, getBlockState(), SoundBoxBlock.HAS_SOUND_SHARD, true);
         }
@@ -85,8 +87,8 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 
     @Override

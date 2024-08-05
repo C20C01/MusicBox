@@ -7,31 +7,33 @@ import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.InstrumentBlocksHelper;
+import io.github.c20c01.cc_mb.util.player.TickPerBeat;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 @Mod(CCMain.ID)
 public class CCMain {
@@ -67,50 +69,59 @@ public class CCMain {
 
     // network
     public static final String NETWORK_VERSION = "1";
-    public static final ResourceLocation CHANNEL_ID = new ResourceLocation(ID, "network");
 
     // register
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, ID);
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ID);
-    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, ID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(ID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ID);
+    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ID);
+    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
 
+    // component
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<NoteGridData>> NOTE_GRID_DATA;
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Byte>> TICK_PER_BEAT;
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SoundShard.SoundInfo>> SOUND_INFO;
+
     // item
-    public static final RegistryObject<NoteGrid> NOTE_GRID_ITEM;
-    public static final RegistryObject<Awl> AWL_ITEM;
-    public static final RegistryObject<Item> SOUND_SHARD_ITEM;
+    public static final DeferredItem<NoteGrid> NOTE_GRID_ITEM;
+    public static final DeferredItem<Awl> AWL_ITEM;
+    public static final DeferredItem<Item> SOUND_SHARD_ITEM;
 
     // block
-    public static final RegistryObject<MusicBoxBlock> MUSIC_BOX_BLOCK;
-    public static final RegistryObject<BlockItem> MUSIC_BOX_BLOCK_ITEM;
-    public static final RegistryObject<BlockEntityType<MusicBoxBlockEntity>> MUSIC_BOX_BLOCK_ENTITY;
+    public static final DeferredBlock<MusicBoxBlock> MUSIC_BOX_BLOCK;
+    public static final DeferredItem<BlockItem> MUSIC_BOX_BLOCK_ITEM;
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MusicBoxBlockEntity>> MUSIC_BOX_BLOCK_ENTITY;
 
-    public static final RegistryObject<PerforationTableBlock> PERFORATION_TABLE_BLOCK;
-    public static final RegistryObject<BlockItem> PERFORATION_TABLE_BLOCK_ITEM;
+    public static final DeferredBlock<PerforationTableBlock> PERFORATION_TABLE_BLOCK;
+    public static final DeferredItem<BlockItem> PERFORATION_TABLE_BLOCK_ITEM;
 
-    public static final RegistryObject<SoundBoxBlock> SOUND_BOX_BLOCK;
-    public static final RegistryObject<BlockItem> SOUND_BOX_BLOCK_ITEM;
-    public static final RegistryObject<BlockEntityType<SoundBoxBlockEntity>> SOUND_BOX_BLOCK_ENTITY;
+    public static final DeferredBlock<SoundBoxBlock> SOUND_BOX_BLOCK;
+    public static final DeferredItem<BlockItem> SOUND_BOX_BLOCK_ITEM;
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SoundBoxBlockEntity>> SOUND_BOX_BLOCK_ENTITY;
 
     // menu
-    public static final RegistryObject<MenuType<PerforationTableMenu>> PERFORATION_TABLE_MENU;
+    public static final DeferredHolder<MenuType<?>, MenuType<PerforationTableMenu>> PERFORATION_TABLE_MENU;
 
 
     static {
-        NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1)));
-        AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024)));
+        NOTE_GRID_DATA = DATA_COMPONENTS.registerComponentType("notes", builder -> builder.persistent(NoteGridData.CODEC).networkSynchronized(NoteGridData.STREAM_CODEC).cacheEncoding());
+        TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(TickPerBeat.STREAM_CODEC).cacheEncoding());
+        SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
+
+        NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1).component(NOTE_GRID_DATA.get(), NoteGridData.empty())));
+        AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024).component(TICK_PER_BEAT.get(), TickPerBeat.DEFAULT)));
         SOUND_SHARD_ITEM = ITEMS.register("sound_shard", () -> new SoundShard(new Item.Properties().stacksTo(1)));
 
         MUSIC_BOX_BLOCK = BLOCKS.register("music_box_block", () -> new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
-        MUSIC_BOX_BLOCK_ITEM = ITEMS.register("music_box_block", () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
+        MUSIC_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("music_box_block", MUSIC_BOX_BLOCK);
         MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("music_box_block", () -> BlockEntityType.Builder.of(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
 
         PERFORATION_TABLE_BLOCK = BLOCKS.register("perforation_table_block", () -> new PerforationTableBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava()));
-        PERFORATION_TABLE_BLOCK_ITEM = ITEMS.register("perforation_table_block", () -> new BlockItem(PERFORATION_TABLE_BLOCK.get(), new Item.Properties()));
+        PERFORATION_TABLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("perforation_table_block", PERFORATION_TABLE_BLOCK);
 
         SOUND_BOX_BLOCK = BLOCKS.register("sound_box_block", () -> new SoundBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
-        SOUND_BOX_BLOCK_ITEM = ITEMS.register("sound_box_block", () -> new BlockItem(SOUND_BOX_BLOCK.get(), new Item.Properties()));
+        SOUND_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("sound_box_block", SOUND_BOX_BLOCK);
         SOUND_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("sound_box_block", () -> BlockEntityType.Builder.of(SoundBoxBlockEntity::new, SOUND_BOX_BLOCK.get()).build(DSL.remainderType()));
 
         PERFORATION_TABLE_MENU = MENU_TYPES.register("perforation_table_menu", () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
@@ -134,8 +145,8 @@ public class CCMain {
         );
     }
 
-    public CCMain() {
-        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public CCMain(IEventBus modEventBus) {
+        DATA_COMPONENTS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCKS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);

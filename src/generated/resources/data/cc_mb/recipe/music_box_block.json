@@ -15,7 +15,7 @@
     "PPP"
   ],
   "result": {
-    "item": "cc_mb:music_box_block"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "cc_mb:music_box_block"
+  }
 }

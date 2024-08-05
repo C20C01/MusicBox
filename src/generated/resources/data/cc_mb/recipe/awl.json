@@ -3,13 +3,14 @@
   "category": "equipment",
   "ingredients": [
     {
-      "item": "minecraft:gold_ingot"
+      "item": "minecraft:iron_ingot"
     },
     {
-      "item": "minecraft:echo_shard"
+      "item": "minecraft:iron_nugget"
     }
   ],
   "result": {
-    "item": "cc_mb:sound_shard"
+    "count": 1,
+    "id": "cc_mb:awl"
   }
 }

@@ -1,18 +1,20 @@
 package io.github.c20c01.cc_mb.data;
 
-import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import net.minecraft.core.BlockPos;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.LinkedList;
 import java.util.function.Consumer;
 
 /**
  * Request and cache note grid data on the client side.
+ * <p>
+ * Use hash code to identify the data.
  */
 @OnlyIn(Dist.CLIENT)
 public class NoteGridDataManager {
@@ -56,7 +58,7 @@ public class NoteGridDataManager {
                 LinkedList<Consumer<NoteGridData>> callbacks = new LinkedList<>();
                 callbacks.add(callback);
                 CALLBACKS.put(hash, callbacks);
-                CCNetwork.CHANNEL.sendToServer(new NoteGridDataPacket.ToServer(hash, blockPos));
+                PacketDistributor.sendToServer(new NoteGridDataPacket.Request(hash, blockPos));
             }
         }
     }

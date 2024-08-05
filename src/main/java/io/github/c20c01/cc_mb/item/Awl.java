@@ -4,7 +4,6 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,29 +15,22 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 public class Awl extends Item {
-    private static final String TICK_PER_BEAT_KEY = "tick_per_beat";
-
     public Awl(Properties properties) {
         super(properties);
-    }
-
-    public static byte getTickPerBeatTag(CompoundTag tag) {
-        return tag.contains(TICK_PER_BEAT_KEY) ? tag.getByte(TICK_PER_BEAT_KEY) : TickPerBeat.DEFAULT;
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack awl = player.getItemInHand(hand);
-        CompoundTag tag = awl.getOrCreateTag();
-
-        byte nextTickPerBeat = (byte) (getTickPerBeatTag(tag) + (player.isSecondaryUseActive() ? -1 : 1));
-        if (nextTickPerBeat < TickPerBeat.MIN) {
-            nextTickPerBeat = TickPerBeat.MAX;
-        } else if (nextTickPerBeat > TickPerBeat.MAX) {
-            nextTickPerBeat = TickPerBeat.MIN;
+        byte current = awl.getOrDefault(CCMain.TICK_PER_BEAT.get(), TickPerBeat.DEFAULT);
+        byte next = (byte) (current + (player.isSecondaryUseActive() ? -1 : 1));
+        if (next < TickPerBeat.MIN) {
+            next = TickPerBeat.MAX;
+        } else if (next > TickPerBeat.MAX) {
+            next = TickPerBeat.MIN;
         }
-        tag.putByte(TICK_PER_BEAT_KEY, nextTickPerBeat);
-        player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(String.valueOf(nextTickPerBeat)).withStyle(ChatFormatting.GOLD), true);
+        awl.set(CCMain.TICK_PER_BEAT.get(), next);
+        player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD), true);
         return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
     }
 

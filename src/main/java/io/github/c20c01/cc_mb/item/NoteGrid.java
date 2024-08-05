@@ -13,10 +13,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class NoteGrid extends Item {
@@ -30,9 +29,9 @@ public class NoteGrid extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> components, TooltipFlag flag) {
-        super.appendHoverText(itemStack, level, components, flag);
-        components.add(Component.translatable(CCMain.TEXT_PAGE_SIZE, NoteGridData.ofNoteGrid(itemStack).size()).withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        tooltipComponents.add(Component.translatable(CCMain.TEXT_PAGE_SIZE, NoteGridData.ofNoteGrid(stack).size()).withStyle(ChatFormatting.GRAY));
     }
 
     @Override

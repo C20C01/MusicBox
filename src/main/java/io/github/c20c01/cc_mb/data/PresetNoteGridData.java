@@ -2,6 +2,7 @@ package io.github.c20c01.cc_mb.data;
 
 import io.github.c20c01.cc_mb.CCMain;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -39,6 +40,8 @@ public class PresetNoteGridData {
     }
 
     private void add(Component name, NoteGridData data) {
-        NOTE_GRIDS.add(data.toNoteGrid().setHoverName(name));
+        ItemStack itemStack = data.saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
+        itemStack.set(DataComponents.ITEM_NAME, name);
+        NOTE_GRIDS.add(itemStack);
     }
 }

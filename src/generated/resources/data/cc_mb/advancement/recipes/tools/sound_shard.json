@@ -1,13 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_note_grid": {
+    "has_music_box": {
       "conditions": {
         "items": [
           {
-            "items": [
-              "cc_mb:note_grid"
-            ]
+            "items": "cc_mb:music_box_block"
           }
         ]
       },
@@ -15,21 +13,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "cc_mb:perforation_table_block"
+        "recipe": "cc_mb:sound_shard"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_note_grid",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_music_box"
     ]
   ],
   "rewards": {
     "recipes": [
-      "cc_mb:perforation_table_block"
+      "cc_mb:sound_shard"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

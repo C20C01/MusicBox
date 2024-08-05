@@ -1,13 +1,15 @@
 package io.github.c20c01.cc_mb.util;
 
+import com.google.common.collect.Iterables;
 import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +69,9 @@ public class InstrumentBlocksHelper {
         } else {
             hoverName = Component.literal(instrument.getSerializedName());
         }
-        return new ItemStack(block).setHoverName(hoverName);
+        ItemStack itemStack = new ItemStack(block);
+        itemStack.set(DataComponents.CUSTOM_NAME, hoverName);
+        return itemStack;
     }
 
     public static void updateBlockList() {
@@ -85,7 +89,7 @@ public class InstrumentBlocksHelper {
         }
         // There are some instruments not found, iterate all blocks to find them
         LogUtils.getLogger().info("Iterating all blocks for instruments{}", instruments);
-        for (Block block : ForgeRegistries.BLOCKS) {
+        for (Block block : Iterables.transform(CCMain.BLOCKS.getEntries(), DeferredHolder::get)) {
             NoteBlockInstrument instrument = block.defaultBlockState().instrument();
             if (instruments.contains(instrument)) {
                 instruments.remove(instrument);

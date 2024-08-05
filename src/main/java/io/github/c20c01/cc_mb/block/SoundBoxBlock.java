@@ -5,15 +5,15 @@ import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
@@ -79,7 +79,6 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos fromPos, boolean isMoving) {
         boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK.get());
         boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
@@ -101,7 +100,6 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
         if (!level.getBlockState(blockPos).getValue(UNDER_MUSIC_BOX)) {
             SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
@@ -110,64 +108,61 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public InteractionResult use(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        ItemStack itemStack = player.getItemInHand(hand);
+    protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         SoundBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity be ? be : null;
         if (blockEntity == null) {
-            return super.use(blockState, level, blockPos, player, hand, hitResult);
+            return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
         }
 
         if (blockState.getValue(HAS_SOUND_SHARD)) {
             if (player.isSecondaryUseActive()) {
                 // take out sound shard
                 if (level.isClientSide) {
-                    return InteractionResult.SUCCESS;
+                    return ItemInteractionResult.SUCCESS;
                 }
                 ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
-                return InteractionResult.CONSUME;
+                return ItemInteractionResult.CONSUME;
             }
             if (!blockState.getValue(UNDER_MUSIC_BOX)) {
                 // play sound
                 if (level.isClientSide) {
-                    return InteractionResult.SUCCESS;
+                    return ItemInteractionResult.SUCCESS;
                 }
                 SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
-                return InteractionResult.CONSUME;
+                return ItemInteractionResult.CONSUME;
             }
         } else {
             if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
                 if (blockEntity.canPlaceItem(itemStack)) {
                     // put in sound shard
                     if (level.isClientSide) {
-                        return InteractionResult.SUCCESS;
+                        return ItemInteractionResult.SUCCESS;
                     }
                     blockEntity.setItem(itemStack);
                     itemStack.shrink(1);// creative mode also need to shrink
                     SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
-                    return InteractionResult.CONSUME;
+                    return ItemInteractionResult.CONSUME;
                 } else {
                     // show message
                     player.displayClientMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED), true);
-                    return InteractionResult.sidedSuccess(level.isClientSide);
+                    return ItemInteractionResult.sidedSuccess(level.isClientSide);
                 }
             }
         }
 
-        return super.use(blockState, level, blockPos, player, hand, hitResult);
+        return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
     }
 
     @Override
     public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
         super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
-        CompoundTag compoundTag = BlockItem.getBlockEntityData(itemStack);
-        if (compoundTag != null && compoundTag.contains(SoundBoxBlockEntity.SOUND_SHARD)) {
+        CustomData customdata = itemStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        if (customdata.contains(SoundBoxBlockEntity.SOUND_SHARD)) {
             BlockUtils.changeProperty(level, blockPos, blockState, HAS_SOUND_SHARD, true, UPDATE_CLIENTS);
         }
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState1, boolean b) {
         if (!blockState.is(blockState1.getBlock())) {
             if (level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {

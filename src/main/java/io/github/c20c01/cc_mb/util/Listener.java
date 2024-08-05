@@ -1,11 +1,11 @@
 package io.github.c20c01.cc_mb.util;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import javax.annotation.Nullable;
 
@@ -19,7 +19,7 @@ public class Listener {
     private ResourceLocation soundLocation = null;
 
     public static void start() {
-        MinecraftForge.EVENT_BUS.register(LISTENER);
+        NeoForge.EVENT_BUS.register(LISTENER);
     }
 
     @Nullable
@@ -34,7 +34,7 @@ public class Listener {
 
     @Nullable
     public static ResourceLocation getFinalResult() {
-        MinecraftForge.EVENT_BUS.unregister(LISTENER);
+        NeoForge.EVENT_BUS.unregister(LISTENER);
         ResourceLocation result = LISTENER.soundLocation;
         LISTENER.soundLocation = null;
         return result;

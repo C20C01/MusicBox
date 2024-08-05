@@ -1,13 +1,13 @@
-// 1.20.1	2024-07-13T12:19:41.5180431	Recipes
-2f6ba5f6086d0c5e44f142ee2c5cba9799987137 data/cc_mb/advancements/recipes/misc/music_box_block.json
-2a8ee22ab14e752dc2c8e737979ef7525dd6152f data/cc_mb/advancements/recipes/misc/note_grid.json
-37237ef078f06fddf806472850668cbaa81fe366 data/cc_mb/advancements/recipes/misc/perforation_table_block.json
-00627c2c66ab5af3ab77954610644a43f70db7f8 data/cc_mb/advancements/recipes/misc/sound_box_block.json
-1b041a355994ddb7f97e8bef2348d048e29a2bae data/cc_mb/advancements/recipes/tools/awl.json
-363364b8ca97262894fd43ec5d194d0216300b3f data/cc_mb/advancements/recipes/tools/sound_shard.json
-87c3eab9861e87d46af56c5fa11bdda33b56adde data/cc_mb/recipes/awl.json
-368b8b802bed480ce9071ffeb1e9afe4a82cda46 data/cc_mb/recipes/music_box_block.json
-2340833ff162f3e49066303443e25d201a61650d data/cc_mb/recipes/note_grid.json
-8c7eb75e905e6dd1f55ebd7672cbc77eb2551af7 data/cc_mb/recipes/perforation_table_block.json
-24cdf50cdc278d4c805863de9cd03d6127055c57 data/cc_mb/recipes/sound_box_block.json
-6e7d8104feea07703e14d3da1ade2609b0165432 data/cc_mb/recipes/sound_shard.json
+// 1.21	2024-08-06T01:11:33.1948317	Recipes
+d3b1028f0e5fde74e4b35df8999a85e8e13cca7c data/cc_mb/advancement/recipes/misc/music_box_block.json
+8c924bf8c229b00a351dedd44402422d479f03c7 data/cc_mb/advancement/recipes/misc/note_grid.json
+0d81a355cdb0e44ef57391ab1e7fab34a1b9c16a data/cc_mb/advancement/recipes/misc/perforation_table_block.json
+68c6b9943f3c795f7f1573251f58b7eee54e3768 data/cc_mb/advancement/recipes/misc/sound_box_block.json
+f312b9cfdbd530528cfc2caf6f47cc3010b60e6a data/cc_mb/advancement/recipes/tools/awl.json
+c0ab9ddb5f55ac60c28890b4c9323fb6ccc46a2b data/cc_mb/advancement/recipes/tools/sound_shard.json
+0a3b9372f81722f279b50e1cc4e948cadd7ad4cb data/cc_mb/recipe/awl.json
+8e177475e0bc3662b48ef6819769045937b8d446 data/cc_mb/recipe/music_box_block.json
+5e3a3757dbf209e568102c6c7e0894359f54ef5d data/cc_mb/recipe/note_grid.json
+68bc4dcc3267b53fd60ffcb622883480c2a04353 data/cc_mb/recipe/perforation_table_block.json
+ce5d4a80be2ef4d9ae9eec03407aa7fd521fbcf8 data/cc_mb/recipe/sound_box_block.json
+2d30bb5b73091e0d34397b40f6c681baff56aa5b data/cc_mb/recipe/sound_shard.json

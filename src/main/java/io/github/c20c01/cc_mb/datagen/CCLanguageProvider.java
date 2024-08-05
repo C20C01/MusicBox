@@ -2,12 +2,12 @@ package io.github.c20c01.cc_mb.datagen;
 
 import io.github.c20c01.cc_mb.CCMain;
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.data.LanguageProvider;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-@Mod.EventBusSubscriber(modid = CCMain.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = CCMain.ID, bus = EventBusSubscriber.Bus.MOD)
 public class CCLanguageProvider extends LanguageProvider {
     private static final String EN_US = "en_us";
     private static final String ZH_CN = "zh_cn";

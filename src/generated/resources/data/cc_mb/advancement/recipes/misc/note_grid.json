@@ -1,13 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_note_grid": {
+    "has_paper": {
       "conditions": {
         "items": [
           {
-            "items": [
-              "cc_mb:note_grid"
-            ]
+            "items": "minecraft:paper"
           }
         ]
       },
@@ -15,21 +13,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "cc_mb:awl"
+        "recipe": "cc_mb:note_grid"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_note_grid",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_paper"
     ]
   ],
   "rewards": {
     "recipes": [
-      "cc_mb:awl"
+      "cc_mb:note_grid"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

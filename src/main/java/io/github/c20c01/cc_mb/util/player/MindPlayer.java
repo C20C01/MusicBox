@@ -10,8 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * A player that plays music in the player's mind.
@@ -62,15 +62,18 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         ItemStack offHand = player.getOffhandItem();
         ItemStack soundShard = mainHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? mainHand : offHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? offHand : ItemStack.EMPTY;
 
-        // Load the sound event and seed from the sound shard
-        SoundShard.Info info = SoundShard.Info.ofItemStack(soundShard);
-        this.sound = info.sound() == null ? SoundEvents.NOTE_BLOCK_HARP : info.sound();
-        if (info.seed() == null) {
-            noSpecificSeed = true;
-        } else {
-            this.seed = info.seed();
-            noSpecificSeed = false;
-        }
+        // Load the sound event and seed from the sound shard.
+        noSpecificSeed = true;
+        sound = SoundEvents.NOTE_BLOCK_HARP;
+        SoundShard.SoundInfo.ofItemStack(soundShard).ifPresent(info -> {
+            sound = info.soundEvent();
+            info.soundSeed().ifPresent(this::setSeed);
+        });
+    }
+
+    private void setSeed(long seed) {
+        this.seed = seed;
+        noSpecificSeed = false;
     }
 
     @Override

@@ -2,40 +2,25 @@ package io.github.c20c01.cc_mb.network;
 
 
 import io.github.c20c01.cc_mb.CCMain;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@Mod.EventBusSubscriber(modid = CCMain.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = CCMain.ID, bus = EventBusSubscriber.Bus.MOD)
 public class CCNetwork {
-    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(CCMain.CHANNEL_ID, () -> CCMain.NETWORK_VERSION, CCMain.NETWORK_VERSION::equals, CCMain.NETWORK_VERSION::equals);
 
     @SubscribeEvent
-    public static void onCommonSetup(FMLCommonSetupEvent event) {
-        int id = -1;// use ++id to get the next id
+    public static void registerPayload(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar(CCMain.NETWORK_VERSION);
+
+        // Request the note grid data from the server.
+        registrar.playToServer(NoteGridDataPacket.Request.TYPE, NoteGridDataPacket.Request.STREAM_CODEC, NoteGridDataPacket.Request::handle);
+
+        // Reply the note grid data to the client.
+        registrar.playToClient(NoteGridDataPacket.Reply.TYPE, NoteGridDataPacket.Reply.STREAM_CODEC, NoteGridDataPacket.Reply::handle);
 
         // Tell the server to update the sound shard with specific sound event name.
-        CHANNEL.messageBuilder(SoundShardPacket.class, ++id, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(SoundShardPacket::encode)
-                .decoder(SoundShardPacket::decode)
-                .consumerMainThread(SoundShardPacket::handleOnServer)
-                .add();
-
-        // Ask the server to send the note grid data with specific hash code.
-        CHANNEL.messageBuilder(NoteGridDataPacket.ToServer.class, ++id, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(NoteGridDataPacket.ToServer::encode)
-                .decoder(NoteGridDataPacket.ToServer::decode)
-                .consumerMainThread(NoteGridDataPacket.ToServer::handleOnServer)
-                .add();
-
-        // Send the note grid data to the client with specific hash code.
-        CHANNEL.messageBuilder(NoteGridDataPacket.ToClient.class, ++id, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(NoteGridDataPacket.ToClient::encode)
-                .decoder(NoteGridDataPacket.ToClient::decode)
-                .consumerMainThread(NoteGridDataPacket.ToClient::handleOnClient)
-                .add();
+        registrar.playToServer(SoundShardUpdatePacket.TYPE, SoundShardUpdatePacket.STREAM_CODEC, SoundShardUpdatePacket::handle);
     }
 }

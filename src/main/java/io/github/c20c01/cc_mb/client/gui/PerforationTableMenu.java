@@ -5,7 +5,7 @@ import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.SlotBuilder;
 import io.github.c20c01.cc_mb.util.punch.PunchDataReceiver;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -147,15 +147,11 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     private void hurtTool(int damage) {
-        ItemStack tool = TOOL_SLOT.getItem();
-        Player player = INVENTORY.player;
-        if (player.getAbilities().instabuild) {
-            return;
-        }
-        if (tool.hurt(damage, player.getRandom(), (ServerPlayer) player)) {
-            tool.shrink(1);
-            ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F));
-        }
+        ACCESS.execute((level, blockPos) ->
+                TOOL_SLOT.getItem().hurtAndBreak(damage, (ServerLevel) level, INVENTORY.player,
+                        item -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F)
+                )
+        );
     }
 
     protected void itemChanged() {
