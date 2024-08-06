@@ -188,6 +188,11 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
+    public void renderBackground(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderTransparentBackground(graphics);
+    }
+
+    @Override
     public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderNoteGrid(graphics);

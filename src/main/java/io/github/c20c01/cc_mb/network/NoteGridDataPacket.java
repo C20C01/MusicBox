@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.network;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
-import io.github.c20c01.cc_mb.data.NoteGridDataManager;
+import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

@@ -148,13 +148,13 @@ public class SoundShard extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        SoundInfo.ofItemStack(stack).ifPresent(info -> info.soundEvent.unwrapKey().ifPresent(key -> {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        SoundInfo.ofItemStack(stack).ifPresent(info -> {
             ChatFormatting color = info.soundSeed.isPresent() ? ChatFormatting.DARK_GREEN : ChatFormatting.GOLD;
             // Display the sound event that saved in the sound shard.
             // Green for the fixed seed, yellow for the random seed.
-            tooltipComponents.add(getSoundEventTitle(key.location()).withStyle(color));
-        }));
-        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+            tooltipComponents.add(getSoundEventTitle(info.soundEvent.value().getLocation()).withStyle(color));
+        });
     }
 
     @Override

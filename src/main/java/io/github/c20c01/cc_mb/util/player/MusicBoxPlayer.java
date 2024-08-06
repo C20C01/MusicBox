@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -101,6 +102,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     public void setData(@Nullable NoteGridData data) {
         this.data = data;
+        this.pageNumber = (byte) Mth.clamp(this.pageNumber, 0, dataSize() - 1);
     }
 
     /**
@@ -171,7 +173,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     @Override
     protected byte dataSize() {
-        return data == null ? 0 : data.size();
+        return data == null ? 1 : data.size();
     }
 
     @Override
