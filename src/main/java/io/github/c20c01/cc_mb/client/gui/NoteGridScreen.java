@@ -306,17 +306,24 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
 
     @Override
     public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-        if (pButton == 0) {
-            tryToPunch();
+        if (super.mouseClicked(pMouseX, pMouseY, pButton)) {
+            return true;
         }
-        tryToPunchWithHelpData();
-        return super.mouseClicked(pMouseX, pMouseY, pButton);
+        if (canEdit) {
+            if (playing) {
+                tryToPunchWithHelpData();
+            } else if (pButton == 0) {
+                tryToPunch();
+            }
+            return true;
+        }
+        return false;
     }
 
     private void tryToPunch() {
-        final byte PAGE = currentPage;
-        if (canEdit && !playing && MOUSE_POS[0] != -1) {
+        if (MOUSE_POS[0] != -1) {
             // punch a note on client and send the punch to server
+            final byte PAGE = currentPage;
             if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
                 PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
                 GuiUtils.playSound(SoundEvents.BOOK_PUT);
@@ -325,13 +332,11 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     private void tryToPunchWithHelpData() {
-        if (canEdit && playing && HELP_DATA != null) {
-            if (!punchWithHelpData() && !punchFail) {
-                // punched at wrong beat, damage the tool as a punishment
-                punchFail = true;
-                GuiUtils.sendCodeToMenu(tableScreen.getMenu().containerId, PerforationTableMenu.CODE_PUNCH_FAIL);
-                GuiUtils.playSound(SoundEvents.VILLAGER_NO);
-            }
+        if (HELP_DATA != null && !punchWithHelpData() && !punchFail) {
+            // punched at wrong beat, damage the tool as a punishment
+            punchFail = true;
+            GuiUtils.sendCodeToMenu(tableScreen.getMenu().containerId, PerforationTableMenu.CODE_PUNCH_FAIL);
+            GuiUtils.playSound(SoundEvents.VILLAGER_NO);
         }
     }
 
@@ -368,7 +373,8 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         for (int i = 0; i < beatsInInterval; i++) {
             if (++beat >= Page.BEATS_SIZE) {
                 beat = 0;
-                if (++page >= MAIN_DATA.size()) {
+                page++;
+                if (page >= HELP_DATA.size() || page >= MAIN_DATA.size()) {
                     return false;
                 }
             }

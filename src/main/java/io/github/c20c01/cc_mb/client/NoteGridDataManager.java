@@ -1,5 +1,6 @@
-package io.github.c20c01.cc_mb.data;
+package io.github.c20c01.cc_mb.client;
 
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;

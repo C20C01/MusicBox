@@ -2,8 +2,8 @@ package io.github.c20c01.cc_mb.block.entity;
 
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
+import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.data.NoteGridDataManager;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
