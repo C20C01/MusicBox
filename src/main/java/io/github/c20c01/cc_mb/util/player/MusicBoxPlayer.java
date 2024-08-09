@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.util.player;
 
+import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.Beat;
@@ -67,7 +68,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         setTickPerBeat(tag.getByte("tick_per_beat"));
         tickSinceLastBeat = tag.getByte("interval");
         beatNumber = tag.getByte("beat");
-        pageNumber = tag.getByte("page");
+        setPageNumber(tag.getByte("page"));
     }
 
     public void saveAdditional(CompoundTag tag) {
@@ -82,7 +83,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         setTickPerBeat(data[0]);
         tickSinceLastBeat = data[1];
         beatNumber = data[2];
-        pageNumber = data[3];
+        setPageNumber(data[3]);
     }
 
     public void saveUpdateTag(CompoundTag tag) {
@@ -101,6 +102,16 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     public void setData(@Nullable NoteGridData data) {
         this.data = data;
+        setPageNumber(pageNumber);
+    }
+
+    private void setPageNumber(byte pageNumber) {
+        if (pageNumber >= dataSize()) {
+            this.pageNumber = 0;
+            LogUtils.getLogger().warn("Page number is out of range. Is the data changed?");
+        } else {
+            this.pageNumber = pageNumber;
+        }
     }
 
     /**

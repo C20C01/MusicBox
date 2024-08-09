@@ -10,7 +10,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = mod_id
+    archivesName = "forge-${project.minecraft_version}-${project.mod_id}"
     libsDirectory = layout.buildDirectory.dir("libs/Forge-${project.minecraft_version}")
 }
 
