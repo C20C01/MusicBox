@@ -30,7 +30,7 @@ Version 0.5.1
 * [Perforation Table](#perforation-table)
 * [Sound Shard](#sound-shard)
 * [Sound Box](#sound-box)
-* [Act the content of the book and quill as reference data](#act-the-content-of-the-book-and-quill-as-reference-data)
+* [Get reference data](#get-reference-data)
 
 ## Content
 
@@ -190,7 +190,7 @@ Load and play sound shards.
       sound
       shard will be refreshed and fixed.
 
-### Act the content of the book and quill as reference data
+## Get reference data
 
 By writing the content of the book and quill, it can be used as reference data to facilitate the punching of the note.
 
