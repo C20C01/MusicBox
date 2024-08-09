@@ -12,11 +12,13 @@ Version 0.5.1
 ### Automation
 
 ![Automation](README/img/PistonGroup.gif)
+
 ↑ Output different signals according to the content of the paper tape with the comparator.
 
 ### Punch
 
 ![Punch](README/img/Punch.gif)
+
 ↑ Punching holes at the perforation table for the note grid.
 
 ## Jump to
