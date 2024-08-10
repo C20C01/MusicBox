@@ -137,7 +137,7 @@ public class SoundShard extends Item {
     @Override
     public void releaseUsing(ItemStack itemStack, Level level, LivingEntity livingEntity, int tick) {
         if (level.isClientSide && livingEntity instanceof Player player) {
-            ResourceLocation location = Listener.getFinalResult();
+            ResourceLocation location = Listener.finish();
             if (location != null) {
                 player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
                 // Send the sound event to the server to save it in the sound shard.
@@ -145,6 +145,14 @@ public class SoundShard extends Item {
             }
         }
         super.releaseUsing(itemStack, level, livingEntity, tick);
+    }
+
+    @Override
+    public void onStopUsing(ItemStack stack, LivingEntity entity, int count) {
+        if (entity.level().isClientSide) {
+            // make sure the listener is removed.
+            Listener.finish();
+        }
     }
 
     @Override
