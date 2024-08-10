@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "cc_mb",
+  "version": "${version}",
+  "name": "MusicBox",
+  "description": "Punch your song on the note grid and play it with the music box.",
+  "authors": [
+    "CC2001"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/cc-mb",
+    "sources": "https://github.com/C20C01/MusicBox"
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/cc_mb/cc_mb.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.c20c01.cc_mb.MusicBox"
+    ],
+    "fabric-datagen": [
+      "io.github.c20c01.cc_mb.MusicBoxDataGenerator"
+    ]
+  },
+  "mixins": [
+    "cc_mb.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
