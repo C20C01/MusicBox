@@ -3,20 +3,18 @@ package io.github.c20c01.cc_mb.client.gui;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.util.GuiUtils;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nonnull;
 
 /**
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
  * And the {@link #onClick(double, double) button} to trigger note grid handling.
  */
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class NoteGridWidget extends AbstractWidget {
     public static final int WIDTH = 68;
     public static final int HEIGHT = 53;
@@ -30,7 +28,7 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         switch (MENU.mode) {
             case PUNCH, CHECK -> renderPunch(guiGraphics);
             case CONNECT -> renderConnect(guiGraphics);
@@ -68,7 +66,7 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    protected void updateWidgetNarration(@Nonnull NarrationElementOutput output) {
+    protected void updateWidgetNarration(NarrationElementOutput output) {
         defaultButtonNarrationText(output);
     }
 

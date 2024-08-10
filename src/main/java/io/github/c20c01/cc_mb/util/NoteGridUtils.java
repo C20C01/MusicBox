@@ -4,8 +4,7 @@ import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.world.item.ItemStack;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class NoteGridUtils {
     public static boolean canConnect(ItemStack noteGrid, ItemStack otherNoteGrid) {

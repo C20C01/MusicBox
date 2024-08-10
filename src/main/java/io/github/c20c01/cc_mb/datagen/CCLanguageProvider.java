@@ -2,10 +2,6 @@ package io.github.c20c01.cc_mb.datagen;
 
 import io.github.c20c01.cc_mb.CCMain;
 import net.minecraft.data.DataGenerator;
-import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = CCMain.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CCLanguageProvider extends LanguageProvider {

@@ -3,6 +3,8 @@ package io.github.c20c01.cc_mb.util.player;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -10,14 +12,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * A player that plays music in the player's mind.
  * Used in the {@link io.github.c20c01.cc_mb.client.gui.NoteGridScreen}.
  */
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class MindPlayer extends AbstractNoteGridPlayer {
     private static MindPlayer instance;
     protected Level level;

@@ -1,6 +1,8 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
@@ -9,12 +11,8 @@ import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-import javax.annotation.Nonnull;
-
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected NoteGridScreen noteGridScreen;
@@ -39,7 +37,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (Minecraft.getInstance().screen == this) {
             this.renderBackground(guiGraphics);
             super.render(guiGraphics, mouseX, mouseY, partialTicks);

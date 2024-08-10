@@ -5,6 +5,8 @@ import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -18,10 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     private final Listener LISTENER;
@@ -35,7 +34,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         this.LISTENER = listener;
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     private static void playBeatOnClient(ClientLevel level, BlockPos blockPos, Holder<SoundEvent> sound, long seed, Beat beat) {
         Vec3 pos = Vec3.atCenterOf(blockPos);
         // Sound

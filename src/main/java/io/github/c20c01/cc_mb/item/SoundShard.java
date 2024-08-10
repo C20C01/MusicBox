@@ -4,6 +4,8 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.SoundShardPacket;
 import io.github.c20c01.cc_mb.util.Listener;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -31,10 +33,8 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class SoundShard extends Item {
@@ -61,7 +61,7 @@ public class SoundShard extends Item {
         return tag != null && tag.contains(SOUND_EVENT);
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     private static MutableComponent getSoundEventTitle(ResourceLocation location) {
         var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
         if (sound != null && sound.getSubtitle() != null) {

@@ -7,6 +7,8 @@ import io.github.c20c01.cc_mb.util.GuiUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.player.MindPlayer;
 import io.github.c20c01.cc_mb.util.punch.PunchDataSender;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,12 +18,9 @@ import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private static final int PAPER_COLOR = 0xFFFDF7EA;
     private static final int LINE_COLOR = 0x33000000;
@@ -188,7 +187,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderNoteGrid(graphics);
@@ -264,7 +263,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
                 return true;
             }
             default -> {
-                if (pKeyCode == Minecraft.getInstance().options.keyInventory.getKey().getValue()) {
+                if (Minecraft.getInstance().options.keyInventory.matches(pKeyCode, pScanCode)) {
                     // INVENTORY: close
                     onClose();
                     return true;

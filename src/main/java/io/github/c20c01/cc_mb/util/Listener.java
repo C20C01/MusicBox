@@ -1,18 +1,14 @@
 package io.github.c20c01.cc_mb.util;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.sound.PlaySoundSourceEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Listen to the sound event and get the last sound event location.
  */
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class Listener {
     private static final Listener LISTENER = new Listener();
     private boolean heard = false;
@@ -40,7 +36,6 @@ public class Listener {
         return result;
     }
 
-    @SubscribeEvent
     public void listen(PlaySoundSourceEvent event) {
         heard = true;
         soundLocation = event.getSound().getLocation();

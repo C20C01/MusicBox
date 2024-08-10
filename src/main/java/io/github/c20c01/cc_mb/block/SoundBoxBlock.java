@@ -27,9 +27,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.items.ItemHandlerHelper;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class SoundBoxBlock extends Block implements EntityBlock {
     public static final BooleanProperty HAS_SOUND_SHARD = BooleanProperty.create("has_sound_shard");
@@ -68,6 +66,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         }
         super.onBlockStateChange(level, pos, oldState, newState);
     }
+
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {

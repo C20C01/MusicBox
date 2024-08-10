@@ -5,7 +5,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -44,7 +43,7 @@ public class SlotBuilder {
     public Slot build() {
         return new Slot(CONTAINER, INDEX, X, Y) {
             @Override
-            public boolean mayPlace(@Nonnull ItemStack itemStack) {
+            public boolean mayPlace(ItemStack itemStack) {
                 return ACCEPTED_ITEMS.contains(itemStack.getItem()) || ACCEPTED_ITEMS.isEmpty();
             }
 
