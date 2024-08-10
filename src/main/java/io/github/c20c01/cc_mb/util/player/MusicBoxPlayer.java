@@ -68,7 +68,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         setTickPerBeat(tag.getByte("tick_per_beat"));
         tickSinceLastBeat = tag.getByte("interval");
         beatNumber = tag.getByte("beat");
-        setPageNumber(tag.getByte("page"));
+        pageNumber = tag.getByte("page");
     }
 
     public void saveAdditional(CompoundTag tag) {
@@ -83,7 +83,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         setTickPerBeat(data[0]);
         tickSinceLastBeat = data[1];
         beatNumber = data[2];
-        setPageNumber(data[3]);
+        pageNumber = data[3];
     }
 
     public void saveUpdateTag(CompoundTag tag) {
@@ -102,16 +102,6 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     public void setData(@Nullable NoteGridData data) {
         this.data = data;
-        setPageNumber(pageNumber);
-    }
-
-    private void setPageNumber(byte pageNumber) {
-        if (pageNumber >= dataSize()) {
-            this.pageNumber = 0;
-            LogUtils.getLogger().warn("Page number is out of range. Is the data changed?");
-        } else {
-            this.pageNumber = pageNumber;
-        }
     }
 
     /**
@@ -175,8 +165,12 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     protected void updateCurrentBeat() {
         if (data == null) {
             currentBeat = Beat.EMPTY_BEAT;
-        } else {
+        } else if (pageNumber < data.size()) {
             currentBeat = data.getPage(pageNumber).readBeat(beatNumber);
+        } else {
+            LogUtils.getLogger().warn("Page number: {} is out of range: {}", pageNumber, data.size());
+            currentBeat = Beat.EMPTY_BEAT;
+            pageNumber = 0;
         }
     }
 
