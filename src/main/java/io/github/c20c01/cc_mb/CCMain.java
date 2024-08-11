@@ -17,6 +17,7 @@ import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -106,7 +107,7 @@ public class CCMain {
 
     static {
         NOTE_GRID_DATA = DATA_COMPONENTS.registerComponentType("notes", builder -> builder.persistent(NoteGridData.CODEC).networkSynchronized(NoteGridData.STREAM_CODEC).cacheEncoding());
-        TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(TickPerBeat.STREAM_CODEC).cacheEncoding());
+        TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(ByteBufCodecs.BYTE).cacheEncoding());
         SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
 
         NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1).component(NOTE_GRID_DATA.get(), NoteGridData.empty())));

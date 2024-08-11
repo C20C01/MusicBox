@@ -30,9 +30,8 @@ public record SoundShardUpdatePacket(int slot, ResourceLocation sound) implement
     private static void saveSoundEvent(ServerPlayer player, int slot, ResourceLocation location) {
         ItemStack soundShard = player.getInventory().getItem(slot);
         if (soundShard.is(CCMain.SOUND_SHARD_ITEM.get())) {
-            SoundShard.SoundInfo info = soundShard.get(CCMain.SOUND_INFO.get());
             Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(location));
-            soundShard.set(CCMain.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, info == null ? Optional.empty() : info.soundSeed()));
+            soundShard.set(CCMain.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
             player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, player.getSoundSource(), 1.0F, 1.0F);
         }
     }

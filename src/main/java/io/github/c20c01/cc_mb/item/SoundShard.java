@@ -212,6 +212,19 @@ public class SoundShard extends Item {
                 SoundInfo::new
         );
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof SoundInfo soundInfo) {
+                return soundSeed.equals(soundInfo.soundSeed) && soundEvent.value().getLocation().equals(soundInfo.soundEvent.value().getLocation());
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * soundEvent.value().getLocation().hashCode() + soundSeed.hashCode();
+        }
+
         public static Optional<SoundInfo> ofItemStack(ItemStack soundShard) {
             return Optional.ofNullable(soundShard.get(CCMain.SOUND_INFO.get()));
         }

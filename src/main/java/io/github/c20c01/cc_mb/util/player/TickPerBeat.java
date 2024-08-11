@@ -4,11 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
-
-import javax.annotation.Nonnull;
 
 public class TickPerBeat {
     public static final byte MIN = 1;
@@ -28,18 +24,6 @@ public class TickPerBeat {
         @Override
         public <T> T write(DynamicOps<T> ops, Byte value) {
             return ops.createByte(value);
-        }
-    };
-
-    public static final StreamCodec<ByteBuf, Byte> STREAM_CODEC = new StreamCodec<>() {
-        @Override
-        public @Nonnull Byte decode(ByteBuf buffer) {
-            return (byte) Mth.clamp(buffer.readByte(), MIN, MAX);
-        }
-
-        @Override
-        public void encode(ByteBuf buffer, @Nonnull Byte value) {
-            buffer.writeByte(value);
         }
     };
 }
