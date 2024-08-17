@@ -149,8 +149,6 @@ public class SoundShard extends Item {
         super.releaseUsing(itemStack, level, livingEntity, tick);
     }
 
-    // FIXME onStopUsing -> Listen.finish()
-
     @Override
     public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> components, TooltipFlag flag) {
         CompoundTag tag = itemStack.getTag();

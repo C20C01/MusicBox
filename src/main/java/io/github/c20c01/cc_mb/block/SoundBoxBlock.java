@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.block;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.BlockUtils;
+import io.github.c20c01.cc_mb.util.ItemUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -121,8 +122,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 if (level.isClientSide) {
                     return InteractionResult.SUCCESS;
                 }
-                // FIXME
-//                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
+                ItemUtils.give(player, blockEntity.removeItem());
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(UNDER_MUSIC_BOX)) {

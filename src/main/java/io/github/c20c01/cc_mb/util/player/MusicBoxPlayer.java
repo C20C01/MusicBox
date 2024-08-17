@@ -181,7 +181,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     @Override
     protected byte dataSize() {
-        return data == null ? 0 : data.size();
+        return data == null ? 1 : data.size();
     }
 
     @Override
