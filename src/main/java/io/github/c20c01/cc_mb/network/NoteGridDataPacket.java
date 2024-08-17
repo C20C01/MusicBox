@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 public class NoteGridDataPacket {
@@ -21,12 +22,13 @@ public class NoteGridDataPacket {
             this(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
         }
 
-        public static void handle(ServerPlayer player, FriendlyByteBuf buf, PacketSender responseSender) {
+        public static void handle(MinecraftServer server, ServerPlayer player, FriendlyByteBuf buf, PacketSender responseSender) {
             int hash = buf.readInt();
             BlockPos blockPos = buf.readBlockPos();
-            player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY)
+            server.execute(() -> player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY)
                     .flatMap(MusicBoxBlockEntity::getPlayerData)
-                    .ifPresent(noteGridData -> responseSender.sendPacket(new Reply(hash, noteGridData.toBytes())));
+                    .ifPresent(noteGridData -> responseSender.sendPacket(new Reply(hash, noteGridData.toBytes())))
+            );
         }
 
         @Override

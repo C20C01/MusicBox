@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
@@ -22,15 +23,17 @@ public record SoundShardPacket(int slot, String sound) implements FabricPacket {
         this(friendlyByteBuf.readInt(), friendlyByteBuf.readUtf());
     }
 
-    public static void handle(ServerPlayer player, FriendlyByteBuf buf) {
+    public static void handle(MinecraftServer server, ServerPlayer player, FriendlyByteBuf buf) {
         int slot = buf.readVarInt();
         String sound = buf.readUtf();
-        ItemStack soundShard = player.getInventory().getItem(slot);
-        if (soundShard.is(CCMain.SOUND_SHARD_ITEM)) {
-            CompoundTag tag = soundShard.getOrCreateTag();
-            tag.putString(SoundShard.SOUND_EVENT, sound);
-            player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, player.getSoundSource(), 1.0F, 1.0F);
-        }
+        server.execute(() -> {
+            ItemStack soundShard = player.getInventory().getItem(slot);
+            if (soundShard.is(CCMain.SOUND_SHARD_ITEM)) {
+                CompoundTag tag = soundShard.getOrCreateTag();
+                tag.putString(SoundShard.SOUND_EVENT, sound);
+                player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, player.getSoundSource(), 1.0F, 1.0F);
+            }
+        });
     }
 
     @Override

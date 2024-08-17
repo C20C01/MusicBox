@@ -79,6 +79,17 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     }
 
     @Override
+    public void load(CompoundTag tag) {
+        if (tag.contains("empty")) {
+            if (!isEmpty()) {
+                removeItem();
+            }
+        } else {
+            super.load(tag);
+        }
+    }
+
+    @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         // Only send update packet when the sound box is under a music box.
         return getBlockState().getValue(SoundBoxBlock.UNDER_MUSIC_BOX) ? ClientboundBlockEntityDataPacket.create(this) : super.getUpdatePacket();
@@ -86,7 +97,11 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
 
     @Override
     public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+        CompoundTag tag = saveWithoutMetadata();
+        if (tag.isEmpty()) {
+            tag.putByte("empty", (byte) 0);
+        }
+        return tag;
     }
 
     @Override

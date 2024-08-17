@@ -47,8 +47,12 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
 
     @Override
     public void load(CompoundTag tag) {
-        super.load(tag);
-        PLAYER.load(tag);
+        if (tag.contains("update")) {
+            handleUpdateTag(tag);
+        } else {
+            super.load(tag);
+            PLAYER.load(tag);
+        }
     }
 
     @Override
@@ -57,29 +61,18 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         PLAYER.saveAdditional(tag);
     }
 
-    // FIXME
-//    @Override
-//    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-//        CompoundTag tag = pkt.getTag();
-//        if (tag != null) {
-//            handleUpdateTag(tag);
-//        }
-//    }
-
-    // FIXME
-//    @Override
-//    public void handleUpdateTag(CompoundTag tag) {
-//        PLAYER.loadUpdateTag(tag);
-//        if (tag.contains("note_grid_hash")) {
-//            NoteGridDataManager.getInstance().getNoteGridData(tag.getInt("note_grid_hash"), getBlockPos(), PLAYER::setData);
-//        } else {
-//            NoteGridData data = PLAYER.getData();
-//            if (data != null) {
-//                NoteGridDataManager.getInstance().markRemovable(data.hashCode());
-//                PLAYER.setData(null);
-//            }
-//        }
-//    }
+    public void handleUpdateTag(CompoundTag tag) {
+        PLAYER.loadUpdateTag(tag);
+        if (tag.contains("note_grid_hash")) {
+            NoteGridDataManager.getInstance().getNoteGridData(tag.getInt("note_grid_hash"), getBlockPos(), PLAYER::setData);
+        } else {
+            NoteGridData data = PLAYER.getData();
+            if (data != null) {
+                NoteGridDataManager.getInstance().markRemovable(data.hashCode());
+                PLAYER.setData(null);
+            }
+        }
+    }
 
     public Optional<NoteGridData> getPlayerData() {
         return Optional.ofNullable(PLAYER.getData());
@@ -88,6 +81,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
+        tag.putByte("update", (byte) 0);
         PLAYER.saveUpdateTag(tag);
         NoteGridData data = PLAYER.getData();
         if (data != null) {

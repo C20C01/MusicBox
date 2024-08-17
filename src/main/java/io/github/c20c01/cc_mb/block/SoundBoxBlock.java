@@ -53,20 +53,6 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         builder.add(HAS_SOUND_SHARD, POWERED, UNDER_MUSIC_BOX);
     }
 
-    /**
-     * Remove sound shard when the block state is changed to no sound shard.
-     * Use this method because the update tag with empty item will not be sent.
-     */
-// FIXME
-    //    @Override
-//    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-//        if (level.getBlockEntity(pos) instanceof SoundBoxBlockEntity blockEntity) {
-//            if (!newState.getValue(HAS_SOUND_SHARD) && !blockEntity.isEmpty()) {
-//                blockEntity.removeItem();
-//            }
-//        }
-//        super.onBlockStateChange(level, pos, oldState, newState);
-//    }
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Level level = context.getLevel();

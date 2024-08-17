@@ -147,7 +147,7 @@ public class CCMain implements ModInitializer {
                 .build()
         );
 
-        ServerPlayNetworking.registerGlobalReceiver(NoteGridDataPacket.Request.KEY, (server, player, handler, buf, responseSender) -> NoteGridDataPacket.Request.handle(player, buf, responseSender));
-        ServerPlayNetworking.registerGlobalReceiver(SoundShardPacket.KEY, (server, player, handler, buf, responseSender) -> SoundShardPacket.handle(player, buf));
+        ServerPlayNetworking.registerGlobalReceiver(NoteGridDataPacket.Request.KEY, (server, player, handler, buf, responseSender) -> NoteGridDataPacket.Request.handle(server, player, buf, responseSender));
+        ServerPlayNetworking.registerGlobalReceiver(SoundShardPacket.KEY, (server, player, handler, buf, responseSender) -> SoundShardPacket.handle(server, player, buf));
     }
 }
