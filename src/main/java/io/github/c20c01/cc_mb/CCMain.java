@@ -110,7 +110,7 @@ public class CCMain {
         TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(ByteBufCodecs.BYTE).cacheEncoding());
         SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
 
-        NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1).component(NOTE_GRID_DATA.get(), NoteGridData.empty())));
+        NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1)));
         AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024).component(TICK_PER_BEAT.get(), TickPerBeat.DEFAULT)));
         SOUND_SHARD_ITEM = ITEMS.register("sound_shard", () -> new SoundShard(new Item.Properties().stacksTo(1)));
 
