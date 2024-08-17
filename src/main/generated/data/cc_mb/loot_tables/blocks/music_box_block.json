@@ -11,11 +11,10 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "cc_mb:perforation_table_block"
+          "name": "cc_mb:music_box_block"
         }
       ],
       "rolls": 1.0
     }
-  ],
-  "random_sequence": "cc_mb:blocks/perforation_table_block"
+  ]
 }

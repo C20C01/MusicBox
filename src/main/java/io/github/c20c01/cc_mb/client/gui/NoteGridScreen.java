@@ -52,6 +52,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private boolean playing = false;
     private boolean paused = false;
     private boolean punchFail = false;// Fail to punch at current beat, avoid punching fail repeatedly.
+    private Screen lastScreen = null;
 
     /**
      * Opened from a note grid item.
@@ -69,6 +70,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
      */
     public NoteGridScreen(PerforationTableScreen screen) {
         super(GameNarrator.NO_TITLE);
+        lastScreen = screen;
         MAIN_DATA = screen.getMenu().data;
         HELP_DATA = screen.getMenu().helpData;
         PUNCH_DATA_SENDER = new PunchDataSender(screen.getMenu().containerId);
@@ -90,7 +92,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         if (PUNCH_DATA_SENDER != null) {
             PUNCH_DATA_SENDER.reset();
         }
-        super.onClose();
+        Minecraft.getInstance().setScreen(lastScreen);
     }
 
     @Override

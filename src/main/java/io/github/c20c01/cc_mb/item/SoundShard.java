@@ -1,11 +1,11 @@
 package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.SoundShardPacket;
 import io.github.c20c01.cc_mb.util.Listener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -29,6 +29,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
@@ -92,7 +93,8 @@ public class SoundShard extends Item {
      * Efficiency level will affect the cooldown time.
      */
     private void addCooldown(Player player, ItemStack soundShard) {
-        int cd = DEFAULT_COOL_DOWN - 10 * Mth.clamp(soundShard.getEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY), 0, 5);
+        int level = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, soundShard);
+        int cd = DEFAULT_COOL_DOWN - 10 * Mth.clamp(level, 0, 5);
         player.getCooldowns().addCooldown(this, cd);
     }
 
@@ -137,15 +139,17 @@ public class SoundShard extends Item {
     @Override
     public void releaseUsing(ItemStack itemStack, Level level, LivingEntity livingEntity, int tick) {
         if (level.isClientSide && livingEntity instanceof Player player) {
-            ResourceLocation location = Listener.getFinalResult();
+            ResourceLocation location = Listener.finish();
             if (location != null) {
                 player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
                 // Send the sound event to the server to save it in the sound shard.
-                CCNetwork.CHANNEL.sendToServer(new SoundShardPacket(player.getInventory().selected, location.toString()));
+                ClientPlayNetworking.send(new SoundShardPacket(player.getInventory().selected, location.toString()));
             }
         }
         super.releaseUsing(itemStack, level, livingEntity, tick);
     }
+
+    // FIXME onStopUsing -> Listen.finish()
 
     @Override
     public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> components, TooltipFlag flag) {
@@ -183,7 +187,7 @@ public class SoundShard extends Item {
     private static class ResetSoundShard implements CauldronInteraction {
         @Override
         public InteractionResult interact(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, ItemStack itemStack) {
-            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
+            if (itemStack.is(CCMain.SOUND_SHARD_ITEM)) {
                 CompoundTag tag = itemStack.getTag();
                 if (containSound(tag)) {
                     tag.remove(SOUND_EVENT);

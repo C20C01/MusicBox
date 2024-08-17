@@ -30,7 +30,7 @@ public class PresetNoteGridData {
     }
 
     private void addNoteGridWithSize(int size) {
-        Component name = Component.translatable(CCMain.NOTE_GRID_ITEM.get().getDescriptionId()).append("(" + size + ")");
+        Component name = Component.translatable(CCMain.NOTE_GRID_ITEM.getDescriptionId()).append("(" + size + ")");
         add(name, NoteGridData.ofPages(new Page[size]));
     }
 

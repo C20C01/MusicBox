@@ -3,53 +3,67 @@ package io.github.c20c01.cc_mb.network;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.util.function.Supplier;
-
 public class NoteGridDataPacket {
-    public record ToServer(int hash, BlockPos blockPos) {
-        public static NoteGridDataPacket.ToServer decode(FriendlyByteBuf friendlyByteBuf) {
-            return new NoteGridDataPacket.ToServer(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
+    public record Request(int hash, BlockPos blockPos) implements FabricPacket {
+        public static final ResourceLocation KEY = CCMain.getKey("note_grid_data_request");
+        public static final PacketType<Request> TYPE = PacketType.create(KEY, Request::new);
+
+        public Request(FriendlyByteBuf friendlyByteBuf) {
+            this(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
         }
 
-        private static void tryToReply(NetworkEvent.Context context, int hash, BlockPos blockPos) {
-            ServerPlayer player = context.getSender();
-            if (player != null) {
-                player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get())
-                        .flatMap(MusicBoxBlockEntity::getPlayerData)
-                        .ifPresent(noteGridData -> CCNetwork.CHANNEL.reply(new ToClient(hash, noteGridData.toBytes()), context));
-            }
+        public static void handle(ServerPlayer player, FriendlyByteBuf buf, PacketSender responseSender) {
+            int hash = buf.readInt();
+            BlockPos blockPos = buf.readBlockPos();
+            player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY)
+                    .flatMap(MusicBoxBlockEntity::getPlayerData)
+                    .ifPresent(noteGridData -> responseSender.sendPacket(new Reply(hash, noteGridData.toBytes())));
         }
 
-        public void encode(FriendlyByteBuf friendlyByteBuf) {
-            friendlyByteBuf.writeInt(hash);
-            friendlyByteBuf.writeBlockPos(blockPos);
+        @Override
+        public void write(FriendlyByteBuf buf) {
+            buf.writeInt(hash);
+            buf.writeBlockPos(blockPos);
         }
 
-        public void handleOnServer(Supplier<NetworkEvent.Context> contextSupplier) {
-            NetworkEvent.Context context = contextSupplier.get();
-            context.enqueueWork(() -> tryToReply(context, hash, blockPos));
-            context.setPacketHandled(true);
+        @Override
+        public PacketType<?> getType() {
+            return TYPE;
         }
     }
 
-    public record ToClient(int hash, byte[] data) {
-        public static NoteGridDataPacket.ToClient decode(FriendlyByteBuf friendlyByteBuf) {
-            return new NoteGridDataPacket.ToClient(friendlyByteBuf.readInt(), friendlyByteBuf.readByteArray());
+    public record Reply(int hash, byte[] data) implements FabricPacket {
+        public static final ResourceLocation KEY = CCMain.getKey("note_grid_data_reply");
+        public static final PacketType<Reply> TYPE = PacketType.create(KEY, Reply::new);
+
+        public Reply(FriendlyByteBuf friendlyByteBuf) {
+            this(friendlyByteBuf.readInt(), friendlyByteBuf.readByteArray());
         }
 
-        public void encode(FriendlyByteBuf friendlyByteBuf) {
-            friendlyByteBuf.writeInt(hash);
-            friendlyByteBuf.writeByteArray(data);
+        public static void handle(Minecraft client, FriendlyByteBuf buf) {
+            int hash = buf.readInt();
+            byte[] data = buf.readByteArray();
+            client.execute(() -> NoteGridDataManager.getInstance().handleReply(hash, data));
         }
 
-        public void handleOnClient(Supplier<NetworkEvent.Context> contextSupplier) {
-            NetworkEvent.Context context = contextSupplier.get();
-            context.enqueueWork(() -> NoteGridDataManager.getInstance().handleReply(hash, data));
-            context.setPacketHandled(true);
+        @Override
+        public void write(FriendlyByteBuf buf) {
+            buf.writeInt(hash);
+            buf.writeByteArray(data);
+        }
+
+        @Override
+        public PacketType<?> getType() {
+            return TYPE;
         }
     }
 }

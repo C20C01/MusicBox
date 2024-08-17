@@ -1,12 +1,12 @@
 package io.github.c20c01.cc_mb.client;
 
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.BlockPos;
 
 import java.util.LinkedList;
@@ -57,7 +57,7 @@ public class NoteGridDataManager {
                 LinkedList<Consumer<NoteGridData>> callbacks = new LinkedList<>();
                 callbacks.add(callback);
                 CALLBACKS.put(hash, callbacks);
-                CCNetwork.CHANNEL.sendToServer(new NoteGridDataPacket.ToServer(hash, blockPos));
+                ClientPlayNetworking.send(new NoteGridDataPacket.Request(hash, blockPos));
             }
         }
     }

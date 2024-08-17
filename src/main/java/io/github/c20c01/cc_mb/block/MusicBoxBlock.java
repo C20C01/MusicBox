@@ -57,7 +57,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     private BlockState setInstrument(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState) {
         BlockState blockBelow = levelAccessor.getBlockState(blockPos.below());
         NoteBlockInstrument instrument = blockBelow.instrument();
-        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get());// is head
+        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK);// is head
         return blockState.setValue(INSTRUMENT, flag ? NoteBlockInstrument.HARP : instrument);
     }
 
@@ -134,7 +134,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
 
-        if (itemStack.is(CCMain.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
+        if (itemStack.is(CCMain.AWL_ITEM) && !player.isSecondaryUseActive()) {
             // modify tick per beat
             if (level.isClientSide) {
                 return InteractionResult.SUCCESS;
@@ -152,11 +152,12 @@ public class MusicBoxBlock extends BaseEntityBlock {
                 if (level.isClientSide) {
                     return InteractionResult.SUCCESS;
                 }
-                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
+                // FIXME
+//                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(POWERED)) {
-                if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
+                if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(CCMain.NOTE_GRID_ITEM)) {
                     // creative only: join the new data to the note grid
                     if (level.isClientSide) {
                         return InteractionResult.SUCCESS;
@@ -214,7 +215,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pType) {
         if (pState.getValue(POWERED) && pState.getValue(HAS_NOTE_GRID)) {
-            return createTickerHelper(pType, CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), MusicBoxBlockEntity::tick);
+            return createTickerHelper(pType, CCMain.MUSIC_BOX_BLOCK_ENTITY, MusicBoxBlockEntity::tick);
         }
         return null;
     }

@@ -16,10 +16,13 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.c20c01.cc_mb.MusicBox"
+      "io.github.c20c01.cc_mb.CCMain"
+    ],
+    "client": [
+      "io.github.c20c01.cc_mb.client.Setup"
     ],
     "fabric-datagen": [
-      "io.github.c20c01.cc_mb.MusicBoxDataGenerator"
+      "io.github.c20c01.cc_mb.datagen.CCDataGenerator"
     ]
   },
   "mixins": [

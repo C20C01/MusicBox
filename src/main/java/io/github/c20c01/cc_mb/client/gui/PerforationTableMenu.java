@@ -42,27 +42,27 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     public PerforationTableMenu(int id, Inventory inventory, final ContainerLevelAccess access) {
-        super(CCMain.PERFORATION_TABLE_MENU.get(), id);
+        super(CCMain.PERFORATION_TABLE_MENU, id);
         this.ACCESS = access;
         this.INVENTORY = inventory;
         this.PUNCH_DATA_RECEIVER = new PunchDataReceiver(() -> data);
 
         this.NOTE_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 0, 15, 22)
-                .accept(CCMain.NOTE_GRID_ITEM.get())
+                .accept(CCMain.NOTE_GRID_ITEM)
                 .maxStackSize(1)
                 .onChanged(this::itemChanged)
                 .build()
         );
 
         this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
-                .accept(Items.SLIME_BALL, CCMain.AWL_ITEM.get())
+                .accept(Items.SLIME_BALL, CCMain.AWL_ITEM)
                 .maxStackSize(64)
                 .onChanged(this::itemChanged)
                 .build()
         );
 
         this.OTHER_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 2, 35, 22)
-                .accept(CCMain.NOTE_GRID_ITEM.get(), Items.WRITABLE_BOOK)
+                .accept(CCMain.NOTE_GRID_ITEM, Items.WRITABLE_BOOK)
                 .maxStackSize(1)
                 .onChanged(this::itemChanged)
                 .build()
@@ -85,7 +85,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(this.ACCESS, player, CCMain.PERFORATION_TABLE_BLOCK.get());
+        return stillValid(this.ACCESS, player, CCMain.PERFORATION_TABLE_BLOCK);
     }
 
     @Override

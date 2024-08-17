@@ -16,7 +16,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
@@ -57,22 +56,21 @@ public class SoundBoxBlock extends Block implements EntityBlock {
      * Remove sound shard when the block state is changed to no sound shard.
      * Use this method because the update tag with empty item will not be sent.
      */
-    @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-        if (level.getBlockEntity(pos) instanceof SoundBoxBlockEntity blockEntity) {
-            if (!newState.getValue(HAS_SOUND_SHARD) && !blockEntity.isEmpty()) {
-                blockEntity.removeItem();
-            }
-        }
-        super.onBlockStateChange(level, pos, oldState, newState);
-    }
-
-
+// FIXME
+    //    @Override
+//    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+//        if (level.getBlockEntity(pos) instanceof SoundBoxBlockEntity blockEntity) {
+//            if (!newState.getValue(HAS_SOUND_SHARD) && !blockEntity.isEmpty()) {
+//                blockEntity.removeItem();
+//            }
+//        }
+//        super.onBlockStateChange(level, pos, oldState, newState);
+//    }
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Level level = context.getLevel();
         BlockPos blockPos = context.getClickedPos();
-        boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK.get());
+        boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK);
         boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
         return this.defaultBlockState().setValue(POWERED, powered).setValue(UNDER_MUSIC_BOX, underMusicBox);
     }
@@ -80,7 +78,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos fromPos, boolean isMoving) {
-        boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK.get());
+        boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK);
         boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
         if (!underMusicBox && powered) {
             BlockState fromBlock = level.getBlockState(fromPos);
@@ -123,7 +121,8 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 if (level.isClientSide) {
                     return InteractionResult.SUCCESS;
                 }
-                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
+                // FIXME
+//                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(UNDER_MUSIC_BOX)) {
@@ -135,7 +134,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 return InteractionResult.CONSUME;
             }
         } else {
-            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
+            if (itemStack.is(CCMain.SOUND_SHARD_ITEM)) {
                 if (blockEntity.canPlaceItem(itemStack)) {
                     // put in sound shard
                     if (level.isClientSide) {

@@ -66,7 +66,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
 
     protected void openNoteGridScreen() {
         noteGridScreen = new NoteGridScreen(this);
-        Minecraft.getInstance().pushGuiLayer(noteGridScreen);
+        Minecraft.getInstance().setScreen(noteGridScreen);
     }
 
     private void pageBack() {

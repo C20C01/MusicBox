@@ -60,7 +60,7 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         // Get the sound shard in the player's MAIN_HAND or OFF_HAND
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-        ItemStack soundShard = mainHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? mainHand : offHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? offHand : ItemStack.EMPTY;
+        ItemStack soundShard = mainHand.is(CCMain.SOUND_SHARD_ITEM) ? mainHand : offHand.is(CCMain.SOUND_SHARD_ITEM) ? offHand : ItemStack.EMPTY;
 
         // Load the sound event and seed from the sound shard
         SoundShard.Info info = SoundShard.Info.ofItemStack(soundShard);

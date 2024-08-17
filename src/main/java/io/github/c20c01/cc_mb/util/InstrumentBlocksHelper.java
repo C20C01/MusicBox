@@ -85,8 +85,6 @@ public class InstrumentBlocksHelper {
         }
         // There are some instruments not found, iterate all blocks to find them
         LogUtils.getLogger().info("Iterating all blocks for instruments{}", instruments);
-
-        // TODO Need Test
         for (Block block : BuiltInRegistries.BLOCK) {
             NoteBlockInstrument instrument = block.defaultBlockState().instrument();
             if (instruments.contains(instrument)) {

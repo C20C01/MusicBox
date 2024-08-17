@@ -78,7 +78,7 @@ public class NoteGridData {
     }
 
     public ItemStack toNoteGrid() {
-        return saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
+        return saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM));
     }
 
     public byte[] toBytes() {
@@ -86,7 +86,7 @@ public class NoteGridData {
     }
 
     public ItemStack saveToNoteGrid(ItemStack noteGrid) {
-        if (noteGrid.is(CCMain.NOTE_GRID_ITEM.get())) {
+        if (noteGrid.is(CCMain.NOTE_GRID_ITEM)) {
             CompoundTag tag = noteGrid.getOrCreateTag();
             tag.put(DATA_KEY, toTag());
         }
