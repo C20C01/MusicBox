@@ -1,4 +1,4 @@
-**[中文版本](README/README_zh.md)**
+**[中文](README/README_zh.md) | English**
 
 # Music box
 
@@ -90,6 +90,7 @@ The page for viewing and editing the content of the note grid.
     * When not playing:
         * Use the mouse wheel to flip the page.
     * When playing:
+        * Use the `black` line to indicate the progress.
         * Use the mouse wheel to adjust the playing speed.
         * The default timbre is `Harp`, and if the player has a sound shard in the main hand or off hand, it will try to
           play according to its timbre.
@@ -187,8 +188,7 @@ Load and play sound shards.
         * When the note block above is a note block, it will no longer play.
     * The note block above will play according to the sound of the sound shard.
     * When a lightning rod adjacent to and pointing to this sound box is struck by lightning, the sound seed of the
-      sound
-      shard will be refreshed and fixed.
+      sound shard will be refreshed and fixed.
 
 ## Get reference data
 
