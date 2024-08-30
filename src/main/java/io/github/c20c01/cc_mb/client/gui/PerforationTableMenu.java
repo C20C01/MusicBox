@@ -127,6 +127,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 case CODE_SAVE_NOTE_GRID -> {
                     data.saveToNoteGrid(NOTE_GRID_SLOT.getItem());
                     PUNCH_DATA_RECEIVER.reset();
+                    broadcastFullState();
                 }
                 case CODE_CONNECT_NOTE_GRID -> {
                     NoteGridUtils.connect(data, helpData).saveToNoteGrid(NOTE_GRID_SLOT.getItem());
