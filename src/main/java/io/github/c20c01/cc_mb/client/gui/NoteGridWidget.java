@@ -23,10 +23,10 @@ public class NoteGridWidget extends AbstractWidget {
     private final PerforationTableScreen SCREEN;
     private final PerforationTableMenu MENU;
 
-    public NoteGridWidget(int x, int y, PerforationTableScreen menu) {
+    public NoteGridWidget(int x, int y, PerforationTableScreen screen) {
         super(x, y, WIDTH, HEIGHT, Component.empty());
-        this.SCREEN = menu;
-        this.MENU = menu.getMenu();
+        this.SCREEN = screen;
+        this.MENU = screen.getMenu();
     }
 
     @Override
