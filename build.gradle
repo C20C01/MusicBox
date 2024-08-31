@@ -14,8 +14,7 @@ repositories {
 }
 
 base {
-    archivesName = "neoforge-${project.minecraft_version}-${project.mod_id}"
-    libsDirectory = layout.buildDirectory.dir("libs/NeoForge-${project.minecraft_version}")
+    archivesName = "${project.mod_id}-neoforge-${project.minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
