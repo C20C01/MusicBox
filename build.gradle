@@ -7,8 +7,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = "fabric-${project.minecraft_version}-${project.mod_id}"
-    libsDirectory = layout.buildDirectory.dir("libs/Fabric-${project.minecraft_version}")
+    archivesName = "${project.mod_id}-fabric-${project.minecraft_version}"
 }
 
 repositories {
