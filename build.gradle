@@ -10,8 +10,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = "forge-${project.minecraft_version}-${project.mod_id}"
-    libsDirectory = layout.buildDirectory.dir("libs/Forge-${project.minecraft_version}")
+    archivesName = "${project.mod_id}-forge-${project.minecraft_version}"
 }
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
