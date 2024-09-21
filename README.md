@@ -212,7 +212,7 @@ By writing the content of the book and quill, it can be used as reference data t
 
 #### U.N.オーエンは彼女なのか？
 
-Original author: まらしぃ, nbs file author: Unknown
+Original author: まらしぃ, author of nbs file: Unknown
 <details><summary>1.20</summary>
 
 竖琴(Harp)
@@ -235,7 +235,7 @@ Original author: まらしぃ, nbs file author: Unknown
 
 #### Hotel California
 
-Original author: Eagles, nbs file author: Cranium
+Original author: Eagles, author of nbs file: Cranium
 
 <details><summary>1.20</summary>
 
@@ -295,7 +295,7 @@ Original author: Eagles, nbs file author: Cranium
 
 #### Still Alive
 
-Original author: Jonathan Coulton, nbs file author: Cranium
+Original author: Jonathan Coulton, author of nbs file: Cranium
 
 <details><summary>1.20</summary>
 
