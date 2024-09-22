@@ -194,6 +194,6 @@
     * 只支持新版nbs文件。无法加载时，请使用新版[Note Block Studio](https://opennbs.org/)重新保存以更新文件格式。
     * 不支持自定义音色，可以先转成原版有的乐器，之后再进行导出。
 
-[此处](Songs)有一些使用nbs文件（网络上收集的，有些经过了修改）进行导出后的结果。
+[此处](Songs.md)有一些使用nbs文件（网络上收集的，有些经过了修改）进行导出后的结果。
 
 # [前往CurseForge下载](https://www.curseforge.com/minecraft/mc-mods/cc-mb/files)😘

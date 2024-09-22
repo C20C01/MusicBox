@@ -208,7 +208,7 @@ By writing the content of the book and quill, it can be used as reference data t
           of [Note Block Studio](https://opennbs.org/) to upgrade the file format.
         * Custom timbre is not supported, you can convert it to the original timbre first, and then export it.
 
-[Here](README/Songs) are some results exported using nbs files(collected from the Internet,
+[Here](README/Songs.md) are some results exported using nbs files(collected from the Internet,
 some of which have been modified).
 
 # [Download on CurseForge](https://www.curseforge.com/minecraft/mc-mods/cc-mb/files)😘
