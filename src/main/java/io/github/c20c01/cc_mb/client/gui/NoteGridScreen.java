@@ -312,22 +312,42 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         if (canEdit) {
             if (playing) {
                 tryToPunchWithHelpData();
-            } else if (pButton == 0) {
-                tryToPunch();
+            } else if (MOUSE_POS[0] != -1) {
+                if (pButton == 0) {
+                    tryToPunch();
+                } else if (pButton == 1) {
+                    previewBeat();
+                }
             }
             return true;
         }
         return false;
     }
 
-    private void tryToPunch() {
-        if (MOUSE_POS[0] != -1) {
-            // punch a note on client and send the punch to server
-            final byte PAGE = currentPage;
-            if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
-                PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
-                GuiUtils.playSound(SoundEvents.BOOK_PUT);
+    /**
+     * Preview the sound of the beat at current mouse position after adding the note.
+     */
+    private void previewBeat() {
+        byte[] chosenNotes = MAIN_DATA.getPage(currentPage).getBeat(MOUSE_POS[0]).getNotes();
+        byte chosenNote = MOUSE_POS[1];
+        for (byte note : chosenNotes) {
+            if (note == chosenNote) {
+                PLAYER.playNotes(chosenNotes);
+                return;
             }
+        }
+        byte[] previewNotes = new byte[chosenNotes.length + 1];
+        System.arraycopy(chosenNotes, 0, previewNotes, 0, chosenNotes.length);
+        previewNotes[chosenNotes.length] = chosenNote;
+        PLAYER.playNotes(previewNotes);
+    }
+
+    private void tryToPunch() {
+        // punch a note on client and send the punch to server
+        final byte PAGE = currentPage;
+        if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
+            PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
+            GuiUtils.playSound(SoundEvents.BOOK_PUT);
         }
     }
 
