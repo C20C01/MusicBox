@@ -94,6 +94,20 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         }
     }
 
+    /**
+     * Used to preview the pitch of the note.
+     */
+    public void previewNote(byte note) {
+        level = Minecraft.getInstance().level;
+        if (level == null) {
+            return;
+        }
+        if (noSpecificSeed) {
+            seed = level.random.nextLong();
+        }
+        level.playSeededSound(player, player.getX(), player.getY(), player.getZ(), sound, SoundSource.RECORDS, 3.0F, getPitchFromNote(note), seed);
+    }
+
     @Override
     protected void updateCurrentBeat() {
         currentBeat = data.getPage(pageNumber).readBeat(beatNumber);

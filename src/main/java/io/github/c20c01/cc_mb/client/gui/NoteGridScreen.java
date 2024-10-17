@@ -316,8 +316,12 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         if (canEdit) {
             if (playing) {
                 tryToPunchWithHelpData();
-            } else if (pButton == 0) {
-                tryToPunch();
+            } else if (MOUSE_POS[0] != -1) {
+                if (pButton == 0) {
+                    tryToPunch();
+                } else if (pButton == 1) {
+                    PLAYER.previewNote(MOUSE_POS[1]);
+                }
             }
             return true;
         }
@@ -325,13 +329,11 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     private void tryToPunch() {
-        if (MOUSE_POS[0] != -1) {
-            // punch a note on client and send the punch to server
-            final byte PAGE = currentPage;
-            if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
-                PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
-                GuiUtils.playSound(SoundEvents.BOOK_PUT);
-            }
+        // punch a note on client and send the punch to server
+        final byte PAGE = currentPage;
+        if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
+            PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
+            GuiUtils.playSound(SoundEvents.BOOK_PUT);
         }
     }
 

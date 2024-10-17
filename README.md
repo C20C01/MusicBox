@@ -97,7 +97,8 @@ The page for viewing and editing the content of the note grid.
         * It can only be heard by yourself.
 * Punch mode:
     * When there is no reference data:
-        * Similar to the view mode, but you can punch holes in the note grid with the left mouse button.
+        * Similar to the view mode, but the note grid can be punched with the left mouse button and the current pitch
+          can be heard with the right mouse button.
             * Punching cannot be undone, so be sure to confirm the position before you start.
     * When there is reference data:
         * The content of the reference data will be displayed on the note grid.

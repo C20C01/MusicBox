@@ -88,7 +88,7 @@ public class NoteGridData {
     }
 
     public ItemStack saveToNoteGrid(ItemStack noteGrid) {
-        noteGrid.set(CCMain.NOTE_GRID_DATA.get(), this);
+        noteGrid.set(CCMain.NOTE_GRID_DATA.get(), this.deepCopy());
         return noteGrid;
     }
 
