@@ -320,12 +320,30 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
                 if (pButton == 0) {
                     tryToPunch();
                 } else if (pButton == 1) {
-                    PLAYER.previewNote(MOUSE_POS[1]);
+                    previewBeat();
                 }
             }
             return true;
         }
         return false;
+    }
+
+    /**
+     * Preview the sound of the beat at current mouse position after adding the note.
+     */
+    private void previewBeat() {
+        byte[] chosenNotes = MAIN_DATA.getPage(currentPage).getBeat(MOUSE_POS[0]).getNotes();
+        byte chosenNote = MOUSE_POS[1];
+        for (byte note : chosenNotes) {
+            if (note == chosenNote) {
+                PLAYER.playNotes(chosenNotes);
+                return;
+            }
+        }
+        byte[] previewNotes = new byte[chosenNotes.length + 1];
+        System.arraycopy(chosenNotes, 0, previewNotes, 0, chosenNotes.length);
+        previewNotes[chosenNotes.length] = chosenNote;
+        PLAYER.playNotes(previewNotes);
     }
 
     private void tryToPunch() {
