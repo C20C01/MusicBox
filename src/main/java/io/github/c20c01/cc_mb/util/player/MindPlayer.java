@@ -75,7 +75,11 @@ public class MindPlayer extends AbstractNoteGridPlayer {
 
     @Override
     protected void playBeat() {
-        if (currentBeat.isEmpty()) {
+        playNotes(currentBeat.getNotes());
+    }
+
+    public void playNotes(byte[] notes) {
+        if (notes.length == 0) {
             return;
         }
         level = Minecraft.getInstance().level;
@@ -85,7 +89,7 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         if (noSpecificSeed) {
             seed = level.random.nextLong();
         }
-        for (byte note : currentBeat.getNotes()) {
+        for (byte note : notes) {
             float pitch = getPitchFromNote(note);
             level.playSeededSound(player, player.getX(), player.getY(), player.getZ(), sound, SoundSource.RECORDS, 3.0F, pitch, seed);
         }
