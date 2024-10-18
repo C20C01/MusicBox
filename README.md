@@ -98,7 +98,7 @@ The page for viewing and editing the content of the note grid.
 * Punch mode:
     * When there is no reference data:
         * Similar to the view mode, but the note grid can be punched with the left mouse button and the chosen note
-          pluses the chosen beat will be played.
+          pluses the chosen beat will be played with the right mouse button.
             * Punching cannot be undone, so be sure to confirm the position before you start.
     * When there is reference data:
         * The content of the reference data will be displayed on the note grid.
