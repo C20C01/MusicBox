@@ -27,7 +27,7 @@ public enum MenuMode {
         if (tool.is(CCMain.AWL_ITEM.get())) {
             return PUNCH;
         }
-        if (tool.is(Items.SLIME_BALL) && !otherGrid.isEmpty() && NoteGridUtils.canConnect(noteGrid, otherGrid)) {
+        if (tool.is(Items.SLIME_BALL) && otherGrid.is(CCMain.NOTE_GRID_ITEM.get()) && NoteGridUtils.canConnect(noteGrid, otherGrid)) {
             return CONNECT;
         }
         return CHECK;
