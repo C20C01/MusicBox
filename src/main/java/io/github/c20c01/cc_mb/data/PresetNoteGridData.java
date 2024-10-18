@@ -12,7 +12,7 @@ public class PresetNoteGridData {
     private final ArrayList<ItemStack> NOTE_GRIDS = new ArrayList<>();
 
     public PresetNoteGridData() {
-        add(Component.literal("Little Star").withStyle(ChatFormatting.GOLD), NoteGridData.ofBytes(
+        add(Component.literal("Little Star").withStyle(ChatFormatting.GOLD), new NoteGridCode(
                 new byte[]{
                         -1, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
                         -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7,
@@ -32,16 +32,17 @@ public class PresetNoteGridData {
 
     private void addNoteGridWithSize(int size) {
         Component name = Component.translatable(CCMain.NOTE_GRID_ITEM.get().getDescriptionId()).append("(" + size + ")");
-        add(name, NoteGridData.ofPages(new Page[size]));
+        add(name, NoteGridCode.of(NoteGridData.ofPages(new Page[size])));
     }
 
     public ArrayList<ItemStack> getItems() {
         return NOTE_GRIDS;
     }
 
-    private void add(Component name, NoteGridData data) {
-        ItemStack itemStack = data.saveToNoteGrid(new ItemStack(CCMain.NOTE_GRID_ITEM.get()));
-        itemStack.set(DataComponents.ITEM_NAME, name);
-        NOTE_GRIDS.add(itemStack);
+    private void add(Component name, NoteGridCode code) {
+        ItemStack noteGrid = new ItemStack(CCMain.NOTE_GRID_ITEM.get());
+        noteGrid.set(DataComponents.ITEM_NAME, name);
+        noteGrid.set(CCMain.NOTE_GRID_DATA.get(), code);
+        NOTE_GRIDS.add(noteGrid);
     }
 }

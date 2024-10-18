@@ -7,7 +7,7 @@ import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
-import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.NoteGridCode;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
@@ -80,7 +80,7 @@ public class CCMain {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
 
     // component
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<NoteGridData>> NOTE_GRID_DATA;
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<NoteGridCode>> NOTE_GRID_DATA;
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Byte>> TICK_PER_BEAT;
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<SoundShard.SoundInfo>> SOUND_INFO;
 
@@ -106,7 +106,7 @@ public class CCMain {
 
 
     static {
-        NOTE_GRID_DATA = DATA_COMPONENTS.registerComponentType("notes", builder -> builder.persistent(NoteGridData.CODEC).networkSynchronized(NoteGridData.STREAM_CODEC).cacheEncoding());
+        NOTE_GRID_DATA = DATA_COMPONENTS.registerComponentType("notes", builder -> builder.persistent(NoteGridCode.CODEC).networkSynchronized(NoteGridCode.STREAM_CODEC).cacheEncoding());
         TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(ByteBufCodecs.BYTE).cacheEncoding());
         SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
 
