@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.network;
 
+import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
@@ -22,6 +23,18 @@ public class NoteGridDataPacket {
             return new Request(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
         }
 
+        private static boolean isValid(final Request packet, final IPayloadContext context) {
+            BlockPos playerPos = context.player().blockPosition();
+            BlockPos requestedPos = packet.blockPos;
+            double disSqr = playerPos.distSqr(requestedPos);
+            if (disSqr >= 4096) {
+                LogUtils.getLogger().warn("{} at {} requested data from {} which is too far away ({}).",
+                        context.player().getDisplayName(), playerPos, requestedPos, Math.sqrt(disSqr));
+                return false;
+            }
+            return true;
+        }
+
         private static void tryToReply(IPayloadContext context, int hash, BlockPos blockPos) {
             ServerLevel level = (ServerLevel) context.player().level();
             level.getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get())
@@ -35,7 +48,11 @@ public class NoteGridDataPacket {
         }
 
         public static void handle(final Request packet, final IPayloadContext context) {
-            context.enqueueWork(() -> tryToReply(context, packet.hash, packet.blockPos));
+            context.enqueueWork(() -> {
+                if (isValid(packet, context)) {
+                    tryToReply(context, packet.hash, packet.blockPos);
+                }
+            });
         }
 
         @Override
