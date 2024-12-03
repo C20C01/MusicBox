@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.network;
 
+import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
@@ -12,6 +13,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 public class NoteGridDataPacket {
     public record Request(int hash, BlockPos blockPos) implements FabricPacket {
@@ -22,13 +24,26 @@ public class NoteGridDataPacket {
             this(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
         }
 
+        private static boolean isValid(BlockPos targetPos, Player player) {
+            BlockPos playerPos = player.blockPosition();
+            double disSqr = playerPos.distSqr(targetPos);
+            if (disSqr >= 4096) {
+                LogUtils.getLogger().warn("{} at {} requested data from {} which is too far away ({}).",
+                        player.getDisplayName(), playerPos, targetPos, Math.sqrt(disSqr));
+                return false;
+            }
+            return true;
+        }
+
         public static void handle(MinecraftServer server, ServerPlayer player, FriendlyByteBuf buf, PacketSender responseSender) {
             int hash = buf.readInt();
             BlockPos blockPos = buf.readBlockPos();
-            server.execute(() -> player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY)
-                    .flatMap(MusicBoxBlockEntity::getPlayerData)
-                    .ifPresent(noteGridData -> responseSender.sendPacket(new Reply(hash, noteGridData.toBytes())))
-            );
+            if (isValid(blockPos, player)) {
+                server.execute(() -> player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY)
+                        .flatMap(MusicBoxBlockEntity::getPlayerData)
+                        .ifPresent(noteGridData -> responseSender.sendPacket(new Reply(hash, noteGridData.toBytes())))
+                );
+            }
         }
 
         @Override
