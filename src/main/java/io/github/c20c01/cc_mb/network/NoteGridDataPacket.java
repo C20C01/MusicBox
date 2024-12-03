@@ -10,6 +10,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nonnull;
@@ -23,13 +24,12 @@ public class NoteGridDataPacket {
             return new Request(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
         }
 
-        private static boolean isValid(final Request packet, final IPayloadContext context) {
-            BlockPos playerPos = context.player().blockPosition();
-            BlockPos requestedPos = packet.blockPos;
-            double disSqr = playerPos.distSqr(requestedPos);
+        private static boolean isValid(BlockPos targetPos, Player player) {
+            BlockPos playerPos = player.blockPosition();
+            double disSqr = playerPos.distSqr(targetPos);
             if (disSqr >= 4096) {
                 LogUtils.getLogger().warn("{} at {} requested data from {} which is too far away ({}).",
-                        context.player().getDisplayName(), playerPos, requestedPos, Math.sqrt(disSqr));
+                        player.getDisplayName(), playerPos, targetPos, Math.sqrt(disSqr));
                 return false;
             }
             return true;
@@ -49,7 +49,7 @@ public class NoteGridDataPacket {
 
         public static void handle(final Request packet, final IPayloadContext context) {
             context.enqueueWork(() -> {
-                if (isValid(packet, context)) {
+                if (isValid(packet.blockPos, context.player())) {
                     tryToReply(context, packet.hash, packet.blockPos);
                 }
             });
