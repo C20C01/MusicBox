@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.network;
 
+import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
@@ -18,11 +19,25 @@ public class NoteGridDataPacket {
 
         private static void tryToReply(NetworkEvent.Context context, int hash, BlockPos blockPos) {
             ServerPlayer player = context.getSender();
-            if (player != null) {
-                player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get())
-                        .flatMap(MusicBoxBlockEntity::getPlayerData)
-                        .ifPresent(noteGridData -> CCNetwork.CHANNEL.reply(new ToClient(hash, noteGridData.toBytes()), context));
+            assert player != null;
+            player.serverLevel().getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get())
+                    .flatMap(MusicBoxBlockEntity::getPlayerData)
+                    .ifPresent(noteGridData -> CCNetwork.CHANNEL.reply(new ToClient(hash, noteGridData.toBytes()), context));
+        }
+
+        private boolean isValid(NetworkEvent.Context context) {
+            ServerPlayer player = context.getSender();
+            if (player == null) {
+                return false;
             }
+            BlockPos playerPos = player.blockPosition();
+            double disSqr = playerPos.distSqr(blockPos);
+            if (disSqr >= 4096) {
+                LogUtils.getLogger().warn("{} at {} requested data from {} which is too far away ({}).",
+                        player.getDisplayName(), playerPos, blockPos, Math.sqrt(disSqr));
+                return false;
+            }
+            return true;
         }
 
         public void encode(FriendlyByteBuf friendlyByteBuf) {
@@ -32,7 +47,11 @@ public class NoteGridDataPacket {
 
         public void handleOnServer(Supplier<NetworkEvent.Context> contextSupplier) {
             NetworkEvent.Context context = contextSupplier.get();
-            context.enqueueWork(() -> tryToReply(context, hash, blockPos));
+            context.enqueueWork(() -> {
+                if (isValid(context)) {
+                    tryToReply(context, hash, blockPos);
+                }
+            });
             context.setPacketHandled(true);
         }
     }
