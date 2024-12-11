@@ -38,7 +38,7 @@ public class Awl extends Item {
             nextTickPerBeat = TickPerBeat.MIN;
         }
         tag.putByte(TICK_PER_BEAT_KEY, nextTickPerBeat);
-        player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(String.valueOf(nextTickPerBeat)).withStyle(ChatFormatting.GOLD), true);
+        player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(nextTickPerBeat)).withStyle(ChatFormatting.GOLD), true);
         return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
     }
 
@@ -50,7 +50,7 @@ public class Awl extends Item {
             Player player = context.getPlayer();
             if (player != null && !level.isClientSide) {
                 String tickPerBeat = String.valueOf(blockEntity.getTickPerBeat());
-                player.displayClientMessage(Component.translatable(CCMain.TEXT_SET_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN), true);
+                player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN), true);
                 return InteractionResult.CONSUME;
             }
             return InteractionResult.SUCCESS;
