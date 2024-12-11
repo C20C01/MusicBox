@@ -25,8 +25,8 @@
   "text.cc_mb.page_size": "页数: %1$s",
   "text.cc_mb.pling": "扣弦（电钢琴）",
   "text.cc_mb.punch": "使用锥子为纸带打孔",
-  "text.cc_mb.set_tick_per_beat": "每拍所用刻数: ",
   "text.cc_mb.shard_without_sound": "碎片还没有记录声音",
   "text.cc_mb.snare": "小军鼓",
+  "text.cc_mb.tick_per_beat": "每拍所用刻数: ",
   "text.cc_mb.xylophone": "木琴"
 }

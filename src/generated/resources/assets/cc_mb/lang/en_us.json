@@ -25,8 +25,8 @@
   "text.cc_mb.page_size": "Page size: %1$s",
   "text.cc_mb.pling": "Pling",
   "text.cc_mb.punch": "Punch the note grid with awl",
-  "text.cc_mb.set_tick_per_beat": "Ticks per beat: ",
   "text.cc_mb.shard_without_sound": "The shard doesn't have a sound",
   "text.cc_mb.snare": "Snare",
+  "text.cc_mb.tick_per_beat": "Ticks per beat: ",
   "text.cc_mb.xylophone": "Xylophone"
 }

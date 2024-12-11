@@ -45,7 +45,7 @@ public class CCMain {
     public static final String TEXT_PUNCH = "text." + ID + ".punch";
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
     public static final String TEXT_CHECK = "text." + ID + ".check";
-    public static final String TEXT_SET_TICK_PER_BEAT = "text." + ID + ".set_tick_per_beat";
+    public static final String TEXT_TICK_PER_BEAT = "text." + ID + ".tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
     public static final String TEXT_PAGE_SIZE = "text." + ID + ".page_size";
