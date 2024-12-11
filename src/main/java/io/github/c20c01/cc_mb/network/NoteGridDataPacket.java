@@ -25,14 +25,13 @@ public class NoteGridDataPacket {
         }
 
         private static boolean isValid(BlockPos targetPos, Player player) {
-            BlockPos playerPos = player.blockPosition();
-            double disSqr = playerPos.distSqr(targetPos);
-            if (disSqr >= 4096) {
-                LogUtils.getLogger().warn("{} at {} requested data from {} which is too far away ({}).",
-                        player.getDisplayName(), playerPos, targetPos, Math.sqrt(disSqr));
-                return false;
+            ServerLevel level = (ServerLevel) player.level();
+            if (level.isLoaded(targetPos)) {
+                return true;
             }
-            return true;
+            LogUtils.getLogger().warn("{} at {} requested data from unloaded block entity at {}.",
+                    player.getDisplayName(), player.blockPosition(), targetPos);
+            return false;
         }
 
         private static void tryToReply(IPayloadContext context, int hash, BlockPos blockPos) {
