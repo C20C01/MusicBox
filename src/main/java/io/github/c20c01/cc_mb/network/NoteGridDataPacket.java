@@ -6,6 +6,7 @@ import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
@@ -23,14 +24,13 @@ public class NoteGridDataPacket {
             if (player == null) {
                 return false;
             }
-            BlockPos playerPos = player.blockPosition();
-            double disSqr = playerPos.distSqr(targetPos);
-            if (disSqr >= 4096) {
-                LogUtils.getLogger().warn("{} at {} requested data from {} which is too far away ({}).",
-                        player.getDisplayName(), playerPos, targetPos, Math.sqrt(disSqr));
-                return false;
+            ServerLevel level = (ServerLevel) player.level();
+            if (level.isLoaded(targetPos)) {
+                return true;
             }
-            return true;
+            LogUtils.getLogger().warn("{} at {} requested data from unloaded block entity at {}.",
+                    player.getDisplayName(), player.blockPosition(), targetPos);
+            return false;
         }
 
         private static void tryToReply(NetworkEvent.Context context, int hash, BlockPos blockPos) {
