@@ -74,7 +74,7 @@ public class CCLanguageProvider extends FabricLanguageProvider {
             case ZH_CN -> "查看当前纸带";
             default -> throw new IllegalStateException();
         });
-        builder.add(CCMain.TEXT_SET_TICK_PER_BEAT, switch (locale) {
+        builder.add(CCMain.TEXT_TICK_PER_BEAT, switch (locale) {
             case EN_US -> "Ticks per beat: ";
             case ZH_CN -> "每拍所用刻数: ";
             default -> throw new IllegalStateException();
