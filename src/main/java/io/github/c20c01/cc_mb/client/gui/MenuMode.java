@@ -4,13 +4,13 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 public enum MenuMode {
     EMPTY(Component.translatable(CCMain.TEXT_EMPTY)),
     CHECK(Component.translatable(CCMain.TEXT_CHECK)),
     PUNCH(Component.translatable(CCMain.TEXT_PUNCH)),
-    CONNECT(Component.translatable(CCMain.TEXT_CONNECT));
+    CONNECT(Component.translatable(CCMain.TEXT_CONNECT)),
+    FIX(Component.translatable(CCMain.TEXT_FIX));
     private final Component TIP;
 
     MenuMode(Component tip) {
@@ -27,8 +27,11 @@ public enum MenuMode {
         if (tool.is(CCMain.AWL_ITEM.get())) {
             return PUNCH;
         }
-        if (tool.is(Items.SLIME_BALL) && otherGrid.is(CCMain.NOTE_GRID_ITEM.get()) && NoteGridUtils.canConnect(noteGrid, otherGrid)) {
+        if (tool.is(CCMain.PAPER_PASTE_ITEM) && otherGrid.is(CCMain.NOTE_GRID_ITEM.get()) && NoteGridUtils.canConnect(noteGrid, otherGrid)) {
             return CONNECT;
+        }
+        if (tool.is(CCMain.PAPER_PASTE_ITEM)) {
+            return FIX;
         }
         return CHECK;
     }

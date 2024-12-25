@@ -193,7 +193,7 @@ public class SoundShard extends Item {
     private static class ResetSoundShard implements CauldronInteraction {
         @Override
         public ItemInteractionResult interact(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, ItemStack itemStack) {
-            if (SoundShard.SoundInfo.ofItemStack(itemStack).isPresent()) {
+            if (SoundShard.SoundInfo.ofItemStack(itemStack).isPresent() && !level.isClientSide()) {
                 itemStack.remove(CCMain.SOUND_INFO.get());
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
                 level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);

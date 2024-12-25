@@ -4,7 +4,7 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.SlotBuilder;
-import io.github.c20c01.cc_mb.util.punch.PunchDataReceiver;
+import io.github.c20c01.cc_mb.util.edit.EditDataReceiver;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -27,7 +27,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     private final ContainerLevelAccess ACCESS;
     private final Container CONTAINER = new SimpleContainer(3);
-    private final PunchDataReceiver PUNCH_DATA_RECEIVER;
+    private final EditDataReceiver PUNCH_DATA_RECEIVER;
     private final Slot NOTE_GRID_SLOT;
     private final Slot TOOL_SLOT;
     private final Slot OTHER_GRID_SLOT;
@@ -46,7 +46,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         super(CCMain.PERFORATION_TABLE_MENU.get(), id);
         this.ACCESS = access;
         this.INVENTORY = inventory;
-        this.PUNCH_DATA_RECEIVER = new PunchDataReceiver(() -> data);
+        this.PUNCH_DATA_RECEIVER = new EditDataReceiver(() -> data);
 
         this.NOTE_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 0, 15, 22)
                 .accept(CCMain.NOTE_GRID_ITEM.get())
@@ -56,7 +56,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         );
 
         this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
-                .accept(Items.SLIME_BALL, CCMain.AWL_ITEM.get())
+                .accept(CCMain.PAPER_PASTE_ITEM.get(), CCMain.AWL_ITEM.get())
                 .maxStackSize(64)
                 .onChanged(this::itemChanged)
                 .build()

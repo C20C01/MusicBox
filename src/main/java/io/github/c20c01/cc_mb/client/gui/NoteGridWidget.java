@@ -32,7 +32,7 @@ public class NoteGridWidget extends AbstractWidget {
     @Override
     protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         switch (MENU.mode) {
-            case PUNCH, CHECK -> renderPunch(guiGraphics);
+            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics);
             case CONNECT -> renderConnect(guiGraphics);
         }
     }
