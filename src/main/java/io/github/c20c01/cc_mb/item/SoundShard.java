@@ -108,18 +108,29 @@ public class SoundShard extends Item {
             }
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(soundShard);
-        } else if (player.getAbilities().instabuild && player.isSecondaryUseActive()) {
-            // creative mode only: shift+use to change the sound seed.
-            Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
-            if (newSeed != null) {
-                level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
-            }
-            return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
-        } else {
-            // play the sound event that saved in the sound shard
-            level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
-            return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
         }
+        if (player.getAbilities().instabuild) {
+            if (player.isSecondaryUseActive()) {
+                // creative mode only: shift to change the sound seed.
+                Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
+                if (newSeed != null) {
+                    level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
+                }
+                return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
+            }
+            if (hand == InteractionHand.OFF_HAND) {
+                // creative mode only: off-hand to reset the sound shard.
+                CompoundTag tag = soundShard.getTag();
+                if (tag != null) {
+                    tag.remove(SOUND_EVENT);
+                    tag.remove(SOUND_SEED);
+                }
+                return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
+            }
+        }
+        // play the sound event that saved in the sound shard
+        level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
+        return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
     }
 
     @Override
