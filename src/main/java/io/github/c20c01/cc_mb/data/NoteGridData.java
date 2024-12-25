@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.data;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.util.CollectionUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -193,8 +194,8 @@ public class NoteGridData {
         }
 
         void addBeat(Beat beat) {
-            byte[] notes = beat.getNotes();
-            DATA.ensureCapacity(DATA.size() + notes.length);
+            ByteArraySet notes = beat.getNotes();
+            DATA.ensureCapacity(DATA.size() + notes.size());
             for (byte note : notes) {
                 DATA.add((byte) (note + 1));
             }

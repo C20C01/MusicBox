@@ -52,7 +52,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
         currentPage = 0;
         updatePageButtonVisibility();
-        if (noteGridScreen != null && menu.mode != MenuMode.PUNCH) {
+        if (noteGridScreen != null && menu.mode != MenuMode.PUNCH && menu.mode != MenuMode.FIX) {
             noteGridScreen.exitEditMode();
         }
     }

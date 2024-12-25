@@ -81,7 +81,7 @@ public class CCLanguageProvider extends FabricLanguageProvider {
         });
         builder.add(CCMain.TEXT_FIX, switch (locale) {
             case EN_US -> "Fix the note grid";
-            case ZH_CN -> "修复纸带";
+            case ZH_CN -> "修补纸带";
             default -> throw new IllegalStateException();
         });
 
