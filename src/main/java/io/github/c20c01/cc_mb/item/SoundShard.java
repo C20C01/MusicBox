@@ -108,13 +108,20 @@ public class SoundShard extends Item {
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(soundShard);
         }
-        if (player.getAbilities().instabuild && player.isSecondaryUseActive()) {
-            // creative mode only: shift+use to change the sound seed.
-            Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
-            if (newSeed != null) {
-                level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.get().soundEvent(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
+        if (player.getAbilities().instabuild) {
+            if (player.isSecondaryUseActive()) {
+                // creative mode only: shift to change the sound seed.
+                Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
+                if (newSeed != null) {
+                    level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.get().soundEvent.value(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
+                }
+                return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
             }
-            return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
+            if (hand == InteractionHand.OFF_HAND) {
+                // creative mode only: off-hand to reset the sound shard.
+                soundShard.remove(CCMain.SOUND_INFO.get());
+                return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
+            }
         }
         // play the sound event that saved in the sound shard
         level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.get().soundEvent(), player.getSoundSource(), 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.random::nextLong));
@@ -186,8 +193,8 @@ public class SoundShard extends Item {
     private static class ResetSoundShard implements CauldronInteraction {
         @Override
         public ItemInteractionResult interact(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, ItemStack itemStack) {
-            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
-                SoundShard.SoundInfo.ofItemStack(itemStack).ifPresent(soundInfo -> itemStack.remove(CCMain.SOUND_INFO.get()));
+            if (SoundShard.SoundInfo.ofItemStack(itemStack).isPresent()) {
+                itemStack.remove(CCMain.SOUND_INFO.get());
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
                 level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
                 return ItemInteractionResult.sidedSuccess(level.isClientSide());
@@ -214,8 +221,8 @@ public class SoundShard extends Item {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof SoundInfo soundInfo) {
-                return soundSeed.equals(soundInfo.soundSeed) && soundEvent.value().getLocation().equals(soundInfo.soundEvent.value().getLocation());
+            if (obj instanceof SoundInfo(Holder<SoundEvent> event, Optional<Long> seed)) {
+                return soundSeed.equals(seed) && soundEvent.value().getLocation().equals(event.value().getLocation());
             }
             return false;
         }
