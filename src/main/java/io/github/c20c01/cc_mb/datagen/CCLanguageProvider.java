@@ -87,7 +87,7 @@ public class CCLanguageProvider extends LanguageProvider {
         });
         this.add(CCMain.TEXT_FIX, switch (this.locale) {
             case EN_US -> "Fix the note grid";
-            case ZH_CN -> "修复纸带";
+            case ZH_CN -> "修补纸带";
             default -> throw new IllegalStateException();
         });
 

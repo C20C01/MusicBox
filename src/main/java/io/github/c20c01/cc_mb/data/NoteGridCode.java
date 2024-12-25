@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.util.CollectionUtils;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -55,8 +56,8 @@ public record NoteGridCode(byte[] code) {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof NoteGridCode other) {
-            return Arrays.equals(code, other.code);
+        if (obj instanceof NoteGridCode(byte[] other)) {
+            return Arrays.equals(code, other);
         }
         return false;
     }
@@ -129,8 +130,8 @@ public record NoteGridCode(byte[] code) {
         }
 
         void addBeat(Beat beat) {
-            byte[] notes = beat.getNotes();
-            CODE.ensureCapacity(CODE.size() + notes.length);
+            ByteArraySet notes = beat.getNotes();
+            CODE.ensureCapacity(CODE.size() + notes.size());
             for (byte note : notes) {
                 CODE.add((byte) (note + 1));
             }

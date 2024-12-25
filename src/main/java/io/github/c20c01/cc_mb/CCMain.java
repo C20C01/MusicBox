@@ -140,7 +140,7 @@ public class CCMain {
                     output.accept(AWL_ITEM);
                     output.accept(SOUND_SHARD_ITEM);
                     output.accept(PAPER_PASTE_ITEM);
-                    output.accept(Items.WRITABLE_BOOK);
+                    output.accept(Items.SLIME_BALL);
                     output.accept(NOTE_GRID_ITEM);
                     output.acceptAll(new PresetNoteGridData().getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());

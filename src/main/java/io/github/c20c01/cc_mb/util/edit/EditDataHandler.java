@@ -34,4 +34,8 @@ public class EditDataHandler {
         page = -1;
         beat = -1;
     }
+
+    public boolean dirty() {
+        return page != -1 || beat != -1;
+    }
 }

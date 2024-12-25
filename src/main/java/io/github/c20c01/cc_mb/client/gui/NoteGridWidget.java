@@ -76,7 +76,7 @@ public class NoteGridWidget extends AbstractWidget {
     public void onClick(double x, double y, int button) {
         super.onClick(x, y, button);
         switch (SCREEN.getMenu().mode) {
-            case PUNCH, CHECK -> SCREEN.openNoteGridScreen();
+            case PUNCH, CHECK, FIX -> SCREEN.openNoteGridScreen();
             case CONNECT -> GuiUtils.sendCodeToMenu(MENU.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
         }
     }
