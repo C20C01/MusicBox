@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.util.player;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -78,8 +79,8 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         playNotes(currentBeat.getNotes());
     }
 
-    public void playNotes(byte[] notes) {
-        if (notes.length == 0) {
+    public void playNotes(ByteArraySet notes) {
+        if (notes.isEmpty()) {
             return;
         }
         level = Minecraft.getInstance().level;

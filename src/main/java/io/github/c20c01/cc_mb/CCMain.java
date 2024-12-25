@@ -127,8 +127,8 @@ public class CCMain {
                     output.accept(SOUND_BOX_BLOCK_ITEM.get());
                     output.accept(AWL_ITEM.get());
                     output.accept(SOUND_SHARD_ITEM.get());
+                    output.accept(PAPER_PASTE_ITEM.get());
                     output.accept(Items.SLIME_BALL);
-                    output.accept(Items.WRITABLE_BOOK);
                     output.accept(NOTE_GRID_ITEM.get());
                     output.acceptAll(new PresetNoteGridData().getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());

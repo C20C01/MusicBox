@@ -1,24 +1,20 @@
 package io.github.c20c01.cc_mb.data;
 
-import io.github.c20c01.cc_mb.util.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A beat is a set of notes that can be played together.
  */
 public class Beat {
     public static final Beat EMPTY_BEAT = new Beat();// Read only
-    private byte[] notes = ArrayUtils.EMPTY_BYTE_ARRAY;
+    private final ByteArraySet NOTES = new ByteArraySet();
     private byte minNote = Byte.MAX_VALUE;
 
-
     public static Beat ofNotes(Collection<Byte> notes) {
-        return new Beat().loadNotes(notes);
+        return new Beat().setNotes(notes);
     }
 
     public static Beat ofCode(String codeOfBeat) {
@@ -65,15 +61,11 @@ public class Beat {
         return note <= 24 && note >= 0;
     }
 
-    public Beat loadNotes(Collection<Byte> notes) {
-        return setNotes(notes);
-    }
-
     public Beat loadCode(String codeOfBeat) {
         if (codeOfBeat.isEmpty()) {
             return this;
         }
-        Set<Byte> notes = new HashSet<>(codeOfBeat.length());
+        ByteArrayList notes = new ByteArrayList(codeOfBeat.length());
         for (char c : codeOfBeat.toCharArray()) {
             byte note = getNoteFromKey(c);
             if (note != -1) {
@@ -85,71 +77,68 @@ public class Beat {
 
     @Override
     public String toString() {
-        return "Beat:" + Arrays.toString(notes);
+        return "Beat:" + NOTES;
     }
 
     public boolean isEmpty() {
-        return notes.length == 0;
+        return NOTES.isEmpty();
     }
 
-    public byte[] getNotes() {
-        return notes;
+    public ByteArraySet getNotes() {
+        return NOTES;
     }
 
-    public Beat setNotes(byte[] newNotes) {
+    private Beat setNotes(Collection<Byte> notes) {
+        NOTES.clear();
         minNote = Byte.MAX_VALUE;
-        if (newNotes.length == 0) {
-            notes = ArrayUtils.EMPTY_BYTE_ARRAY;
-            return this;
-        }
-        notes = newNotes;
         for (byte note : notes) {
             if (note < minNote) {
                 minNote = note;
             }
+            NOTES.add(note);
         }
         return this;
     }
 
-    public Beat setNotes(Collection<Byte> notes) {
-        byte[] notesArray = CollectionUtils.toArray(notes);
-        return setNotes(notesArray);
-    }
-
     public byte getMinNote() {
-        return notes.length == 0 ? -1 : minNote;
+        return NOTES.isEmpty() ? -1 : minNote;
     }
 
-    private boolean canAddToNotes(byte note) {
-        return !ArrayUtils.contains(notes, note) && isAvailableNote(note);
-    }
-
-    public boolean addOneNote(byte note) {
-        if (canAddToNotes(note)) {
-            setNotes(ArrayUtils.add(notes, note));
+    public boolean addNote(byte note) {
+        if (isAvailableNote(note) && NOTES.add(note)) {
+            if (note < minNote) {
+                minNote = note;
+            }
             return true;
         }
         return false;
     }
 
-    public void addNotes(byte... newNotes) {
-        byte len = 0;
-        byte[] availableNewNotes = new byte[newNotes.length];
-        for (byte note : newNotes) {
-            if (canAddToNotes(note)) {
-                availableNewNotes[len++] = note;
+    public boolean removeNote(byte note) {
+        if (NOTES.remove(note)) {
+            if (note == minNote) {
+                minNote = Byte.MAX_VALUE;
+                for (byte n : NOTES) {
+                    if (n < minNote) {
+                        minNote = n;
+                    }
+                }
             }
+            return true;
         }
-        if (len > 0) {
-            byte[] noteArray = new byte[notes.length + len];
-            System.arraycopy(notes, 0, noteArray, 0, notes.length);
-            System.arraycopy(availableNewNotes, 0, noteArray, notes.length, len);
-            setNotes(noteArray);
-        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(notes);
+        return NOTES.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Beat beat) {
+            return NOTES.containsAll(beat.NOTES);
+        }
+        return super.equals(obj);
     }
 }

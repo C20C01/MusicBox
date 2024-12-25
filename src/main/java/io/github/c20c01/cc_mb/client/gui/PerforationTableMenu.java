@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.SlotBuilder;
@@ -26,7 +27,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     private final ContainerLevelAccess ACCESS;
     private final Container CONTAINER = new SimpleContainer(3);
-    private final EditDataReceiver PUNCH_DATA_RECEIVER;
+    private final EditDataReceiver EDIT_DATA_RECEIVER;
     private final Slot NOTE_GRID_SLOT;
     private final Slot TOOL_SLOT;
     private final Slot OTHER_GRID_SLOT;
@@ -45,7 +46,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         super(CCMain.PERFORATION_TABLE_MENU.get(), id);
         this.ACCESS = access;
         this.INVENTORY = inventory;
-        this.PUNCH_DATA_RECEIVER = new EditDataReceiver(() -> data);
+        this.EDIT_DATA_RECEIVER = new EditDataReceiver();
 
         this.NOTE_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 0, 15, 22)
                 .accept(CCMain.NOTE_GRID_ITEM.get())
@@ -55,7 +56,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         );
 
         this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
-                .accept(CCMain.PAPER_PASTE_ITEM.get(), CCMain.AWL_ITEM.get())
+                .accept(CCMain.PAPER_PASTE_ITEM.get(), CCMain.AWL_ITEM.get(), Items.SLIME_BALL)
                 .maxStackSize(64)
                 .onChanged(this::itemChanged)
                 .build()
@@ -115,7 +116,6 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 slot.setChanged();
             }
         }
-
         return itemStack;
     }
 
@@ -125,9 +125,11 @@ public class PerforationTableMenu extends AbstractContainerMenu {
             // handel flags
             switch (code) {
                 case CODE_SAVE_NOTE_GRID -> {
-                    data.saveToNoteGrid(NOTE_GRID_SLOT.getItem());
-                    PUNCH_DATA_RECEIVER.reset();
-                    broadcastFullState();
+                    if (EDIT_DATA_RECEIVER.dirty()) {
+                        data.saveToNoteGrid(NOTE_GRID_SLOT.getItem());
+                        EDIT_DATA_RECEIVER.reset();
+                        broadcastFullState();
+                    }
                 }
                 case CODE_CONNECT_NOTE_GRID -> {
                     NoteGridUtils.connect(data, helpData).saveToNoteGrid(NOTE_GRID_SLOT.getItem());
@@ -138,9 +140,22 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 case CODE_PUNCH_FAIL -> hurtTool(16);
             }
         } else {
-            // handle punch
-            if (PUNCH_DATA_RECEIVER.receive((byte) code)) {
-                hurtTool(1);
+            // handle edit
+            if (!EDIT_DATA_RECEIVER.receive((byte) code)) {
+                return true;
+            }
+            Beat beat = EDIT_DATA_RECEIVER.getBeat(data);
+            if (mode == MenuMode.PUNCH) {
+                if (beat.addNote((byte) code)) {
+                    hurtTool(1);
+                }
+                return true;
+            }
+            if (mode == MenuMode.FIX) {
+                if (beat.removeNote((byte) code)) {
+                    TOOL_SLOT.getItem().shrink(1);
+                }
+                return true;
             }
         }
         return true;
@@ -158,6 +173,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         updateMode();
         updateData();
         if (screen != null) {
+            // FIXME
             screen.onItemChanged();
         }
     }

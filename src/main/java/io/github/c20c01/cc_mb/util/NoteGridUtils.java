@@ -28,7 +28,7 @@ public class NoteGridUtils {
         }
         Beat mainBeat = main.getPage(page).getBeat(beat);
         Beat helpBeat = help.getPage(page).getBeat(beat);
-        return CollectionUtils.containsAll(mainBeat.getNotes(), helpBeat.getNotes());
+        return mainBeat.getNotes().containsAll(helpBeat.getNotes());
     }
 
     /**
@@ -41,7 +41,9 @@ public class NoteGridUtils {
                 if (otherData.getPage(page).isEmptyBeat(beat)) {
                     continue;
                 }
-                data.getPage(page).getBeat(beat).addNotes(otherData.getPage(page).getBeat(beat).getNotes());
+                for (byte note : otherData.getPage(page).getBeat(beat).getNotes()) {
+                    data.getPage(page).getBeat(beat).addNote(note);
+                }
             }
         }
         return data;

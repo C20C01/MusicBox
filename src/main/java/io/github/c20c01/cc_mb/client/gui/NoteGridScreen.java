@@ -7,6 +7,7 @@ import io.github.c20c01.cc_mb.util.GuiUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.edit.EditDataSender;
 import io.github.c20c01.cc_mb.util.player.MindPlayer;
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -38,7 +39,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private static final byte JUDGMENT_INTERVAL_TICK = 5;// max tick you can early the beat (1tick = 50ms)
 
     private final byte[] MOUSE_POS = new byte[]{-1, -1};// {x, y}, {0, 0} at bottom left
-    private final EditDataSender PUNCH_DATA_SENDER;
+    private final EditDataSender EDIT_DATA_SENDER;
     private final NoteGridData MAIN_DATA;// play or edit on this data
     private final NoteGridData HELP_DATA;// show a translucent note grid to help player to copy notes from this data
     private final MindPlayer PLAYER;
@@ -49,10 +50,11 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private int playProgressLineColor = SELECTION_COLOR;
     private PageButton forwardButton;
     private PageButton backButton;
-    private boolean canEdit = false;// When the tool is broken it will be set to false, which should only happen once.
+    private boolean editMode = false;// punch or fix mode
     private boolean playing = false;
-    private boolean paused = false;
+    private boolean paused = false;// Whether the player is waiting for the player to punch notes.
     private boolean punchFail = false;// Fail to punch at current beat, avoid punching fail repeatedly.
+    private MenuMode mode = MenuMode.CHECK;
 
     /**
      * Opened from a note grid item.
@@ -61,7 +63,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         super(GameNarrator.NO_TITLE);
         MAIN_DATA = mainData;
         HELP_DATA = null;
-        PUNCH_DATA_SENDER = null;
+        EDIT_DATA_SENDER = null;
         PLAYER = MindPlayer.getInstance(mainData, this);
     }
 
@@ -72,11 +74,12 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         super(GameNarrator.NO_TITLE);
         MAIN_DATA = screen.getMenu().data;
         HELP_DATA = screen.getMenu().helpData;
-        PUNCH_DATA_SENDER = new EditDataSender(screen.getMenu().containerId);
+        EDIT_DATA_SENDER = new EditDataSender(screen.getMenu().containerId);
         tableScreen = screen;
         currentPage = (byte) Math.min(screen.currentPage, getNumPages() - 1);
-        canEdit = screen.getMenu().mode == MenuMode.PUNCH;
-        playProgressLineColor = canEdit ? EDIT_PROGRESS_COLOR : SELECTION_COLOR;
+        mode = screen.getMenu().mode;
+        editMode = mode == MenuMode.PUNCH || mode == MenuMode.FIX;
+        playProgressLineColor = mode == MenuMode.PUNCH ? EDIT_PROGRESS_COLOR : SELECTION_COLOR;
         PLAYER = MindPlayer.getInstance(MAIN_DATA, this);
     }
 
@@ -88,8 +91,8 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
             GuiUtils.sendCodeToMenu(tableScreen.getMenu().containerId, PerforationTableMenu.CODE_SAVE_NOTE_GRID);
             tableScreen.noteGridScreen = null;
         }
-        if (PUNCH_DATA_SENDER != null) {
-            PUNCH_DATA_SENDER.reset();
+        if (EDIT_DATA_SENDER != null) {
+            EDIT_DATA_SENDER.reset();
         }
         super.onClose();
     }
@@ -150,7 +153,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     @Override
     public void mouseMoved(double x, double y) {
         super.mouseMoved(x, y);
-        if (canEdit) {
+        if (editMode) {
             updateMousePosAndTip(x, y);
         }
     }
@@ -174,8 +177,12 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         }
     }
 
+    private boolean pointNote() {
+        return MOUSE_POS[0] != -1;
+    }
+
     private void updateTip() {
-        if (MOUSE_POS[0] == -1 || playing) {
+        if (!pointNote() || playing) {
             updatePageTip();
         } else {
             String note = NOTE_NAME[(MOUSE_POS[1] + 6) % 12] + " (" + MOUSE_POS[1] + ")";
@@ -228,7 +235,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         if (playing) {
             // playing progress line
             graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + beatNumber * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, playProgressLineColor);
-        } else if (canEdit && MOUSE_POS[0] != -1) {
+        } else if (editMode && pointNote()) {
             // selection lines
             graphics.hLine(GRID_CENTER_X - HALF_GRID_WIDTH, GRID_CENTER_X + HALF_GRID_WIDTH, GRID_CENTER_Y + HALF_GRID_HEIGHT - MOUSE_POS[1] * GRID_SIZE, SELECTION_COLOR);
             graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + MOUSE_POS[0] * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, SELECTION_COLOR);
@@ -253,8 +260,11 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         switch (pKeyCode) {
             case 90, 88 -> {
                 // Z, X: punch with help data
-                tryToPunchWithHelpData();
-                return true;
+                if (mode == MenuMode.PUNCH && playing) {
+                    tryToPunchWithHelpData();
+                    return true;
+                }
+                return super.keyPressed(pKeyCode, pScanCode, pModifiers);
             }
             case 32 -> {
                 // SPACE: play/pause
@@ -309,14 +319,24 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         if (super.mouseClicked(pMouseX, pMouseY, pButton)) {
             return true;
         }
-        if (canEdit) {
+        if (mode == MenuMode.PUNCH) {
             if (playing) {
                 tryToPunchWithHelpData();
-            } else if (MOUSE_POS[0] != -1) {
+            } else if (pointNote()) {
                 if (pButton == 0) {
                     tryToPunch();
                 } else if (pButton == 1) {
-                    previewBeat();
+                    previewBeat(true);
+                }
+            }
+            return true;
+        }
+        if (mode == MenuMode.FIX) {
+            if (!playing && pointNote()) {
+                if (pButton == 0) {
+                    tryToFix();
+                } else if (pButton == 1) {
+                    previewBeat(false);
                 }
             }
             return true;
@@ -325,28 +345,35 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     /**
-     * Preview the sound of the beat at current mouse position after adding the note.
+     * Preview the sound of the beat at current mouse position.
+     *
+     * @param mode true: add pointed note, false: remove pointed note.
      */
-    private void previewBeat() {
-        byte[] chosenNotes = MAIN_DATA.getPage(currentPage).getBeat(MOUSE_POS[0]).getNotes();
-        byte chosenNote = MOUSE_POS[1];
-        for (byte note : chosenNotes) {
-            if (note == chosenNote) {
-                PLAYER.playNotes(chosenNotes);
-                return;
-            }
+    private void previewBeat(boolean mode) {
+        ByteArraySet notes = MAIN_DATA.getPage(currentPage).getBeat(MOUSE_POS[0]).getNotes().clone();
+        byte pointedNote = MOUSE_POS[1];
+        if (mode) {
+            notes.add(pointedNote);
+        } else {
+            notes.remove(pointedNote);
         }
-        byte[] previewNotes = new byte[chosenNotes.length + 1];
-        System.arraycopy(chosenNotes, 0, previewNotes, 0, chosenNotes.length);
-        previewNotes[chosenNotes.length] = chosenNote;
-        PLAYER.playNotes(previewNotes);
+        PLAYER.playNotes(notes);
+    }
+
+    private void tryToFix() {
+        // remove a note on client and send the fix to server
+        final byte PAGE = currentPage;
+        if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).removeNote(MOUSE_POS[1])) {
+            EDIT_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
+            GuiUtils.playSound(SoundEvents.SLIME_BLOCK_FALL);
+        }
     }
 
     private void tryToPunch() {
         // punch a note on client and send the punch to server
         final byte PAGE = currentPage;
-        if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addOneNote(MOUSE_POS[1])) {
-            PUNCH_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
+        if (MAIN_DATA.getPage(PAGE).getBeat(MOUSE_POS[0]).addNote(MOUSE_POS[1])) {
+            EDIT_DATA_SENDER.send(PAGE, MOUSE_POS[0], MOUSE_POS[1]);
             GuiUtils.playSound(SoundEvents.BOOK_PUT);
         }
     }
@@ -418,19 +445,18 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         }
         Beat mainBeat = MAIN_DATA.getPage(page).getBeat(beat);
         Beat helpBeat = HELP_DATA.getPage(page).getBeat(beat);
-        byte[] helpBeatNotes = helpBeat.getNotes();
+        ByteArraySet helpBeatNotes = helpBeat.getNotes();
         boolean punchNewNote = false;
         for (byte note : helpBeatNotes) {
-            if (mainBeat.addOneNote(note)) {
-                PUNCH_DATA_SENDER.send(page, beat, note);
-                if (!canEdit) {
+            if (mainBeat.addNote(note)) {
+                EDIT_DATA_SENDER.send(page, beat, note);
+                if (mode != MenuMode.PUNCH) {
                     break;
                 }
                 punchNewNote = true;
             }
         }
         if (punchNewNote) {
-            // punched successfully or !canEdit
             if (skipWaiting) {
                 PLAYER.skipWaiting();
             }
@@ -446,7 +472,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
             return;
         }
         punchFail = false;
-        paused = canEdit && !NoteGridUtils.containsAll(MAIN_DATA, HELP_DATA, currentPage, beatNumber);
+        paused = mode == MenuMode.PUNCH && !NoteGridUtils.containsAll(MAIN_DATA, HELP_DATA, currentPage, beatNumber);
     }
 
     /**
@@ -454,8 +480,8 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
      * to exit edit mode because of the broken tool.
      */
     protected void exitEditMode() {
-        if (canEdit) {
-            canEdit = false;
+        if (editMode) {
+            editMode = false;
             paused = false;
             playProgressLineColor = SELECTION_COLOR;
             updateTip();
