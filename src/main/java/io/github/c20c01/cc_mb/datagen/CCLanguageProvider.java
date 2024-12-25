@@ -58,6 +58,11 @@ public class CCLanguageProvider extends LanguageProvider {
             case ZH_CN -> "声响碎片";
             default -> throw new IllegalStateException();
         });
+        this.add(CCMain.PAPER_PASTE_ITEM.get(), switch (this.locale) {
+            case EN_US -> "Paper paste";
+            case ZH_CN -> "纸糊";
+            default -> throw new IllegalStateException();
+        });
 
 
         this.add(CCMain.TEXT_PUNCH, switch (this.locale) {
@@ -78,6 +83,11 @@ public class CCLanguageProvider extends LanguageProvider {
         this.add(CCMain.TEXT_CHECK, switch (this.locale) {
             case EN_US -> "Check the note grid";
             case ZH_CN -> "查看当前纸带";
+            default -> throw new IllegalStateException();
+        });
+        this.add(CCMain.TEXT_FIX, switch (this.locale) {
+            case EN_US -> "Fix the note grid";
+            case ZH_CN -> "修复纸带";
             default -> throw new IllegalStateException();
         });
 

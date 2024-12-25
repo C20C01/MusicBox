@@ -10,6 +10,7 @@ import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.item.PaperPaste;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.InstrumentBlocksHelper;
 import net.minecraft.core.registries.Registries;
@@ -42,6 +43,7 @@ public class CCMain {
     public static final String TEXT_PUNCH = "text." + ID + ".punch";
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
     public static final String TEXT_CHECK = "text." + ID + ".check";
+    public static final String TEXT_FIX = "text." + ID + ".fix";
     public static final String TEXT_TICK_PER_BEAT = "text." + ID + ".tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
@@ -80,6 +82,7 @@ public class CCMain {
     public static final RegistryObject<NoteGrid> NOTE_GRID_ITEM;
     public static final RegistryObject<Awl> AWL_ITEM;
     public static final RegistryObject<Item> SOUND_SHARD_ITEM;
+    public static final RegistryObject<Item> PAPER_PASTE_ITEM;
 
     // block
     public static final RegistryObject<MusicBoxBlock> MUSIC_BOX_BLOCK;
@@ -101,6 +104,7 @@ public class CCMain {
         NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1)));
         AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024)));
         SOUND_SHARD_ITEM = ITEMS.register("sound_shard", () -> new SoundShard(new Item.Properties().stacksTo(1)));
+        PAPER_PASTE_ITEM = ITEMS.register("paper_paste", () -> new PaperPaste(new Item.Properties()));
 
         MUSIC_BOX_BLOCK = BLOCKS.register("music_box_block", () -> new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
         MUSIC_BOX_BLOCK_ITEM = ITEMS.register("music_box_block", () -> new BlockItem(MUSIC_BOX_BLOCK.get(), new Item.Properties()));
