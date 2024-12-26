@@ -43,6 +43,8 @@ public class CCMain implements ModInitializer {
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
     public static final String TEXT_CHECK = "text." + ID + ".check";
     public static final String TEXT_FIX = "text." + ID + ".fix";
+    public static final String TEXT_CUT = "text." + ID + ".cut";
+    public static final String TEXT_CANNOT_CUT = "text." + ID + ".cannot_cut";
     public static final String TEXT_TICK_PER_BEAT = "text." + ID + ".tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
