@@ -139,10 +139,11 @@ public class CCMain {
                     output.accept(MUSIC_BOX_BLOCK_ITEM);
                     output.accept(PERFORATION_TABLE_BLOCK_ITEM);
                     output.accept(SOUND_BOX_BLOCK_ITEM);
-                    output.accept(AWL_ITEM);
                     output.accept(SOUND_SHARD_ITEM);
+                    output.accept(AWL_ITEM);
                     output.accept(PAPER_PASTE_ITEM);
                     output.accept(Items.SLIME_BALL);
+                    output.accept(Items.SHEARS);
                     output.accept(NOTE_GRID_ITEM);
                     output.acceptAll(new PresetNoteGridData().getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());
