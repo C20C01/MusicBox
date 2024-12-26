@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
@@ -56,6 +57,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     private void playSound(Level level, BlockPos blockPos) {
         if (getSoundEvent() != null) {
             Vec3 pos = blockPos.getCenter();
+            level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, pos);
             level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
         }
     }
@@ -81,6 +83,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     }
 
     @Override
+    @Nullable
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         // Only send update packet when the sound box is under a music box.
         return getBlockState().getValue(SoundBoxBlock.UNDER_MUSIC_BOX) ? ClientboundBlockEntityDataPacket.create(this) : super.getUpdatePacket();

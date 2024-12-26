@@ -35,6 +35,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -125,6 +126,7 @@ public class SoundShard extends Item {
         }
         // play the sound event that saved in the sound shard
         level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.get().soundEvent(), player.getSoundSource(), 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.random::nextLong));
+        level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
         return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
     }
 
