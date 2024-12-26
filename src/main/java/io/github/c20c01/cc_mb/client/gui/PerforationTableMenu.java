@@ -56,7 +56,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         );
 
         this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
-                .accept(CCMain.PAPER_PASTE_ITEM.get(), CCMain.AWL_ITEM.get(), Items.SLIME_BALL)
+                .accept(CCMain.PAPER_PASTE_ITEM.get(), CCMain.AWL_ITEM.get(), Items.SLIME_BALL, Items.SHEARS)
                 .maxStackSize(64)
                 .onChanged(this::itemChanged)
                 .build()
@@ -140,6 +140,17 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 case CODE_PUNCH_FAIL -> hurtTool(16);
             }
         } else {
+            // handle cut
+            if (mode == MenuMode.CUT) {
+                NoteGridData[] res = NoteGridUtils.cut(data, (byte) code);
+                ItemStack otherGrid = NOTE_GRID_SLOT.getItem().copy();
+                res[0].saveToNoteGrid(NOTE_GRID_SLOT.getItem());
+                res[1].saveToNoteGrid(otherGrid);
+                OTHER_GRID_SLOT.set(otherGrid);
+                ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.BEEHIVE_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F));
+                hurtTool(1);
+                return true;
+            }
             // handle edit
             if (!EDIT_DATA_RECEIVER.receive((byte) code)) {
                 return true;
@@ -173,7 +184,6 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         updateMode();
         updateData();
         if (screen != null) {
-            // FIXME
             screen.onItemChanged();
         }
     }

@@ -25,6 +25,10 @@ public class NoteGridData {
         return new NoteGridData().loadPages(pages);
     }
 
+    public static NoteGridData ofPages(Collection<Page> pages) {
+        return new NoteGridData().loadPages(pages);
+    }
+
     public static NoteGridData ofBytes(byte[] data) {
         return new NoteGridData().loadPages(new Decoder().decode(data));
     }

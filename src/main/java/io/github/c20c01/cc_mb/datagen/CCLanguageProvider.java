@@ -90,6 +90,16 @@ public class CCLanguageProvider extends LanguageProvider {
             case ZH_CN -> "修补纸带";
             default -> throw new IllegalStateException();
         });
+        this.add(CCMain.TEXT_CUT, switch (this.locale) {
+            case EN_US -> "Cut the note grid from the end of the current page";
+            case ZH_CN -> "将纸带从本页末尾剪断";
+            default -> throw new IllegalStateException();
+        });
+        this.add(CCMain.TEXT_CANNOT_CUT, switch (this.locale) {
+            case EN_US -> "Cannot cut the last page";
+            case ZH_CN -> "无法剪断最后一页";
+            default -> throw new IllegalStateException();
+        });
 
         this.add(CCMain.TEXT_TICK_PER_BEAT, switch (this.locale) {
             case EN_US -> "Ticks per beat: ";

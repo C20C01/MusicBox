@@ -35,7 +35,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, false, (button) -> pageBack(), true));
         this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, true, (button) -> pageForward(), true));
         this.gridOnTableWidget = this.addRenderableWidget(new NoteGridWidget(this.leftPos + 79, this.topPos + 15, this));
-        updatePageButtonVisibility();
+        updateWidget();
     }
 
     @Override
@@ -51,9 +51,8 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
      * Called when the item in the {@link PerforationTableMenu} changes.
      */
     protected void onItemChanged() {
-        gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
         currentPage = 0;
-        updatePageButtonVisibility();
+        updateWidget();
         if (noteGridScreen != null && menu.mode != MenuMode.PUNCH && menu.mode != MenuMode.FIX) {
             noteGridScreen.exitEditMode();
         }
@@ -75,19 +74,25 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         if (currentPage > 0) {
             --currentPage;
         }
-        updatePageButtonVisibility();
+        if (menu.mode == MenuMode.CUT && currentPage == getPageSize() - 2) {
+            gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
+        }
+        updateWidget();
     }
 
     private void pageForward() {
         if (currentPage < getPageSize() - 1) {
             ++this.currentPage;
         }
-        updatePageButtonVisibility();
+        if (menu.mode == MenuMode.CUT && currentPage == getPageSize() - 1) {
+            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(CCMain.TEXT_CANNOT_CUT)));
+        }
+        updateWidget();
     }
 
     private int getPageSize() {
         switch (menu.mode) {
-            case PUNCH, CHECK -> {
+            case PUNCH, CHECK, CUT -> {
                 return menu.data == null ? 0 : menu.data.size();
             }
             case CONNECT -> {
@@ -99,8 +104,27 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         }
     }
 
-    private void updatePageButtonVisibility() {
+    private void updateWidget() {
+        // page buttons
         backButton.visible = currentPage > 0;
-        forwardButton.visible = currentPage < getPageSize() - 1;
+        if (backButton.visible) {
+            backButton.setTooltip(Tooltip.create(Component.literal(currentPage + " ←")));
+        }
+        boolean hasNextPage = hasNextPage();
+        forwardButton.visible = hasNextPage;
+        if (hasNextPage) {
+            forwardButton.setTooltip(Tooltip.create(Component.literal("→ " + (currentPage + 2))));
+        }
+
+        // tooltip
+        if (menu.mode == MenuMode.CUT && !hasNextPage) {
+            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(CCMain.TEXT_CANNOT_CUT)));
+        } else {
+            gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
+        }
+    }
+
+    protected boolean hasNextPage() {
+        return currentPage < getPageSize() - 1;
     }
 }

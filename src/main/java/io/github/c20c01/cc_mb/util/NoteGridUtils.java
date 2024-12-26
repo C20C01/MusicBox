@@ -48,4 +48,17 @@ public class NoteGridUtils {
         }
         return data;
     }
+
+    /**
+     * Cut the data to two parts.
+     *
+     * @param page cut the end of which page
+     */
+    public static NoteGridData[] cut(NoteGridData data, byte page) {
+        page += 1;
+        NoteGridData[] res = new NoteGridData[2];
+        res[0] = NoteGridData.ofPages(data.getPages().subList(0, page));
+        res[1] = NoteGridData.ofPages(data.getPages().subList(page, data.size()));
+        return res;
+    }
 }
