@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -105,7 +106,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     }
 
     /**
-     * Client side only. The player will not play the beat on the server side by ticking.
+     * Must be called before {@link #tick()}.
      */
     public void update(Level level, BlockPos blockPos, BlockState blockState) {
         this.level = level;
@@ -156,8 +157,11 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
 
     @Override
     protected void playBeat() {
-        if (level != null && shouldPlay(level, blockPos, blockState)) {
-            playBeatOnClient((ClientLevel) level, blockPos, sound, seed, currentBeat);
+        if (shouldPlay(level, blockPos, blockState)) {
+            level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, blockPos);
+            if (level.isClientSide) {
+                playBeatOnClient((ClientLevel) level, blockPos, sound, seed, currentBeat);
+            }
         }
     }
 

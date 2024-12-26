@@ -40,9 +40,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     public static void tick(Level level, BlockPos blockPos, BlockState blockState, MusicBoxBlockEntity blockEntity) {
-        if (level.isClientSide) {
-            blockEntity.PLAYER.update(level, blockPos, blockState);
-        }
+        blockEntity.PLAYER.update(level, blockPos, blockState);
         blockEntity.PLAYER.tick();
     }
 

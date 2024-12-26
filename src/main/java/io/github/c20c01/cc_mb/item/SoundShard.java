@@ -31,6 +31,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -130,6 +131,7 @@ public class SoundShard extends Item {
         }
         // play the sound event that saved in the sound shard
         level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
+        level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
         return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
     }
 
