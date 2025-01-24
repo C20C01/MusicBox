@@ -1,9 +1,11 @@
-// 1.20.1	2024-12-11T11:30:30.4592661	MusicBox/Recipes
+// 1.20.1	2025-02-10T19:22:22.5987225	MusicBox/Recipes
 00627c2c66ab5af3ab77954610644a43f70db7f8 data\cc_mb\advancements\recipes\misc\sound_box_block.json
 8c7eb75e905e6dd1f55ebd7672cbc77eb2551af7 data\cc_mb\recipes\perforation_table_block.json
 2f6ba5f6086d0c5e44f142ee2c5cba9799987137 data\cc_mb\advancements\recipes\misc\music_box_block.json
 2a8ee22ab14e752dc2c8e737979ef7525dd6152f data\cc_mb\advancements\recipes\misc\note_grid.json
-2340833ff162f3e49066303443e25d201a61650d data\cc_mb\recipes\note_grid.json
+c9eee90cf273c17d9d69129ada8d725dc883ec37 data\cc_mb\advancements\recipes\misc\paper_paste.json
+dd57281f8679b9d64839d71fbae727ae3cf5d0a1 data\cc_mb\recipes\paper_paste.json
+222245f40f6a8ee366678a16b2974a3d3a455a13 data\cc_mb\recipes\note_grid.json
 37237ef078f06fddf806472850668cbaa81fe366 data\cc_mb\advancements\recipes\misc\perforation_table_block.json
 6e7d8104feea07703e14d3da1ade2609b0165432 data\cc_mb\recipes\sound_shard.json
 24cdf50cdc278d4c805863de9cd03d6127055c57 data\cc_mb\recipes\sound_box_block.json

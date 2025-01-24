@@ -3,6 +3,8 @@ package io.github.c20c01.cc_mb.item;
 import io.github.c20c01.cc_mb.CCMain;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -29,7 +31,8 @@ public class PaperPaste extends Item {
                 return InteractionResult.PASS;
             } else if (!level.isClientSide) {
                 itemStack.shrink(1);
-                player.addItem(new ItemStack(CCMain.PAPER_PASTE_ITEM));
+                level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                player.addItem(new ItemStack(CCMain.PAPER_PASTE_ITEM, 16));
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
