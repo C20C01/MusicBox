@@ -29,7 +29,7 @@ public enum MenuMode {
         if (tool.is(CCMain.AWL_ITEM.get())) {
             return PUNCH;
         }
-        if (tool.is(CCMain.PAPER_PASTE_ITEM)) {
+        if (tool.is(CCMain.PAPER_PASTE_ITEM.get())) {
             return FIX;
         }
         if (tool.is(Items.SHEARS) && otherGrid.isEmpty()) {
