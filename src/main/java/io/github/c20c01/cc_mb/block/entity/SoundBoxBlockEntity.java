@@ -57,7 +57,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     private void playSound(Level level, BlockPos blockPos) {
         if (getSoundEvent() != null) {
             Vec3 pos = blockPos.getCenter();
-            level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, pos);
+            level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
             level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
         }
     }
