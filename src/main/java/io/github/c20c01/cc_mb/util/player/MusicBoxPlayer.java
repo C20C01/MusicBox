@@ -118,6 +118,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
      * The only way to play the beat on the server side.
      */
     public void hitOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+        update(level, blockPos, blockState);
         nextBeat();
         if (shouldPlay(level, blockPos, blockState)) {
             playBeatOnServer(level, blockPos, sound, seed, currentBeat);
