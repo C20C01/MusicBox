@@ -2,24 +2,30 @@
 
 # Music box
 
-Version 0.5.1
+Version 0.5.2 (2025.1)
 
-![MusicBox.png](README/img/MusicBox.png)
+![MusicBox.png](README/assets/MusicBox.png)
 **Punch songs on the Note Grid and play it with the Music Box!**
 
 ## Preview
 
 ### Automation
 
-![Automation](README/img/PistonGroup.gif)
+![Automation](README/assets/PistonGroup.gif)
 
 ↑ Output different signals according to the content of the note grid with the comparator.
 
 ### Punch
 
-![Punch](README/img/Punch.gif)
+![Punch](README/assets/Punch.gif)
 
 ↑ Punching holes at the perforation table for the note grid.
+
+### Sound Shard
+
+![Sound Shard](README/assets/SoundShard.mp4)
+
+↑ Use the sound shard to record and play sound.
 
 ## Jump to
 
@@ -27,6 +33,7 @@ Version 0.5.1
 * [Note Grid](#note-grid)
 * [Note Grid Page](#note-grid-page)
 * [Awl](#awl)
+* [Paper Paste](#paper-paste)
 * [Perforation Table](#perforation-table)
 * [Sound Shard](#sound-shard)
 * [Sound Box](#sound-box)
@@ -107,6 +114,9 @@ The page for viewing and editing the content of the note grid.
             * Press any mouse button or the `z`/`x` key on the keyboard to punch a whole beat within `5` ticks:
                 * If the punch fails, the awl will take `16` damage.
                 * Stop when you encounter reference data that has not been punched, and continue after punching.
+* Fix mode:
+    * Similar to the view mode. The left mouse button can fix the hole on the note grid, and the right mouse button can
+      play the effect after fixing a specific hole.
 
 ### Awl
 
@@ -118,6 +128,12 @@ A tool for punching or viewing and adjusting the speed of the music box.
     * The default value and range are the same as the speed of the music box.
     * Use without Shift: `+1`.
     * Use with Shift: `-1`.
+
+### Paper Paste
+
+A consumable item for repairing note grids.
+
+* In addition to crafting on the workbench, it can also be obtained by using paper on a cauldron with water.
 
 ### Perforation Table
 
@@ -131,25 +147,32 @@ A table for viewing, punching, and connecting the note grid.
           image will trigger a specific operation.
         * The left upper bar is the `operation object`, which can only be placed with a note grid.
         * The right upper bar is the `input content`, which can be placed with a note grid or a book and quill.
-        * The lower bar is the `tool`, which can be placed with an awl or slime balls.
+        * The lower bar is the `tool`, which can be placed with awl, slime ball, shears, or paper paste.
     * View mode:
         * The `operation object` is not empty, and the `tool` is empty.
         * You can enter the view mode of the [note grid page](#note-grid-page):
             * The `operation object` is the object to be viewed.
             * The `input content` is the reference data.
     * Punch mode:
-        * The `operation object` is not empty, and the `tool` is an awl.
+        * The `operation object` is not empty, and the `tool` is awl.
         * You can enter the punch mode of the [note grid page](#note-grid-page):
             * The `operation object` is the object to be punched.
             * The `input content` is the reference data.
             * Each hole consumes `1` durability, and the tool will automatically exit the mode after it is broken.
     * Connection mode:
-        * The `operation object` is not empty, the `input content` is a note grid, and the combined note grid length
-          does
-          not exceed `64` pages.
+        * The `operation object` is not empty, the `input content` is a note grid, the `tool` is slime ball, and the
+          combined note grid length does not exceed `64` pages.
         * You can connect two note grids:
             * Connect the `input content` to the end of the `operation object`.
             * The `input content` and the `tool` will be consumed.
+    * Fix mode:
+        * The `operation object` is not empty, and the `tool` is paper paste.
+        * You can enter the fix mode of the [note grid page](#note-grid-page):
+            * The `operation object` is the object to be fixed.
+            * Each fix consumes `1` paper paste.
+    * Split mode:
+        * The `operation object` is not empty, the `input content` is empty, and the `tool` is shears.
+        * You can split the note grid into two parts at the end of a specific page.
 
 ### Sound Shard
 
@@ -176,6 +199,8 @@ An item that listens, records, and plays sound.
             * The default is `55` ticks.
             * For each level of efficiency enchantment, the interval is reduced by `10` ticks, up to a maximum of
               `50` ticks.
+* Refresh:
+    * Use on a cauldron with powder snow to refresh the sound shard.
 
 ### Sound Box
 
@@ -195,7 +220,7 @@ Load and play sound shards.
 
 By writing the content of the book and quill, it can be used as reference data to facilitate the punching of the note.
 
-![Piano.png](README/img/Piano.png)
+![Piano.png](README/assets/Piano.png)
 
 * Conversion rule:
     * Each beat uses the keys in the [Note Block Studio](https://opennbs.org/) to represent the notes, using "." as the
@@ -212,4 +237,7 @@ By writing the content of the book and quill, it can be used as reference data t
 [Here](README/Songs.md) are some results exported using nbs files(collected from the Internet,
 some of which have been modified).
 
-# [Download on CurseForge](https://www.curseforge.com/minecraft/mc-mods/cc-mb/files)😘
+# Download😘
+
+* [CurseForge](https://www.curseforge.com/minecraft/mc-mods/cc-mb)
+* [Modrinth](https://modrinth.com/mod/cc-mb)
