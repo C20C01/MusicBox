@@ -23,7 +23,7 @@ Version 0.5.2 (2025.1)
 
 ### Sound Shard
 
-![Sound Shard](README/assets/SoundShard.mp4)
+https://github.com/user-attachments/assets/1682f6c8-a0e3-4f53-b09d-6eb9d0cd0c09
 
 ↑ Use the sound shard to record and play sound.
 

@@ -23,7 +23,7 @@
 
 ### 声响碎片
 
-![声响碎片](assets/SoundShard.mp4)
+https://github.com/user-attachments/assets/1682f6c8-a0e3-4f53-b09d-6eb9d0cd0c09
 
 ↑ 使用声响碎片记录、播放声音。
 
