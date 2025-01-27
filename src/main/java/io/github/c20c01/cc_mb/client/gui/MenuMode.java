@@ -10,7 +10,9 @@ public enum MenuMode {
     EMPTY(Component.translatable(CCMain.TEXT_EMPTY)),
     CHECK(Component.translatable(CCMain.TEXT_CHECK)),
     PUNCH(Component.translatable(CCMain.TEXT_PUNCH)),
-    CONNECT(Component.translatable(CCMain.TEXT_CONNECT));
+    CONNECT(Component.translatable(CCMain.TEXT_CONNECT)),
+    FIX(Component.translatable(CCMain.TEXT_FIX)),
+    CUT(Component.translatable(CCMain.TEXT_CUT));
     private final Component TIP;
 
     MenuMode(Component tip) {
@@ -26,6 +28,12 @@ public enum MenuMode {
         }
         if (tool.is(CCMain.AWL_ITEM.get())) {
             return PUNCH;
+        }
+        if (tool.is(CCMain.PAPER_PASTE_ITEM.get())) {
+            return FIX;
+        }
+        if (tool.is(Items.SHEARS) && otherGrid.isEmpty()) {
+            return CUT;
         }
         if (tool.is(Items.SLIME_BALL) && otherGrid.is(CCMain.NOTE_GRID_ITEM.get()) && NoteGridUtils.canConnect(noteGrid, otherGrid)) {
             return CONNECT;

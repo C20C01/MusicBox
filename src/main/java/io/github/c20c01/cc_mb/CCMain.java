@@ -11,6 +11,7 @@ import io.github.c20c01.cc_mb.data.NoteGridCode;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.item.PaperPaste;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.InstrumentBlocksHelper;
 import io.github.c20c01.cc_mb.util.player.TickPerBeat;
@@ -45,6 +46,9 @@ public class CCMain {
     public static final String TEXT_PUNCH = "text." + ID + ".punch";
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
     public static final String TEXT_CHECK = "text." + ID + ".check";
+    public static final String TEXT_FIX = "text." + ID + ".fix";
+    public static final String TEXT_CUT = "text." + ID + ".cut";
+    public static final String TEXT_CANNOT_CUT = "text." + ID + ".cannot_cut";
     public static final String TEXT_TICK_PER_BEAT = "text." + ID + ".tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
@@ -88,6 +92,7 @@ public class CCMain {
     public static final DeferredItem<NoteGrid> NOTE_GRID_ITEM;
     public static final DeferredItem<Awl> AWL_ITEM;
     public static final DeferredItem<Item> SOUND_SHARD_ITEM;
+    public static final DeferredItem<PaperPaste> PAPER_PASTE_ITEM;
 
     // block
     public static final DeferredBlock<MusicBoxBlock> MUSIC_BOX_BLOCK;
@@ -113,6 +118,7 @@ public class CCMain {
         NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1)));
         AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024).component(TICK_PER_BEAT.get(), TickPerBeat.DEFAULT)));
         SOUND_SHARD_ITEM = ITEMS.register("sound_shard", () -> new SoundShard(new Item.Properties().stacksTo(1)));
+        PAPER_PASTE_ITEM = ITEMS.register("paper_paste", () -> new PaperPaste(new Item.Properties()));
 
         MUSIC_BOX_BLOCK = BLOCKS.register("music_box_block", () -> new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
         MUSIC_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("music_box_block", MUSIC_BOX_BLOCK);
@@ -128,17 +134,18 @@ public class CCMain {
         PERFORATION_TABLE_MENU = MENU_TYPES.register("perforation_table_menu", () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
 
         CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
-                .icon(() -> MUSIC_BOX_BLOCK_ITEM.get().getDefaultInstance())
+                .icon(MUSIC_BOX_BLOCK_ITEM::toStack)
                 .displayItems((parameters, output) -> {
-                    output.accept(MUSIC_BOX_BLOCK_ITEM.get());
-                    output.accept(PERFORATION_TABLE_BLOCK_ITEM.get());
-                    output.accept(SOUND_BOX_BLOCK_ITEM.get());
-                    output.accept(AWL_ITEM.get());
-                    output.accept(SOUND_SHARD_ITEM.get());
+                    output.accept(MUSIC_BOX_BLOCK_ITEM);
+                    output.accept(PERFORATION_TABLE_BLOCK_ITEM);
+                    output.accept(SOUND_BOX_BLOCK_ITEM);
+                    output.accept(SOUND_SHARD_ITEM);
+                    output.accept(AWL_ITEM);
+                    output.accept(PAPER_PASTE_ITEM);
                     output.accept(Items.SLIME_BALL);
-                    output.accept(Items.WRITABLE_BOOK);
-                    output.accept(NOTE_GRID_ITEM.get());
-                    output.acceptAll(new PresetNoteGridData().getItems());
+                    output.accept(Items.SHEARS);
+                    output.accept(NOTE_GRID_ITEM);
+                    output.acceptAll(PresetNoteGridData.getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());
                 })
                 .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))

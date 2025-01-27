@@ -6,11 +6,11 @@
       "item": "minecraft:paper"
     },
     {
-      "item": "minecraft:paper"
+      "item": "minecraft:water_bucket"
     }
   ],
   "result": {
-    "count": 1,
-    "id": "cc_mb:note_grid"
+    "count": 16,
+    "id": "cc_mb:paper_paste"
   }
 }

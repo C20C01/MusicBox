@@ -8,6 +8,7 @@ import net.minecraft.world.item.component.WritableBookContent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -19,8 +20,8 @@ public class NoteGridData {
         this.PAGES = new ArrayList<>(List.of(new Page()));
     }
 
-    protected NoteGridData(ArrayList<Page> pages) {
-        this.PAGES = pages;
+    public NoteGridData(Collection<Page> pages) {
+        this.PAGES = new ArrayList<>(pages);
         this.PAGES.replaceAll(page -> page == null ? new Page() : page);
     }
 

@@ -30,11 +30,6 @@ public class CCLootTableProvider extends LootTableProvider {
         generator.addProvider(event.includeServer(), new CCLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
     }
 
-//    @Override
-//    protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationcontext) {
-//        map.forEach((key, value) -> value.validate(validationcontext));
-//    }
-
     private static class CCBlockLoot extends BlockLootSubProvider {
         protected CCBlockLoot(HolderLookup.Provider lookupProvider) {
             super(Set.of(), FeatureFlags.REGISTRY.allFlags(), lookupProvider);

@@ -28,7 +28,7 @@ public class NoteGridUtils {
         }
         Beat mainBeat = main.getPage(page).getBeat(beat);
         Beat helpBeat = help.getPage(page).getBeat(beat);
-        return CollectionUtils.containsAll(mainBeat.getNotes(), helpBeat.getNotes());
+        return mainBeat.getNotes().containsAll(helpBeat.getNotes());
     }
 
     /**
@@ -41,9 +41,24 @@ public class NoteGridUtils {
                 if (otherData.getPage(page).isEmptyBeat(beat)) {
                     continue;
                 }
-                data.getPage(page).getBeat(beat).addNotes(otherData.getPage(page).getBeat(beat).getNotes());
+                for (byte note : otherData.getPage(page).getBeat(beat).getNotes()) {
+                    data.getPage(page).getBeat(beat).addNote(note);
+                }
             }
         }
         return data;
+    }
+
+    /**
+     * Cut the data to two parts.
+     *
+     * @param page cut the end of which page
+     */
+    public static NoteGridData[] cut(NoteGridData data, byte page) {
+        page += 1;
+        NoteGridData[] res = new NoteGridData[2];
+        res[0] = new NoteGridData(data.getPages().subList(0, page));
+        res[1] = new NoteGridData(data.getPages().subList(page, data.size()));
+        return res;
     }
 }

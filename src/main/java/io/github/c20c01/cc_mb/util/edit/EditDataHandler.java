@@ -1,13 +1,13 @@
-package io.github.c20c01.cc_mb.util.punch;
+package io.github.c20c01.cc_mb.util.edit;
 
 /**
- * The punch data is transmitted with several positive bytes.
+ * The edit data is transmitted with several positive bytes.
  * For each byte, after the 1st sign bit, the 2nd bit is used to represent the content of the code.
  * If the 2nd bit is 0, the code is a note, if it is 1, the code is a beat or a page.
  * The page and beat are cached in both the sender and the receiver, they will only be sent if there is a change.
  * The flow of the data is as follows: page -> beat -> note.
  */
-public class PunchDataHandler {
+public class EditDataHandler {
     protected static final int MASK = 0b01000000;
     protected byte page = -1;
     protected byte beat = -1;
@@ -33,5 +33,9 @@ public class PunchDataHandler {
     public void reset() {
         page = -1;
         beat = -1;
+    }
+
+    public boolean dirty() {
+        return page != -1 || beat != -1;
     }
 }

@@ -32,8 +32,9 @@ public class NoteGridWidget extends AbstractWidget {
     @Override
     protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         switch (MENU.mode) {
-            case PUNCH, CHECK -> renderPunch(guiGraphics);
+            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics);
             case CONNECT -> renderConnect(guiGraphics);
+            case CUT -> renderCut(guiGraphics);
         }
     }
 
@@ -67,6 +68,16 @@ public class NoteGridWidget extends AbstractWidget {
         }
     }
 
+    private void renderCut(GuiGraphics guiGraphics) {
+        renderBg(guiGraphics);
+        for (byte beat = 0; beat < 64; beat++) {
+            renderOneBeat(guiGraphics, MENU.data, SCREEN.currentPage, beat, GuiUtils.BLACK);
+        }
+        if (SCREEN.hasNextPage()) {
+            guiGraphics.vLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
+        }
+    }
+
     @Override
     protected void updateWidgetNarration(@Nonnull NarrationElementOutput output) {
         defaultButtonNarrationText(output);
@@ -76,8 +87,13 @@ public class NoteGridWidget extends AbstractWidget {
     public void onClick(double x, double y, int button) {
         super.onClick(x, y, button);
         switch (SCREEN.getMenu().mode) {
-            case PUNCH, CHECK -> SCREEN.openNoteGridScreen();
+            case PUNCH, CHECK, FIX -> SCREEN.openNoteGridScreen();
             case CONNECT -> GuiUtils.sendCodeToMenu(MENU.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
+            case CUT -> {
+                if (SCREEN.hasNextPage()) {
+                    GuiUtils.sendCodeToMenu(MENU.containerId, SCREEN.currentPage);
+                }
+            }
         }
     }
 }

@@ -5,8 +5,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.util.CollectionUtils;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -55,8 +56,8 @@ public record NoteGridCode(byte[] code) {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof NoteGridCode other) {
-            return Arrays.equals(code, other.code);
+        if (obj instanceof NoteGridCode(byte[] other)) {
+            return Arrays.equals(code, other);
         }
         return false;
     }
@@ -64,7 +65,7 @@ public record NoteGridCode(byte[] code) {
     private static class Decoder {
         final ArrayList<Page> PAGES = new ArrayList<>();
         final ArrayList<Beat> BEATS = new ArrayList<>(Page.BEATS_SIZE);
-        final ArrayList<Byte> NOTES = new ArrayList<>(5);
+        final ByteArrayList NOTES = new ByteArrayList(5);
 
         NoteGridData decode(byte[] code) {
             for (byte b : code) {
@@ -110,7 +111,7 @@ public record NoteGridCode(byte[] code) {
     }
 
     private static class Encoder {
-        final ArrayList<Byte> CODE = new ArrayList<>(1024);
+        final ByteArrayList CODE = new ByteArrayList(1024);
         byte emptyBeats = 0;
 
         byte[] encode(NoteGridData data) {
@@ -125,12 +126,12 @@ public record NoteGridCode(byte[] code) {
                 }
                 finishPage();
             }
-            return CollectionUtils.toArray(CODE);
+            return CODE.toByteArray();
         }
 
         void addBeat(Beat beat) {
-            byte[] notes = beat.getNotes();
-            CODE.ensureCapacity(CODE.size() + notes.length);
+            ByteArraySet notes = beat.getNotes();
+            CODE.ensureCapacity(CODE.size() + notes.size());
             for (byte note : notes) {
                 CODE.add((byte) (note + 1));
             }

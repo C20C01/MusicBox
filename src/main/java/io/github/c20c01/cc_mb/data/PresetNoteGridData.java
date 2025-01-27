@@ -9,9 +9,13 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 
 public class PresetNoteGridData {
-    private final ArrayList<ItemStack> NOTE_GRIDS = new ArrayList<>();
+    private static final ArrayList<ItemStack> NOTE_GRIDS = new ArrayList<>();
 
-    public PresetNoteGridData() {
+    private static void updateNoteGrids() {
+        for (int size = 2; size <= 64; size *= 2) {
+            Component name = Component.translatable(CCMain.NOTE_GRID_ITEM.get().getDescriptionId()).append("(" + size + ")");
+            add(name, NoteGridCode.of(NoteGridData.ofPages(new Page[size])));
+        }
         add(Component.literal("Little Star").withStyle(ChatFormatting.GOLD), new NoteGridCode(
                 new byte[]{
                         -1, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
@@ -22,27 +26,19 @@ public class PresetNoteGridData {
                         -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7, 0
                 }
         ));
-        addNoteGridWithSize(2);
-        addNoteGridWithSize(4);
-        addNoteGridWithSize(8);
-        addNoteGridWithSize(16);
-        addNoteGridWithSize(32);
-        addNoteGridWithSize(64);
     }
 
-    private void addNoteGridWithSize(int size) {
-        Component name = Component.translatable(CCMain.NOTE_GRID_ITEM.get().getDescriptionId()).append("(" + size + ")");
-        add(name, NoteGridCode.of(NoteGridData.ofPages(new Page[size])));
-    }
-
-    public ArrayList<ItemStack> getItems() {
-        return NOTE_GRIDS;
-    }
-
-    private void add(Component name, NoteGridCode code) {
+    private static void add(Component name, NoteGridCode code) {
         ItemStack noteGrid = new ItemStack(CCMain.NOTE_GRID_ITEM.get());
         noteGrid.set(DataComponents.ITEM_NAME, name);
         noteGrid.set(CCMain.NOTE_GRID_DATA.get(), code);
         NOTE_GRIDS.add(noteGrid);
+    }
+
+    public static ArrayList<ItemStack> getItems() {
+        if (NOTE_GRIDS.isEmpty()) {
+            updateNoteGrids();
+        }
+        return NOTE_GRIDS;
     }
 }
