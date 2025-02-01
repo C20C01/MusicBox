@@ -148,7 +148,7 @@ public class CCMain implements ModInitializer {
                     output.accept(Items.SLIME_BALL);
                     output.accept(Items.SHEARS);
                     output.accept(NOTE_GRID_ITEM);
-                    output.acceptAll(new PresetNoteGridData().getItems());
+                    output.acceptAll(PresetNoteGridData.getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());
                 })
                 .title(Component.translatable(MUSIC_BOX_BLOCK.getDescriptionId()))
