@@ -186,8 +186,12 @@ https://github.com/user-attachments/assets/1682f6c8-a0e3-4f53-b09d-6eb9d0cd0c09
     * 播放间隔：
         * 默认为`55`tick。
         * 每有`1`级效率附魔，间隔减少`10`tick，最多减少`50`tick。
+* 更新声音种子：
+    * 见[声响盒](#声响盒)。
+    * 按下潜行键并使用可更新声音种子。（仅创造模式可用）
 * 重置：
     * 对装有细雪的炼药锅使用可重置声响碎片。
+    * 副手使用可重置声响碎片。（仅创造模式可用）
 
 ### 声响盒
 
@@ -215,6 +219,7 @@ https://github.com/user-attachments/assets/1682f6c8-a0e3-4f53-b09d-6eb9d0cd0c09
         * 书本内容：`r.r.i.i.o.o.i..u.u.y.y.t.t.r`。
     * 如果有多声部，就在对应的拍子那里添加上对应的键位即可。
 * 使用[NBS 文件导出工具](https://c20c01.github.io/Mods/MusicBox/Tool)可将你的`nbs`文件自动转换成书与笔的内容：
+    ![导出工具](assets/NBSTool.png)
     * 只支持新版nbs文件。无法加载时，请使用新版[Note Block Studio](https://opennbs.org/)重新保存以更新文件格式。
     * 不支持自定义音色，可以先转成原版有的乐器，之后再进行导出。
 

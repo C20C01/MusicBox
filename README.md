@@ -199,8 +199,12 @@ An item that listens, records, and plays sound.
             * The default is `55` ticks.
             * For each level of efficiency enchantment, the interval is reduced by `10` ticks, up to a maximum of
               `50` ticks.
+* Update sound seed:
+    * See [Sound Box](#sound-box).
+    * Press Shift and use it to update the sound seed. (Only available in creative mode)
 * Refresh:
     * Use on a cauldron with powder snow to refresh the sound shard.
+    * Use on the off-hand to refresh the sound shard. (Only available in creative mode)
 
 ### Sound Box
 
@@ -230,6 +234,7 @@ By writing the content of the book and quill, it can be used as reference data t
         * Book content: `r.r.i.i.o.o.i..u.u.y.y.t.t.r`.
     * Use the [NBS File Export Tool](https://c20c01.github.io/Mods/MusicBox/Tool) to automatically convert your `nbs`
       file into the content of the book and quill:
+      ![Export Tool](README/assets/NBSTool.png)
         * Only supports new version nbs files. If it cannot be loaded, please use the new version
           of [Note Block Studio](https://opennbs.org/) to upgrade the file format.
         * Custom timbre is not supported, you can convert it to the original timbre first, and then export it.
