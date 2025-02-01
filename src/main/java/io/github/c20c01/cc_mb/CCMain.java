@@ -133,7 +133,7 @@ public class CCMain {
                     output.accept(Items.SLIME_BALL);
                     output.accept(Items.SHEARS);
                     output.accept(NOTE_GRID_ITEM.get());
-                    output.acceptAll(new PresetNoteGridData().getItems());
+                    output.acceptAll(PresetNoteGridData.getItems());
                     output.acceptAll(InstrumentBlocksHelper.getItems());
                 })
                 .title(Component.translatable(MUSIC_BOX_BLOCK.get().getDescriptionId()))
