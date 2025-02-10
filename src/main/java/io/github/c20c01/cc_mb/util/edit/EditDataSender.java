@@ -1,11 +1,11 @@
-package io.github.c20c01.cc_mb.util.punch;
+package io.github.c20c01.cc_mb.util.edit;
 
 import io.github.c20c01.cc_mb.util.GuiUtils;
 
-public class PunchDataSender extends PunchDataHandler {
+public class EditDataSender extends EditDataHandler {
     private final int CONTAINER_ID;
 
-    public PunchDataSender(int containerId) {
+    public EditDataSender(int containerId) {
         this.CONTAINER_ID = containerId;
     }
 

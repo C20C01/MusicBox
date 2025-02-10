@@ -1,16 +1,16 @@
-package io.github.c20c01.cc_mb.util.punch;
+package io.github.c20c01.cc_mb.util.edit;
 
 import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 
 import java.util.function.Supplier;
 
-public class PunchDataReceiver extends PunchDataHandler {
+public class EditDataReceiver extends EditDataHandler {
     private final Supplier<NoteGridData> DATA_SUPPLIER;
     private final byte[] tempCode = new byte[2];// [page, beat] or [beat], mark is removed
     private byte tempCodeIndex = 0;
 
-    public PunchDataReceiver(Supplier<NoteGridData> dateSupplier) {
+    public EditDataReceiver(Supplier<NoteGridData> dateSupplier) {
         this.DATA_SUPPLIER = dateSupplier;
     }
 

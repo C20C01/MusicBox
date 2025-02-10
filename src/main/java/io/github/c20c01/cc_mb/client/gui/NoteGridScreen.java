@@ -5,8 +5,8 @@ import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import io.github.c20c01.cc_mb.util.GuiUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
+import io.github.c20c01.cc_mb.util.edit.EditDataSender;
 import io.github.c20c01.cc_mb.util.player.MindPlayer;
-import io.github.c20c01.cc_mb.util.punch.PunchDataSender;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.GameNarrator;
@@ -37,7 +37,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private static final byte JUDGMENT_INTERVAL_TICK = 5;// max tick you can early the beat (1tick = 50ms)
 
     private final byte[] MOUSE_POS = new byte[]{-1, -1};// {x, y}, {0, 0} at bottom left
-    private final PunchDataSender PUNCH_DATA_SENDER;
+    private final EditDataSender PUNCH_DATA_SENDER;
     private final NoteGridData MAIN_DATA;// play or edit on this data
     private final NoteGridData HELP_DATA;// show a translucent note grid to help player to copy notes from this data
     private final MindPlayer PLAYER;
@@ -73,7 +73,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         lastScreen = screen;
         MAIN_DATA = screen.getMenu().data;
         HELP_DATA = screen.getMenu().helpData;
-        PUNCH_DATA_SENDER = new PunchDataSender(screen.getMenu().containerId);
+        PUNCH_DATA_SENDER = new EditDataSender(screen.getMenu().containerId);
         tableScreen = screen;
         currentPage = (byte) Math.min(screen.currentPage, getNumPages() - 1);
         canEdit = screen.getMenu().mode == MenuMode.PUNCH;

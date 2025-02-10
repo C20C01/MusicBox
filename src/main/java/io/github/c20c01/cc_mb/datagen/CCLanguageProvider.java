@@ -52,6 +52,11 @@ public class CCLanguageProvider extends FabricLanguageProvider {
             case ZH_CN -> "声响碎片";
             default -> throw new IllegalStateException();
         });
+        builder.add(CCMain.PAPER_PASTE_ITEM, switch (locale) {
+            case EN_US -> "Paper paste";
+            case ZH_CN -> "纸糊";
+            default -> throw new IllegalStateException();
+        });
 
 
         builder.add(CCMain.TEXT_PUNCH, switch (locale) {
@@ -74,6 +79,12 @@ public class CCLanguageProvider extends FabricLanguageProvider {
             case ZH_CN -> "查看当前纸带";
             default -> throw new IllegalStateException();
         });
+        builder.add(CCMain.TEXT_FIX, switch (locale) {
+            case EN_US -> "Fix the note grid";
+            case ZH_CN -> "修复纸带";
+            default -> throw new IllegalStateException();
+        });
+
         builder.add(CCMain.TEXT_TICK_PER_BEAT, switch (locale) {
             case EN_US -> "Ticks per beat: ";
             case ZH_CN -> "每拍所用刻数: ";

@@ -10,6 +10,7 @@ import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
+import io.github.c20c01.cc_mb.item.PaperPaste;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
 import io.github.c20c01.cc_mb.network.SoundShardPacket;
@@ -41,6 +42,7 @@ public class CCMain implements ModInitializer {
     public static final String TEXT_PUNCH = "text." + ID + ".punch";
     public static final String TEXT_CONNECT = "text." + ID + ".connect";
     public static final String TEXT_CHECK = "text." + ID + ".check";
+    public static final String TEXT_FIX = "text." + ID + ".fix";
     public static final String TEXT_TICK_PER_BEAT = "text." + ID + ".tick_per_beat";
     public static final String TEXT_CHANGE_TICK_PER_BEAT = "text." + ID + ".change_tick_per_beat";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
@@ -68,6 +70,7 @@ public class CCMain implements ModInitializer {
     public static final Item NOTE_GRID_ITEM;
     public static final Item AWL_ITEM;
     public static final Item SOUND_SHARD_ITEM;
+    public static final Item PAPER_PASTE_ITEM;
 
     // block
     /**
@@ -91,6 +94,7 @@ public class CCMain implements ModInitializer {
         NOTE_GRID_ITEM = new NoteGrid(new Item.Properties().stacksTo(1));
         AWL_ITEM = new Awl(new Item.Properties().durability(1024));
         SOUND_SHARD_ITEM = new SoundShard(new Item.Properties().stacksTo(1));
+        PAPER_PASTE_ITEM = new PaperPaste(new Item.Properties());
 
         MUSIC_BOX_BLOCK = new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
         MUSIC_BOX_BLOCK_ITEM = new BlockItem(MUSIC_BOX_BLOCK, new Item.Properties());
@@ -115,6 +119,7 @@ public class CCMain implements ModInitializer {
         Registry.register(BuiltInRegistries.ITEM, getKey("note_grid"), NOTE_GRID_ITEM);
         Registry.register(BuiltInRegistries.ITEM, getKey("awl"), AWL_ITEM);
         Registry.register(BuiltInRegistries.ITEM, getKey("sound_shard"), SOUND_SHARD_ITEM);
+        Registry.register(BuiltInRegistries.ITEM, getKey("paper_paste"), PAPER_PASTE_ITEM);
 
         Registry.register(BuiltInRegistries.BLOCK, getKey("music_box_block"), MUSIC_BOX_BLOCK);
         Registry.register(BuiltInRegistries.ITEM, getKey("music_box_block"), MUSIC_BOX_BLOCK_ITEM);
