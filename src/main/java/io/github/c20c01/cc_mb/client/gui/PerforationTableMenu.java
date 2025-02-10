@@ -148,7 +148,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 res[0].saveToNoteGrid(NOTE_GRID_SLOT.getItem());
                 res[1].saveToNoteGrid(otherGrid);
                 OTHER_GRID_SLOT.set(otherGrid);
-                ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.BOGGED_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F));
+                ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SHEEP_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F));
                 hurtTool(1);
                 return true;
             }
