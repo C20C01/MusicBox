@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -15,13 +16,16 @@ import java.util.function.Supplier;
 /**
  * Packet to update the sound shard with specific sound event name.
  */
-public record SoundShardPacket(int slot, String sound) {
-    public static SoundShardPacket decode(FriendlyByteBuf friendlyByteBuf) {
-        return new SoundShardPacket(friendlyByteBuf.readVarInt(), friendlyByteBuf.readUtf());
+public record SoundShardUpdatePacket(int slot, String sound) {
+    public static SoundShardUpdatePacket decode(FriendlyByteBuf friendlyByteBuf) {
+        return new SoundShardUpdatePacket(friendlyByteBuf.readVarInt(), friendlyByteBuf.readUtf());
     }
 
     private static void saveSoundEvent(@Nullable ServerPlayer player, int slot, String sound) {
         if (player != null) {
+            if (!Inventory.isHotbarSlot(slot) && slot != Inventory.SLOT_OFFHAND) {
+                return;
+            }
             ItemStack soundShard = player.getInventory().getItem(slot);
             if (soundShard.is(CCMain.SOUND_SHARD_ITEM.get())) {
                 CompoundTag tag = soundShard.getOrCreateTag();

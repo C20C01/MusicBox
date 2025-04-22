@@ -18,10 +18,10 @@ public class CCNetwork {
         int id = -1;// use ++id to get the next id
 
         // Tell the server to update the sound shard with specific sound event name.
-        CHANNEL.messageBuilder(SoundShardPacket.class, ++id, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(SoundShardPacket::encode)
-                .decoder(SoundShardPacket::decode)
-                .consumerMainThread(SoundShardPacket::handleOnServer)
+        CHANNEL.messageBuilder(SoundShardUpdatePacket.class, ++id, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(SoundShardUpdatePacket::encode)
+                .decoder(SoundShardUpdatePacket::decode)
+                .consumerMainThread(SoundShardUpdatePacket::handleOnServer)
                 .add();
 
         // Ask the server to send the note grid data with specific hash code.
