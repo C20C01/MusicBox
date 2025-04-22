@@ -23,17 +23,17 @@ public class CCLanguageProvider extends FabricLanguageProvider {
     @Override
     public void generateTranslations(TranslationBuilder builder) {
         builder.add(CCMain.NOTE_GRID_ITEM, switch (locale) {
-            case EN_US -> "Note grid";
+            case EN_US -> "Note Grid";
             case ZH_CN -> "纸带";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.MUSIC_BOX_BLOCK, switch (locale) {
-            case EN_US -> "Music box";
+            case EN_US -> "Music Box";
             case ZH_CN -> "八音盒";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.PERFORATION_TABLE_BLOCK, switch (locale) {
-            case EN_US -> "Perforation table";
+            case EN_US -> "Perforation Table";
             case ZH_CN -> "打孔台";
             default -> throw new IllegalStateException();
         });
@@ -43,49 +43,48 @@ public class CCLanguageProvider extends FabricLanguageProvider {
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.SOUND_BOX_BLOCK, switch (locale) {
-            case EN_US -> "Sound box";
+            case EN_US -> "Sound Box";
             case ZH_CN -> "声响盒";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.SOUND_SHARD_ITEM, switch (locale) {
-            case EN_US -> "Sound shard";
+            case EN_US -> "Sound Shard";
             case ZH_CN -> "声响碎片";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.PAPER_PASTE_ITEM, switch (locale) {
-            case EN_US -> "Paper paste";
+            case EN_US -> "Paper Paste";
             case ZH_CN -> "纸糊";
             default -> throw new IllegalStateException();
         });
 
-
         builder.add(CCMain.TEXT_PUNCH, switch (locale) {
-            case EN_US -> "Punch the note grid with awl";
+            case EN_US -> "Punch the Note Grid with Awl";
             case ZH_CN -> "使用锥子为纸带打孔";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_CONNECT, switch (locale) {
-            case EN_US -> "Connect the right note grid to the end of the left one";
+            case EN_US -> "Connect the right Note Grid to the end of the left one";
             case ZH_CN -> "将右面的纸带连接到左面的纸带的末尾";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_EMPTY, switch (locale) {
-            case EN_US -> "Put the note grid in to operate";
+            case EN_US -> "Put the Note Grid in to operate";
             case ZH_CN -> "放入纸带以进行操作";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_CHECK, switch (locale) {
-            case EN_US -> "Check the note grid";
+            case EN_US -> "Check the Note Grid";
             case ZH_CN -> "查看当前纸带";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_FIX, switch (locale) {
-            case EN_US -> "Fix the note grid";
+            case EN_US -> "Fix the Note Grid";
             case ZH_CN -> "修补纸带";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_CUT, switch (this.locale) {
-            case EN_US -> "Cut the note grid from the end of the current page";
+            case EN_US -> "Cut the Note Grid from the end of the current page";
             case ZH_CN -> "将纸带从本页末尾剪断";
             default -> throw new IllegalStateException();
         });
@@ -133,7 +132,7 @@ public class CCLanguageProvider extends FabricLanguageProvider {
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_SOUND_BASS_DRUM, switch (locale) {
-            case EN_US -> "Bass drum";
+            case EN_US -> "Bass Drum";
             case ZH_CN -> "底鼓";
             default -> throw new IllegalStateException();
         });
@@ -163,12 +162,12 @@ public class CCLanguageProvider extends FabricLanguageProvider {
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_SOUND_IRON_XYLOPHONE, switch (locale) {
-            case EN_US -> "Iron xylophone";
+            case EN_US -> "Iron Xylophone";
             case ZH_CN -> "铁木琴（颤音琴）";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_SOUND_COW_BELL, switch (locale) {
-            case EN_US -> "Cow bell";
+            case EN_US -> "Cow Bell";
             case ZH_CN -> "牛铃";
             default -> throw new IllegalStateException();
         });
