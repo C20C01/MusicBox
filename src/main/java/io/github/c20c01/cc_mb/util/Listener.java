@@ -43,8 +43,11 @@ public class Listener implements SoundEventListener {
     @Nullable
     public static ResourceLocation finish() {
         Minecraft.getInstance().getSoundManager().removeListener(LISTENER);
-        LISTENER.listening = false;
-        return LISTENER.soundLocation;
+        if (LISTENER.listening) {
+            LISTENER.listening = false;
+            return LISTENER.soundLocation;
+        }
+        return null;
     }
 
     private boolean isAudible(SoundInstance sound, float range) {

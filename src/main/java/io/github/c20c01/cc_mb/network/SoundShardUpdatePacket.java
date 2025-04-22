@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -28,6 +29,9 @@ public record SoundShardUpdatePacket(int slot, ResourceLocation sound) implement
     }
 
     private static void saveSoundEvent(ServerPlayer player, int slot, ResourceLocation location) {
+        if (!Inventory.isHotbarSlot(slot) && slot != Inventory.SLOT_OFFHAND) {
+            return;
+        }
         ItemStack soundShard = player.getInventory().getItem(slot);
         if (soundShard.is(CCMain.SOUND_SHARD_ITEM.get())) {
             Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(location));
