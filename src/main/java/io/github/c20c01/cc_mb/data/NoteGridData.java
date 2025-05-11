@@ -20,6 +20,8 @@ public class NoteGridData {
     public static final String DATA_KEY = "notes";
     public static final byte MAX_SIZE = 64;
     private ArrayList<Page> pages = new ArrayList<>(List.of(new Page()));
+    private boolean dirty = true;
+    private int hashCode = 0;
 
     public static NoteGridData ofPages(Page... pages) {
         return new NoteGridData().loadPages(pages);
@@ -98,6 +100,10 @@ public class NoteGridData {
         return noteGrid;
     }
 
+    public void markDirty() {
+        this.dirty = true;
+    }
+
     @Override
     public String toString() {
         return "NoteGrid:" + pages;
@@ -105,7 +111,11 @@ public class NoteGridData {
 
     @Override
     public int hashCode() {
-        return pages.hashCode();
+        if (dirty) {
+            hashCode = pages.hashCode();
+            dirty = false;
+        }
+        return hashCode;
     }
 
     public Page getPage(byte index) {

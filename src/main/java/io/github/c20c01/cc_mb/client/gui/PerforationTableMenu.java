@@ -158,12 +158,14 @@ public class PerforationTableMenu extends AbstractContainerMenu {
             if (mode == MenuMode.PUNCH) {
                 if (beat.addNote((byte) code)) {
                     hurtTool(1);
+                    data.markDirty();
                 }
                 return true;
             }
             if (mode == MenuMode.FIX) {
                 if (beat.removeNote((byte) code)) {
                     TOOL_SLOT.getItem().shrink(1);
+                    data.markDirty();
                 }
                 return true;
             }
