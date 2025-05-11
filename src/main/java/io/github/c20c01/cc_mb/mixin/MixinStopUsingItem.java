@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * release using is not enough.
  */
 @Mixin(LocalPlayer.class)
-public abstract class StopUsingItemMixin {
+public abstract class MixinStopUsingItem {
     @Inject(at = @At("HEAD"), method = "stopUsingItem")
     private void stopUsingItem(CallbackInfo info) {
         if (((LocalPlayer) (Object) this).getUseItem().is(CCMain.SOUND_SHARD_ITEM)) {
