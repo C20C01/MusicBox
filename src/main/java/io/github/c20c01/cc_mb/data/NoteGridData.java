@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 public class NoteGridData {
     public static final byte MAX_SIZE = 64;
     private final ArrayList<Page> PAGES;
+    private boolean dirty = true;
+    private int hashCode = 0;
 
     private NoteGridData() {
         this.PAGES = new ArrayList<>(List.of(new Page()));
@@ -60,6 +62,10 @@ public class NoteGridData {
         noteGrid.set(CCMain.NOTE_GRID_DATA.get(), NoteGridCode.of(this));
     }
 
+    public void markDirty() {
+        this.dirty = true;
+    }
+
     @Override
     public String toString() {
         return "NoteGrid:" + PAGES;
@@ -67,7 +73,11 @@ public class NoteGridData {
 
     @Override
     public int hashCode() {
-        return PAGES.hashCode();
+        if (dirty) {
+            hashCode = PAGES.hashCode();
+            dirty = false;
+        }
+        return hashCode;
     }
 
     @Override
