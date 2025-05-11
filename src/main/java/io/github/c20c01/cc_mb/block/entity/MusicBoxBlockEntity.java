@@ -33,6 +33,7 @@ import java.util.Optional;
 public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implements MusicBoxPlayer.Listener {
     public static final String NOTE_GRID = "note_grid";
     private final MusicBoxPlayer PLAYER;
+    private boolean playNextBeat = false; // whether ask the client to play next beat
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState, NOTE_GRID);
@@ -66,16 +67,22 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
 
     @Override
     public void handleUpdateTag(CompoundTag tag) {
-        PLAYER.loadUpdateTag(tag);
         if (tag.contains("note_grid_hash")) {
+            // has note grid, load data and play next beat if needed
             NoteGridDataManager.getInstance().getNoteGridData(tag.getInt("note_grid_hash"), getBlockPos(), PLAYER::setData);
+            if (tag.getBoolean("play_next_beat")) {
+                PLAYER.nextBeat(level, getBlockPos(), getBlockState());
+            }
         } else {
+            // no note grid, remove data
             NoteGridData data = PLAYER.getData();
             if (data != null) {
                 NoteGridDataManager.getInstance().markRemovable(data.hashCode());
                 PLAYER.setData(null);
             }
         }
+        // update the player's state
+        PLAYER.loadUpdateTag(tag);
     }
 
     public Optional<NoteGridData> getPlayerData() {
@@ -89,7 +96,9 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         NoteGridData data = PLAYER.getData();
         if (data != null) {
             tag.putInt("note_grid_hash", data.hashCode());
+            tag.putBoolean("play_next_beat", playNextBeat);
         }
+        playNextBeat = false;
         return tag;
     }
 
@@ -178,15 +187,17 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     /**
-     * Play one beat. The sound and particle will be sent to the client from the server.
-     * The effect will be affected by the network latency.
+     * Play next beat. From server to client there will both play their own next beat.
      */
-    public void playOneBeat(Level level, BlockPos blockPos, BlockState blockState) {
-        if (!blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID) || blockState.getValue(MusicBoxBlock.POWERED)) {
+    public void playNextBeat(Level level, BlockPos blockPos, BlockState blockState) {
+        if (!blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID) || blockState.getValue(MusicBoxBlock.POWERED) || level.isClientSide) {
             return;
         }
         if (level instanceof ServerLevel serverLevel) {
-            PLAYER.hitOneBeat(serverLevel, blockPos, blockState);
+            // play next beat on server
+            PLAYER.nextBeat(level, blockPos, blockState);
+            // ask the client to play next beat
+            playNextBeat = true;
             BlockUtils.markForUpdate(serverLevel, blockPos);
         }
     }
