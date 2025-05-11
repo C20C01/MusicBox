@@ -13,3 +13,5 @@ logoFile = "cc_mb.png" #optional
 authors = "${mod_authors}"
 #displayTest="MATCH_VERSION" # MATCH_VERSION is the default if nothing is specified (#optional)
 description = '''${mod_description}'''
+[[mixins]]
+config="${mod_id}.mixins.json"
