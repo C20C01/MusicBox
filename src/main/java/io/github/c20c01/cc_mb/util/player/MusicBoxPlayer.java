@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -48,20 +47,6 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         if (!level.getBlockState(blockPos.above()).canOcclude()) {
             double d = (double) beat.getMinNote() / 24.0D;
             level.addParticle(ParticleTypes.NOTE, pos.x, pos.y + 0.7D, pos.z, d, 0.0D, 0.0D);
-        }
-    }
-
-    private static void playBeatOnServer(ServerLevel level, BlockPos blockPos, Holder<SoundEvent> sound, long seed, Beat beat) {
-        Vec3 pos = Vec3.atCenterOf(blockPos);
-        // Sound
-        for (byte note : beat.getNotes()) {
-            float pitch = getPitchFromNote(note);
-            level.playSeededSound(null, pos.x, pos.y, pos.z, sound, SoundSource.RECORDS, 3.0F, pitch, seed);
-        }
-        // Particle
-        if (!level.getBlockState(blockPos.above()).canOcclude()) {
-            double d = (double) beat.getMinNote() / 24.0D;
-            level.sendParticles(ParticleTypes.NOTE, pos.x, pos.y + 0.7D, pos.z, 0, d, 0.0D, 0.0D, 1.0D);
         }
     }
 
@@ -114,15 +99,9 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         this.blockState = blockState;
     }
 
-    /**
-     * The only way to play the beat on the server side.
-     */
-    public void hitOneBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+    public void nextBeat(Level level, BlockPos blockPos, BlockState blockState) {
         update(level, blockPos, blockState);
         nextBeat();
-        if (shouldPlay(level, blockPos, blockState)) {
-            playBeatOnServer(level, blockPos, sound, seed, currentBeat);
-        }
     }
 
     /**

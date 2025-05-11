@@ -127,7 +127,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
         if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
-            blockEntity.playOneBeat(level, blockPos, blockState);
+            blockEntity.playNextBeat(level, blockPos, blockState);
         }
         super.attack(blockState, level, blockPos, player);
     }
@@ -176,7 +176,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
                 if (level.isClientSide) {
                     return ItemInteractionResult.SUCCESS;
                 }
-                blockEntity.playOneBeat(level, blockPos, blockState);
+                blockEntity.playNextBeat(level, blockPos, blockState);
                 return ItemInteractionResult.CONSUME;
             }
         } else {
