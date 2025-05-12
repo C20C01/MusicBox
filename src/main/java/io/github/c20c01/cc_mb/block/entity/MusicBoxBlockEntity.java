@@ -186,6 +186,21 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         return PLAYER.getTickPerBeat();
     }
 
+    public void setOctave(Level level, BlockPos blockPos, byte octave) {
+        if (PLAYER.getOctave() == octave) {
+            return;
+        }
+        PLAYER.setOctave(octave);
+        // Sync the note grid player information to the client.
+        if (level instanceof ServerLevel serverLevel) {
+            BlockUtils.markForUpdate(serverLevel, blockPos);
+        }
+    }
+
+    public byte getOctave() {
+        return PLAYER.getOctave();
+    }
+
     /**
      * Play next beat. From server to client there will both play their own next beat.
      */

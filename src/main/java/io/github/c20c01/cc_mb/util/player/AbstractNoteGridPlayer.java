@@ -4,6 +4,7 @@ import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.NoteBlock;
 
 public abstract class AbstractNoteGridPlayer {
@@ -21,6 +22,8 @@ public abstract class AbstractNoteGridPlayer {
     protected Beat currentBeat = Beat.EMPTY_BEAT;
     protected long seed;
     protected Holder<SoundEvent> sound;
+    private byte octave;
+    private float pitchFactor = 1f;
     private byte tickPerBeat = TickPerBeat.DEFAULT;
 
     /**
@@ -51,6 +54,19 @@ public abstract class AbstractNoteGridPlayer {
 
     public void setTickPerBeat(int tickPerBeat) {
         this.tickPerBeat = TickPerBeat.clamp(tickPerBeat);
+    }
+
+    public byte getOctave() {
+        return octave;
+    }
+
+    public void setOctave(byte octave) {
+        this.octave = (byte) Mth.clamp(octave, -2, 2);
+        this.pitchFactor = (float) Math.pow(2.0, octave);
+    }
+
+    public float getPitchFactor() {
+        return pitchFactor;
     }
 
     public void tick() {

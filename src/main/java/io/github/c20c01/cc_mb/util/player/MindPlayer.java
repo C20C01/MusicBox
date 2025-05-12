@@ -1,13 +1,13 @@
 package io.github.c20c01.cc_mb.util.player;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.client.SoundPlayer;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -92,7 +92,7 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         }
         for (byte note : notes) {
             float pitch = getPitchFromNote(note);
-            level.playSeededSound(player, player.getX(), player.getY(), player.getZ(), sound, SoundSource.RECORDS, 3.0F, pitch, seed);
+            SoundPlayer.playInMind(sound.value(), seed, 3.0F, pitch);
         }
     }
 
