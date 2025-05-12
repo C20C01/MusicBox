@@ -115,7 +115,7 @@ public class SoundShard extends Item {
                 // creative mode only: shift to change the sound seed.
                 Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
                 if (newSeed != null) {
-                    level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
+                    level.playSeededSound(player, player, info.sound(), player.getSoundSource(), 1.0F, 1.0F, newSeed);
                 }
                 return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
             }
@@ -130,7 +130,7 @@ public class SoundShard extends Item {
             }
         }
         // play the sound event that saved in the sound shard
-        level.playSeededSound(null, player.getX(), player.getY(), player.getZ(), info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
+        level.playSeededSound(player, player, info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
         level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
         return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
     }
