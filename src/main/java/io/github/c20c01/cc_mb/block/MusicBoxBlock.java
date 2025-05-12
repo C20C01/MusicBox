@@ -135,6 +135,20 @@ public class MusicBoxBlock extends BaseEntityBlock {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
 
+        // TODO: remove me
+        if (itemStack.is(Items.STICK)) {
+            // change octave
+            if (level.isClientSide) {
+                return InteractionResult.SUCCESS;
+            }
+            int newOctave = blockEntity.getOctave() + (hand == InteractionHand.MAIN_HAND ? -1 : 1);
+            blockEntity.setOctave(level, blockPos, (byte) newOctave);
+            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
+            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getOctave())).withStyle(ChatFormatting.DARK_AQUA), true);
+            return InteractionResult.CONSUME;
+        }
+        // =====================================
+
         if (itemStack.is(CCMain.AWL_ITEM) && !player.isSecondaryUseActive()) {
             // modify tick per beat
             if (level.isClientSide) {
