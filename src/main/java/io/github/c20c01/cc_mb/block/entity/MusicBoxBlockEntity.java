@@ -6,19 +6,25 @@ import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
+import io.github.c20c01.cc_mb.util.player.AbstractNoteGridPlayer;
 import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -171,30 +177,40 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         return minNote > 13 ? 15 : minNote + 2;
     }
 
-    public void setTickPerBeat(Level level, BlockPos blockPos, byte tickPerBeat) {
+    public void setTickPerBeat(ServerLevel level, BlockPos blockPos, byte tickPerBeat) {
         if (PLAYER.getTickPerBeat() == tickPerBeat) {
             return;
         }
         PLAYER.setTickPerBeat(tickPerBeat);
         // Sync the note grid player information to the client.
-        if (level instanceof ServerLevel serverLevel) {
-            BlockUtils.markForUpdate(serverLevel, blockPos);
-        }
+        BlockUtils.markForUpdate(level, blockPos);
     }
 
     public byte getTickPerBeat() {
         return PLAYER.getTickPerBeat();
     }
 
-    public void setOctave(Level level, BlockPos blockPos, byte octave) {
+    public void setOctave(ServerLevel level, BlockPos blockPos, Player player) {
+        int next;
+        if (player.isSecondaryUseActive()) {
+            // decrease octave
+            next = getOctave() > AbstractNoteGridPlayer.MIN_OCTAVE ? getOctave() - 1 : AbstractNoteGridPlayer.MAX_OCTAVE;
+        } else {
+            // increase octave
+            next = getOctave() < AbstractNoteGridPlayer.MAX_OCTAVE ? getOctave() + 1 : AbstractNoteGridPlayer.MIN_OCTAVE;
+        }
+        setOctave(level, blockPos, (byte) next);
+        level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
+        player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_OCTAVE).append(String.valueOf(next)).withStyle(ChatFormatting.DARK_AQUA), true);
+    }
+
+    private void setOctave(ServerLevel level, BlockPos blockPos, byte octave) {
         if (PLAYER.getOctave() == octave) {
             return;
         }
         PLAYER.setOctave(octave);
         // Sync the note grid player information to the client.
-        if (level instanceof ServerLevel serverLevel) {
-            BlockUtils.markForUpdate(serverLevel, blockPos);
-        }
+        BlockUtils.markForUpdate(level, blockPos);
     }
 
     public byte getOctave() {
@@ -204,17 +220,15 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     /**
      * Play next beat. From server to client there will both play their own next beat.
      */
-    public void playNextBeat(Level level, BlockPos blockPos, BlockState blockState) {
-        if (!blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID) || blockState.getValue(MusicBoxBlock.POWERED) || level.isClientSide) {
+    public void playNextBeat(ServerLevel level, BlockPos blockPos, BlockState blockState) {
+        if (!blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID) || blockState.getValue(MusicBoxBlock.POWERED)) {
             return;
         }
-        if (level instanceof ServerLevel serverLevel) {
-            // play next beat on server
-            PLAYER.nextBeat(level, blockPos, blockState);
-            // ask the client to play next beat
-            playNextBeat = true;
-            BlockUtils.markForUpdate(serverLevel, blockPos);
-        }
+        // play next beat on server (only for the level event)
+        PLAYER.nextBeat(level, blockPos, blockState);
+        // ask the client to play next beat (for the sound and particles)
+        playNextBeat = true;
+        BlockUtils.markForUpdate(level, blockPos);
     }
 
     /**
