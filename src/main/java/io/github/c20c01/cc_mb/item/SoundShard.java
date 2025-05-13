@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.network.SoundShardPacket;
+import io.github.c20c01.cc_mb.network.SoundShardUpdatePacket;
 import io.github.c20c01.cc_mb.util.Listener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -156,7 +156,7 @@ public class SoundShard extends Item {
             if (location != null) {
                 player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
                 // Send the sound event to the server to save it in the sound shard.
-                ClientPlayNetworking.send(new SoundShardPacket(player.getInventory().selected, location.toString()));
+                ClientPlayNetworking.send(new SoundShardUpdatePacket(player.getInventory().selected, location.toString()));
             }
         }
         super.releaseUsing(itemStack, level, livingEntity, tick);

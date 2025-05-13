@@ -13,7 +13,7 @@ import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.PaperPaste;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
-import io.github.c20c01.cc_mb.network.SoundShardPacket;
+import io.github.c20c01.cc_mb.network.SoundShardUpdatePacket;
 import io.github.c20c01.cc_mb.util.InstrumentBlocksHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -156,6 +156,6 @@ public class CCMain implements ModInitializer {
         );
 
         ServerPlayNetworking.registerGlobalReceiver(NoteGridDataPacket.Request.KEY, (server, player, handler, buf, responseSender) -> NoteGridDataPacket.Request.handle(server, player, buf, responseSender));
-        ServerPlayNetworking.registerGlobalReceiver(SoundShardPacket.KEY, (server, player, handler, buf, responseSender) -> SoundShardPacket.handle(server, player, buf));
+        ServerPlayNetworking.registerGlobalReceiver(SoundShardUpdatePacket.KEY, (server, player, handler, buf, responseSender) -> SoundShardUpdatePacket.handle(server, player, buf));
     }
 }
