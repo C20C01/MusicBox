@@ -8,6 +8,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.NoteBlock;
 
 public abstract class AbstractNoteGridPlayer {
+    public static final byte MAX_OCTAVE = 2;
+    public static final byte MIN_OCTAVE = -2;
     private static final float[] PITCHES = new float[25];
 
     static {
@@ -61,7 +63,7 @@ public abstract class AbstractNoteGridPlayer {
     }
 
     public void setOctave(byte octave) {
-        this.octave = (byte) Mth.clamp(octave, -2, 2);
+        this.octave = (byte) Mth.clamp(octave, MIN_OCTAVE, MAX_OCTAVE);
         this.pitchFactor = (float) Math.pow(2.0, octave);
     }
 

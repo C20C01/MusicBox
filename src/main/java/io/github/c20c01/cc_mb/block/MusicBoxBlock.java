@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
@@ -117,13 +118,24 @@ public class MusicBoxBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
+    /**
+     * Attack with an awl in non-creative mode will set the octave,
+     * without an awl will play the next beat.
+     * For creative mode setting the octave, see {@link Awl#canAttackBlock}
+     */
     @Override
     @SuppressWarnings("deprecation")
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
-        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
-            blockEntity.playNextBeat(level, blockPos, blockState);
+        if (level.isClientSide || !(level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity)) {
+            super.attack(blockState, level, blockPos, player);
+            return;
         }
-        super.attack(blockState, level, blockPos, player);
+        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(CCMain.AWL_ITEM)) {
+            blockEntity.setOctave((ServerLevel) level, blockPos, player);
+            return;
+        }
+
+        blockEntity.playNextBeat((ServerLevel) level, blockPos, blockState);
     }
 
     @Override
@@ -135,27 +147,13 @@ public class MusicBoxBlock extends BaseEntityBlock {
             return super.use(blockState, level, blockPos, player, hand, hitResult);
         }
 
-        // TODO: remove me
-        if (itemStack.is(Items.STICK)) {
-            // change octave
-            if (level.isClientSide) {
-                return InteractionResult.SUCCESS;
-            }
-            int newOctave = blockEntity.getOctave() + (hand == InteractionHand.MAIN_HAND ? -1 : 1);
-            blockEntity.setOctave(level, blockPos, (byte) newOctave);
-            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
-            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getOctave())).withStyle(ChatFormatting.DARK_AQUA), true);
-            return InteractionResult.CONSUME;
-        }
-        // =====================================
-
         if (itemStack.is(CCMain.AWL_ITEM) && !player.isSecondaryUseActive()) {
             // modify tick per beat
             if (level.isClientSide) {
                 return InteractionResult.SUCCESS;
             }
             byte tickPerBeat = Awl.getTickPerBeatTag(itemStack.getOrCreateTag());
-            blockEntity.setTickPerBeat(level, blockPos, tickPerBeat);
+            blockEntity.setTickPerBeat((ServerLevel) level, blockPos, tickPerBeat);
             level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
             player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
             return InteractionResult.CONSUME;
@@ -186,7 +184,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
                 if (level.isClientSide) {
                     return InteractionResult.SUCCESS;
                 }
-                blockEntity.playNextBeat(level, blockPos, blockState);
+                blockEntity.playNextBeat((ServerLevel) level, blockPos, blockState);
                 return InteractionResult.CONSUME;
             }
         } else {

@@ -4,8 +4,10 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -14,6 +16,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class Awl extends Item {
     private static final String TICK_PER_BEAT_KEY = "tick_per_beat";
@@ -30,15 +33,17 @@ public class Awl extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack awl = player.getItemInHand(hand);
         CompoundTag tag = awl.getOrCreateTag();
-
-        byte nextTickPerBeat = (byte) (getTickPerBeatTag(tag) + (player.isSecondaryUseActive() ? -1 : 1));
-        if (nextTickPerBeat < TickPerBeat.MIN) {
-            nextTickPerBeat = TickPerBeat.MAX;
-        } else if (nextTickPerBeat > TickPerBeat.MAX) {
-            nextTickPerBeat = TickPerBeat.MIN;
+        byte current = getTickPerBeatTag(tag);
+        int next;
+        if (player.isSecondaryUseActive()) {
+            // decrease octave
+            next = current > TickPerBeat.MIN ? current - 1 : TickPerBeat.MAX;
+        } else {
+            // increase octave
+            next = current < TickPerBeat.MAX ? current + 1 : TickPerBeat.MIN;
         }
-        tag.putByte(TICK_PER_BEAT_KEY, nextTickPerBeat);
-        player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(nextTickPerBeat)).withStyle(ChatFormatting.GOLD), true);
+        tag.putByte(TICK_PER_BEAT_KEY, (byte) next);
+        player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD), true);
         return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
     }
 
@@ -56,5 +61,19 @@ public class Awl extends Item {
             return InteractionResult.SUCCESS;
         }
         return super.useOn(context);
+    }
+
+    /**
+     * Stops the creative player from breaking the music box with the awl.
+     */
+    @Override
+    public boolean canAttackBlock(BlockState state, Level level, BlockPos blockPos, Player player) {
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity && player.getAbilities().instabuild) {
+            if (level instanceof ServerLevel serverLevel) {
+                blockEntity.setOctave(serverLevel, blockPos, player);
+            }
+            return false;
+        }
+        return super.canAttackBlock(state, level, blockPos, player);
     }
 }

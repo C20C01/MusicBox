@@ -101,7 +101,12 @@ public class CCLanguageProvider extends FabricLanguageProvider {
         });
         builder.add(CCMain.TEXT_CHANGE_TICK_PER_BEAT, switch (locale) {
             case EN_US -> "Ticks per beat has been set to: ";
-            case ZH_CN -> "八音盒每拍所用刻数已设为: ";
+            case ZH_CN -> "每拍所用刻数已设为: ";
+            default -> throw new IllegalStateException();
+        });
+        builder.add(CCMain.TEXT_CHANGE_OCTAVE, switch (this.locale) {
+            case EN_US -> "Octave offset has been set to: ";
+            case ZH_CN -> "八度偏移已设为: ";
             default -> throw new IllegalStateException();
         });
         builder.add(CCMain.TEXT_SHARD_WITHOUT_SOUND, switch (locale) {
