@@ -4,7 +4,9 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -13,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class Awl extends Item {
     public Awl(Properties properties) {
@@ -23,13 +26,15 @@ public class Awl extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack awl = player.getItemInHand(hand);
         byte current = awl.getOrDefault(CCMain.TICK_PER_BEAT.get(), TickPerBeat.DEFAULT);
-        byte next = (byte) (current + (player.isSecondaryUseActive() ? -1 : 1));
-        if (next < TickPerBeat.MIN) {
-            next = TickPerBeat.MAX;
-        } else if (next > TickPerBeat.MAX) {
-            next = TickPerBeat.MIN;
+        int next;
+        if (player.isSecondaryUseActive()) {
+            // decrease octave
+            next = current > TickPerBeat.MIN ? current - 1 : TickPerBeat.MAX;
+        } else {
+            // increase octave
+            next = current < TickPerBeat.MAX ? current + 1 : TickPerBeat.MIN;
         }
-        awl.set(CCMain.TICK_PER_BEAT.get(), next);
+        awl.set(CCMain.TICK_PER_BEAT.get(), (byte) next);
         player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD), true);
         return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
     }
@@ -48,5 +53,19 @@ public class Awl extends Item {
             return InteractionResult.SUCCESS;
         }
         return super.useOn(context);
+    }
+
+    /**
+     * Stops the creative player from breaking the music box with the awl.
+     */
+    @Override
+    public boolean canAttackBlock(BlockState state, Level level, BlockPos blockPos, Player player) {
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity && player.getAbilities().instabuild) {
+            if (level instanceof ServerLevel serverLevel) {
+                blockEntity.setOctave(serverLevel, blockPos, player);
+            }
+            return false;
+        }
+        return super.canAttackBlock(state, level, blockPos, player);
     }
 }
