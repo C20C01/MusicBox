@@ -2,7 +2,7 @@
 
 # Music box
 
-Version 0.5.2 (2025.1) | [Download](#download)
+Version 0.5.3 (2025.5) | [Download](#download)
 
 ![MusicBox.png](README/assets/MusicBox.png)
 **Punch songs on the Note Grid and play it with the Music Box!**
@@ -26,6 +26,12 @@ Version 0.5.2 (2025.1) | [Download](#download)
 https://github.com/user-attachments/assets/1682f6c8-a0e3-4f53-b09d-6eb9d0cd0c09
 
 ↑ Use the sound shard to record and play sound.
+
+### Octave Offset
+
+https://github.com/user-attachments/assets/af37487b-0693-4638-988d-5dac99e76190
+
+↑ Knock the music box with the awl to adjust its octave offset.
 
 ## Jump to
 
@@ -53,13 +59,17 @@ Load and play your note grid.
     * The unit is `tick/beat`, which is the number of `tick`s consumed per beat.
     * The speed range is: `[1, 20]`.
     * The default speed is `10` ticks/beat.
+* Knock the music box with the awl to adjust its octave offset:
+    * The offset range is `[-2, 2]`.
+    * The default offset is `0`.
+    * Note: **Some instruments may sound very harsh after a large offset!**
 * Without note grid:
     * Use a note grid to insert it into the music box.
     * Use a hopper to insert the note grid into the music box, and items outside the note grid will be blocked in the
       hopper.
 * With note grid:
     * Press Shift and use with empty hand to take out the note grid.
-    * Digging or using the music box will play one beat.
+    * Knocking or using the music box will play one beat.
     * When activated by a redstone signal:
         * Play the note grid at the set speed.
         * Using a comparator will output a redstone signal of `[1, 15]` strength:
@@ -120,7 +130,7 @@ The page for viewing and editing the content of the note grid.
 
 ### Awl
 
-A tool for punching or viewing and adjusting the speed of the music box.
+A tool for punching, viewing and adjusting the speed, adjusting the octave offset of the music box.
 
 * Use without Shift on the music box to set its speed to the speed stored in the awl.
 * Use with Shift on the music box to view its current speed.
@@ -128,6 +138,9 @@ A tool for punching or viewing and adjusting the speed of the music box.
     * The default value and range are the same as the speed of the music box.
     * Use without Shift: `+1`.
     * Use with Shift: `-1`.
+* Knock the music box with the awl to adjust its octave offset:
+    * Knock without Shift: `+1`.
+    * Knock with Shift: `-1`.
 
 ### Paper Paste
 
@@ -214,7 +227,7 @@ Load and play sound shards.
     * Use a sound shard with sound to load the sound shard.
     * The note block above will play silently.
 * With sound shard:
-    * When digging, using, or activating with a redstone signal, play the sound of the sound shard:
+    * When knocking, using, or activating with a redstone signal, play the sound of the sound shard:
         * When the note block above is a note block, it will no longer play.
     * The note block above will play according to the sound of the sound shard.
     * When a lightning rod adjacent to and pointing to this sound box is struck by lightning, the sound seed of the
