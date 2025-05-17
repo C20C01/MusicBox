@@ -14,7 +14,7 @@ public class MixinSoundEngine {
      * @author C20C01 @ GitHub
      * @reason Skip the pitch calculation for {@link SoundPlayer.MusicBoxSoundInstance} to expand the pitch range.
      */
-    @Inject(method = "calculatePitch", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "calculatePitch", at = @At("HEAD"), cancellable = true, require = 0)
     private void expandPitch(SoundInstance sound, CallbackInfoReturnable<Float> cir) {
         if (sound instanceof SoundPlayer.MusicBoxSoundInstance) {
             cir.setReturnValue(sound.getPitch());
