@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.data;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -68,6 +69,11 @@ public record NoteGridCode(byte[] code) {
         final ByteArrayList NOTES = new ByteArrayList(5);
 
         NoteGridData decode(byte[] code) {
+            if (code[code.length - 1] != 0) {
+                // in case the player directly modifies the code and crashes
+                LogUtils.getLogger().error("Wrong note grid code format!");
+                return NoteGridData.empty();
+            }
             for (byte b : code) {
                 if (b > 0) {
                     handleNote(b);
