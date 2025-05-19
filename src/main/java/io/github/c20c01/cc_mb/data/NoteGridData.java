@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.data;
 
+import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.util.CollectionUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
@@ -146,6 +147,11 @@ public class NoteGridData {
         final ArrayList<Byte> NOTES = new ArrayList<>(5);
 
         ArrayList<Page> decode(byte[] data) {
+            if (data[data.length - 1] != 0) {
+                // in case the player directly modifies the code and crashes
+                LogUtils.getLogger().error("Wrong note grid code format!");
+                return new ArrayList<>(List.of(new Page()));
+            }
             for (byte b : data) {
                 if (b > 0) {
                     handleNote(b);
