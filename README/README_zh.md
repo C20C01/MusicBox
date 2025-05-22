@@ -231,10 +231,8 @@ https://github.com/user-attachments/assets/af37487b-0693-4638-988d-5dac99e76190
         * 简谱（0为空拍）：`1，1，5，5，6，6，5，0，4，4，3，3，2，2，1`。
         * 书本内容：`r.r.i.i.o.o.i..u.u.y.y.t.t.r`。
     * 如果有多声部，就在对应的拍子那里添加上对应的键位即可。
-* 使用[NBS 文件导出工具](https://c20c01.github.io/Mods/MusicBox/Tool)可将你的`nbs`文件自动转换成书与笔的内容：
+* 使用[NBS 文件导出工具](https://c20c01.github.io/MusicBoxTool)可将你的`nbs`文件自动转换成参考数据：
   ![导出工具](assets/NBSTool.png)
-    * 只支持新版nbs文件。无法加载时，请使用新版[Note Block Studio](https://opennbs.org/)重新保存以更新文件格式。
-    * 不支持自定义音色，可以先转成原版有的乐器，之后再进行导出。
 
 [此处](Songs.md)有一些使用nbs文件（网络上收集的，有些经过了修改）进行导出后的结果。
 

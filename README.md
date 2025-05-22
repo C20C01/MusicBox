@@ -245,12 +245,9 @@ By writing the content of the book and quill, it can be used as reference data t
     * Take "Twinkle Twinkle Little Star" as an example:
         * Numbered musical notation: `1, 1, 5, 5, 6, 6, 5, 0, 4, 4, 3, 3, 2, 2, 1`.
         * Book content: `r.r.i.i.o.o.i..u.u.y.y.t.t.r`.
-    * Use the [NBS File Export Tool](https://c20c01.github.io/Mods/MusicBox/Tool) to automatically convert your `nbs`
-      file into the content of the book and quill:
-      ![Export Tool](README/assets/NBSTool.png)
-        * Only supports new version nbs files. If it cannot be loaded, please use the new version
-          of [Note Block Studio](https://opennbs.org/) to upgrade the file format.
-        * Custom timbre is not supported, you can convert it to the original timbre first, and then export it.
+* Use the [NBS File Export Tool](https://c20c01.github.io/MusicBoxTool) to automatically convert your `nbs`
+  file into the reference data for the mod:
+  ![Export Tool](README/assets/NBSTool.png)
 
 [Here](README/Songs.md) are some results exported using nbs files(collected from the Internet,
 some of which have been modified).
