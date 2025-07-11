@@ -12,7 +12,7 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = CCMain.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = CCMain.ID)
 public class CCRecipeProvider extends RecipeProvider {
     public CCRecipeProvider(PackOutput gen, CompletableFuture<HolderLookup.Provider> lookup) {
         super(gen, lookup);

@@ -94,13 +94,11 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public boolean hasAnalogOutputSignal(BlockState blockState) {
         return true;
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos) {
         if (blockState.getValue(HAS_NOTE_GRID)) {
             BlockEntity blockentity = level.getBlockEntity(blockPos);
@@ -121,7 +119,6 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public RenderShape getRenderShape(BlockState blockState) {
         return RenderShape.MODEL;
     }

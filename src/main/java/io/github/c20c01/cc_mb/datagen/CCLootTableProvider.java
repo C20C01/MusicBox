@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = CCMain.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = CCMain.ID)
 public class CCLootTableProvider extends LootTableProvider {
     private CCLootTableProvider(PackOutput gen, CompletableFuture<HolderLookup.Provider> lookup) {
         super(gen, Set.of(), List.of(new SubProviderEntry(CCBlockLoot::new, LootContextParamSets.BLOCK)), lookup);

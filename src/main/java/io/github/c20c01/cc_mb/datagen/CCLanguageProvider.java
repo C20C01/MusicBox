@@ -7,7 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-@EventBusSubscriber(modid = CCMain.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = CCMain.ID)
 public class CCLanguageProvider extends LanguageProvider {
     private static final String EN_US = "en_us";
     private static final String ZH_CN = "zh_cn";

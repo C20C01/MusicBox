@@ -7,7 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = CCMain.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = CCMain.ID)
 public class CCNetwork {
 
     @SubscribeEvent
