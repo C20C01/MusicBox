@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SoundEngine.class)
-public class MixinSoundEngine {
+public abstract class MixinSoundEngine {
     /**
      * @author C20C01 @ GitHub
      * @reason Skip the pitch calculation for {@link SoundPlayer.MusicBoxSoundInstance} to expand the pitch range.
