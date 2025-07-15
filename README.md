@@ -41,7 +41,7 @@ https://github.com/user-attachments/assets/af37487b-0693-4638-988d-5dac99e76190
 * [Awl](#awl)
 * [Paper Paste](#paper-paste)
 * [Perforation Table](#perforation-table)
-* [Sound Shard](#sound-shard)
+* [Sound Shard](#sound-shard-1)
 * [Sound Box](#sound-box)
 * [Get reference data](#get-reference-data)
 
@@ -202,16 +202,20 @@ An item that listens, records, and plays sound.
     * Sound seed:
         * Used to determine the specific sound in the sound event. In the same sound event, different seeds will play
           different sounds.
-    * Play sound:
-        * When the sound shard records sound, it can play its sound:
-            * When the sound seed exists, the same seed will be used every time it is played, and the same sound will be
-              played.
-            * When the sound seed does not exist, a random seed will be used every time it is played, and the sound
-              played will be different.
-        * Playback interval:
-            * The default is `55` ticks.
-            * For each level of efficiency enchantment, the interval is reduced by `10` ticks, up to a maximum of
-              `50` ticks.
+* Play sound:
+    * When the sound shard records sound, it can play its sound:
+        * When the sound seed exists, the same seed will be used every time it is played, and the same sound will be
+          played.
+        * When the sound seed does not exist, a random seed will be used every time it is played, and the sound
+          played will be different.
+    * Playback interval:
+        * The default is `55` ticks.
+        * For each level of efficiency enchantment, the interval is reduced by `10` ticks, up to a maximum of
+          `50` ticks.
+    * Tempt mobs when the following conditions are met:
+        * The distance between the mob and the sound is less than `8` blocks.
+        * The sound is the "ambient" sound of the mob, such as ("Pig oinks").
+        * The mob is not currently moving on its own.
 * Update sound seed:
     * See [Sound Box](#sound-box).
     * Press Shift and use it to update the sound seed. (Only available in creative mode)
@@ -229,6 +233,7 @@ Load and play sound shards.
 * With sound shard:
     * When knocking, using, or activating with a redstone signal, play the sound of the sound shard:
         * When the note block above is a note block, it will no longer play.
+        * Tempt mobs like the sound shard. (See [Sound Shard](#sound-shard-1))
     * The note block above will play according to the sound of the sound shard.
     * When a lightning rod adjacent to and pointing to this sound box is struck by lightning, the sound seed of the
       sound shard will be refreshed and fixed.
@@ -240,7 +245,7 @@ By writing the content of the book and quill, it can be used as reference data t
 ![Piano.png](README/assets/Piano.png)
 
 * Conversion rule:
-    * Each beat uses the keys in the [Note Block Studio](https://opennbs.org/) to represent the notes, using "." as the
+    * Each beat uses the keys in the [Note Block Studio](https://github.com/OpenNBS/NoteBlockStudio) to represent the notes, using "." as the
       end of the beat.
     * Take "Twinkle Twinkle Little Star" as an example:
         * Numbered musical notation: `1, 1, 5, 5, 6, 6, 5, 0, 4, 4, 3, 3, 2, 2, 1`.
