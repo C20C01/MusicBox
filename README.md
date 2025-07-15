@@ -2,7 +2,7 @@
 
 # Music box
 
-Version 0.5.3 (2025.5) | [Download](#download)
+Version 0.5.4 (2025.7) | [Download](#download)
 
 ![MusicBox.png](README/assets/MusicBox.png)
 **Punch songs on the Note Grid and play it with the Music Box!**
