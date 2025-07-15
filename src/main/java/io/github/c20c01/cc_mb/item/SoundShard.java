@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.item;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.network.SoundShardUpdatePacket;
 import io.github.c20c01.cc_mb.util.Listener;
+import io.github.c20c01.cc_mb.util.MobListenAndActHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -131,8 +132,12 @@ public class SoundShard extends Item {
                 return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
             }
         }
+        var soundEvent = info.sound();
         // play the sound event that saved in the sound shard
-        level.playSeededSound(player, player, info.sound(), player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
+        level.playSeededSound(player, player, soundEvent, player.getSoundSource(), 1.0F, 1.0F, info.seed() == null ? level.random.nextLong() : info.seed());
+        if (!level.isClientSide) {
+            MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().getLocation());
+        }
         level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
         return InteractionResultHolder.sidedSuccess(soundShard, level.isClientSide);
     }

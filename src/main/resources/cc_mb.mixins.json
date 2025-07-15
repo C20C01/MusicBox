@@ -1,7 +1,9 @@
 {
   "required": true,
   "package": "io.github.c20c01.cc_mb.mixin",
-  "mixins": [],
+  "mixins": [
+    "MixinMob"
+  ],
   "client": [
     "MixinSoundEngine",
     "MixinStopUsingItem"

@@ -4,6 +4,7 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.BlockUtils;
+import io.github.c20c01.cc_mb.util.MobListenAndActHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -56,6 +57,9 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     private void playSound(Level level, BlockPos blockPos) {
         if (getSoundEvent() != null) {
             Vec3 pos = blockPos.getCenter();
+            if (!level.isClientSide) {
+                MobListenAndActHelper.nearbyMobsListen(level, blockPos, soundEvent.value().getLocation());
+            }
             level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
             level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
         }
