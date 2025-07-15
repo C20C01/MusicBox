@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
@@ -49,6 +50,11 @@ public class MobListenAndActHelper {
 
     public interface Listener {
         Listener AMBIENT_SOUND = (level, source, mob, soundLocation) -> {
+            PathNavigation navigation = mob.getNavigation();
+            if (navigation.isInProgress()) {
+                return false;
+            }
+
             if (mob instanceof TamableAnimal tamableAnimal && tamableAnimal.isInSittingPose()) {
                 return false;
             }
@@ -56,7 +62,7 @@ public class MobListenAndActHelper {
             ResourceLocation ambientSound = ((MixinMob) mob).invokeGetAmbientSound().getLocation();
             if (soundLocation.equals(ambientSound)) {
                 Vec3 to = Vec3.atCenterOf(source);
-                mob.getNavigation().moveTo(to.x, to.y, to.z, mob.getMoveControl().getSpeedModifier());
+                navigation.moveTo(to.x, to.y, to.z, mob.getMoveControl().getSpeedModifier());
                 return true;
             }
 
