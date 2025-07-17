@@ -6,15 +6,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
-@OnlyIn(Dist.CLIENT)
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
     protected static final ResourceLocation GUI_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected NoteGridScreen noteGridScreen;
@@ -61,7 +59,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int x, int y) {
         int left = (this.width - this.imageWidth) / 2;
         int up = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(GUI_BACKGROUND, left, up, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_BACKGROUND, left, up, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     protected void openNoteGridScreen() {

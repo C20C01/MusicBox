@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "minecraft:water_bucket"
-    }
+    "minecraft:paper",
+    "minecraft:water_bucket"
   ],
   "result": {
     "count": 16,

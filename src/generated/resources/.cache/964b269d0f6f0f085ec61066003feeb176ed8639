@@ -1,4 +1,4 @@
-// 1.21	2025-01-24T09:36:08.558606	Recipes
+// 1.21.7	2025-07-17T22:28:52.4269898	cc_mb Recipes
 d3b1028f0e5fde74e4b35df8999a85e8e13cca7c data/cc_mb/advancement/recipes/misc/music_box_block.json
 8c924bf8c229b00a351dedd44402422d479f03c7 data/cc_mb/advancement/recipes/misc/note_grid.json
 3657fe4bf506057bd6ee1f4672893cd8b65acf77 data/cc_mb/advancement/recipes/misc/paper_paste.json
@@ -6,10 +6,10 @@ d3b1028f0e5fde74e4b35df8999a85e8e13cca7c data/cc_mb/advancement/recipes/misc/mus
 68c6b9943f3c795f7f1573251f58b7eee54e3768 data/cc_mb/advancement/recipes/misc/sound_box_block.json
 f312b9cfdbd530528cfc2caf6f47cc3010b60e6a data/cc_mb/advancement/recipes/tools/awl.json
 c0ab9ddb5f55ac60c28890b4c9323fb6ccc46a2b data/cc_mb/advancement/recipes/tools/sound_shard.json
-0a3b9372f81722f279b50e1cc4e948cadd7ad4cb data/cc_mb/recipe/awl.json
-8e177475e0bc3662b48ef6819769045937b8d446 data/cc_mb/recipe/music_box_block.json
-8efbe03971b3a9758704e9c539ec53888eb16bba data/cc_mb/recipe/note_grid.json
-ea29991d3297828186c692ba6825940a775b3357 data/cc_mb/recipe/paper_paste.json
-68bc4dcc3267b53fd60ffcb622883480c2a04353 data/cc_mb/recipe/perforation_table_block.json
-ce5d4a80be2ef4d9ae9eec03407aa7fd521fbcf8 data/cc_mb/recipe/sound_box_block.json
-2d30bb5b73091e0d34397b40f6c681baff56aa5b data/cc_mb/recipe/sound_shard.json
+20f1be2fd333de29ab9dbdd4ed1a2a1f5213d17b data/cc_mb/recipe/awl.json
+841234f5c70d245e87fb1f761348bb86d80a2931 data/cc_mb/recipe/music_box_block.json
+30ef3bb937ac8aded571ea58ea96f2fd2050f821 data/cc_mb/recipe/note_grid.json
+4f48b394db0154b8b43d54b8dd3ffafedd0c5ce9 data/cc_mb/recipe/paper_paste.json
+7f46ce086d16ee95ccd08d0a50401dd5a0741b51 data/cc_mb/recipe/perforation_table_block.json
+df52b3672c41109e25f1e446df44a48406de51b5 data/cc_mb/recipe/sound_box_block.json
+0e17d70166d5810867da8facd32dc851192da569 data/cc_mb/recipe/sound_shard.json

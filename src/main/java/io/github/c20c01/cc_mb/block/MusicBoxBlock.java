@@ -14,9 +14,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +24,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -34,14 +35,18 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
 public class MusicBoxBlock extends BaseEntityBlock {
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty HAS_NOTE_GRID = BooleanProperty.create("has_note_grid");
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final EnumProperty<NoteBlockInstrument> INSTRUMENT = BlockStateProperties.NOTEBLOCK_INSTRUMENT;
@@ -65,17 +70,17 @@ public class MusicBoxBlock extends BaseEntityBlock {
     /**
      * Only support instruments that {@link NoteBlockInstrument#isTunable()}
      */
-    private BlockState setInstrument(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState) {
-        BlockState blockBelow = levelAccessor.getBlockState(blockPos.below());
+    private BlockState setInstrument(LevelReader level, BlockPos blockPos, BlockState blockState) {
+        BlockState blockBelow = level.getBlockState(blockPos.below());
         NoteBlockInstrument instrument = blockBelow.instrument();
         boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get());// is head
         return blockState.setValue(INSTRUMENT, flag ? NoteBlockInstrument.HARP : instrument);
     }
 
     @Override
-    public BlockState updateShape(BlockState blockState, Direction direction, BlockState blockState1, LevelAccessor levelAccessor, BlockPos blockPos, BlockPos blockPos1) {
+    protected BlockState updateShape(BlockState blockState, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos blockPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
         boolean flag = direction == Direction.DOWN;
-        return flag ? this.setInstrument(levelAccessor, blockPos, blockState) : super.updateShape(blockState, direction, blockState1, levelAccessor, blockPos, blockPos1);
+        return flag ? this.setInstrument(level, blockPos, blockState) : super.updateShape(blockState, level, scheduledTickAccess, blockPos, direction, neighborPos, neighborState, random);
     }
 
     @Override
@@ -89,7 +94,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos1, boolean b) {
+    protected void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
         BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), UPDATE_CLIENTS);
     }
 
@@ -126,7 +131,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     /**
      * Attack with an awl in non-creative mode will set the octave,
      * without an awl will play the next beat.
-     * For creative mode setting the octave, see {@link Awl#canAttackBlock}
+     * For creative mode setting the octave, see {@link Awl#canDestroyBlock}
      */
     @Override
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
@@ -143,7 +148,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         MusicBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity be ? be : null;
         if (blockEntity == null) {
             return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
@@ -152,53 +157,53 @@ public class MusicBoxBlock extends BaseEntityBlock {
         if (itemStack.is(CCMain.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
             // modify tick per beat
             if (level.isClientSide) {
-                return ItemInteractionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
             byte tickPerBeat = itemStack.getOrDefault(CCMain.TICK_PER_BEAT, TickPerBeat.DEFAULT);
             blockEntity.setTickPerBeat((ServerLevel) level, blockPos, tickPerBeat);
             level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
             player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
-            return ItemInteractionResult.CONSUME;
+            return InteractionResult.CONSUME;
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
                 // take out note grid
                 if (level.isClientSide) {
-                    return ItemInteractionResult.SUCCESS;
+                    return InteractionResult.SUCCESS;
                 }
                 ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
-                return ItemInteractionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(POWERED)) {
                 if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
                     // creative only: join the new data to the note grid
                     if (level.isClientSide) {
-                        return ItemInteractionResult.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                     if (blockEntity.joinData(itemStack)) {
                         blockEntity.ejectNoteGrid(level, blockPos, blockState);
                         level.playSound(null, blockPos, SoundEvents.ANVIL_USE, player.getSoundSource(), 1.0F, 1.0F);
-                        return ItemInteractionResult.CONSUME;
+                        return InteractionResult.CONSUME;
                     }
                 }
                 // play one beat
                 if (level.isClientSide) {
-                    return ItemInteractionResult.SUCCESS;
+                    return InteractionResult.SUCCESS;
                 }
                 blockEntity.playNextBeat((ServerLevel) level, blockPos, blockState);
-                return ItemInteractionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
         } else {
             if (blockEntity.canPlaceItem(itemStack)) {
                 // put in note grid
                 if (level.isClientSide) {
-                    return ItemInteractionResult.SUCCESS;
+                    return InteractionResult.SUCCESS;
                 }
                 blockEntity.setItem(itemStack);
                 itemStack.shrink(1);// creative mode also need to shrink
                 level.playSound(null, blockPos, SoundEvents.BOOK_PUT, SoundSource.BLOCKS);
-                return ItemInteractionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
         }
 
@@ -212,16 +217,6 @@ public class MusicBoxBlock extends BaseEntityBlock {
         if (customdata.contains(MusicBoxBlockEntity.NOTE_GRID)) {
             BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true, UPDATE_CLIENTS);
         }
-    }
-
-    @Override
-    public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState1, boolean b) {
-        if (!blockState.is(blockState1.getBlock())) {
-            if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
-                Containers.dropItemStack(level, blockPos.getX(), blockPos.getY(), blockPos.getZ(), blockEntity.getItem());
-            }
-        }
-        super.onRemove(blockState, level, blockPos, blockState1, b);
     }
 
     @Nullable

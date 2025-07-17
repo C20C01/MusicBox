@@ -20,7 +20,7 @@ public class CCLanguageProvider extends LanguageProvider {
     }
 
     @SubscribeEvent
-    public static void onGatherData(GatherDataEvent event) {
+    public static void onGatherData(GatherDataEvent.Client event) {
         var generator = event.getGenerator();
         generator.addProvider(true, new CCLanguageProvider(generator, EN_US));
         generator.addProvider(true, new CCLanguageProvider(generator, ZH_CN));

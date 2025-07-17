@@ -1,6 +1,5 @@
 package io.github.c20c01.cc_mb;
 
-import com.mojang.datafixers.DSL;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.PerforationTableBlock;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
@@ -116,21 +115,21 @@ public class CCMain {
         TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(ByteBufCodecs.BYTE).cacheEncoding());
         SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
 
-        NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1)));
-        AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024).component(TICK_PER_BEAT.get(), TickPerBeat.DEFAULT)));
-        SOUND_SHARD_ITEM = ITEMS.register("sound_shard", () -> new SoundShard(new Item.Properties().stacksTo(1)));
-        PAPER_PASTE_ITEM = ITEMS.register("paper_paste", () -> new PaperPaste(new Item.Properties()));
+        NOTE_GRID_ITEM = ITEMS.registerItem("note_grid", NoteGrid::new, new Item.Properties().stacksTo(1));
+        AWL_ITEM = ITEMS.registerItem("awl", Awl::new, new Item.Properties().durability(1024));
+        SOUND_SHARD_ITEM = ITEMS.registerItem("sound_shard", SoundShard::new, new Item.Properties().stacksTo(1));
+        PAPER_PASTE_ITEM = ITEMS.registerItem("paper_paste", PaperPaste::new);
 
-        MUSIC_BOX_BLOCK = BLOCKS.register("music_box_block", () -> new MusicBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
+        MUSIC_BOX_BLOCK = BLOCKS.registerBlock("music_box_block", MusicBoxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
         MUSIC_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("music_box_block", MUSIC_BOX_BLOCK);
-        MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("music_box_block", () -> BlockEntityType.Builder.of(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()).build(DSL.remainderType()));
+        MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("music_box_block", () -> new BlockEntityType<>(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()));
 
-        PERFORATION_TABLE_BLOCK = BLOCKS.register("perforation_table_block", () -> new PerforationTableBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava()));
+        PERFORATION_TABLE_BLOCK = BLOCKS.registerBlock("perforation_table_block", PerforationTableBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava());
         PERFORATION_TABLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("perforation_table_block", PERFORATION_TABLE_BLOCK);
 
-        SOUND_BOX_BLOCK = BLOCKS.register("sound_box_block", () -> new SoundBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
+        SOUND_BOX_BLOCK = BLOCKS.registerBlock("sound_box_block", SoundBoxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
         SOUND_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("sound_box_block", SOUND_BOX_BLOCK);
-        SOUND_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("sound_box_block", () -> BlockEntityType.Builder.of(SoundBoxBlockEntity::new, SOUND_BOX_BLOCK.get()).build(DSL.remainderType()));
+        SOUND_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("sound_box_block", () -> new BlockEntityType<>(SoundBoxBlockEntity::new, SOUND_BOX_BLOCK.get()));
 
         PERFORATION_TABLE_MENU = MENU_TYPES.register("perforation_table_menu", () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
 

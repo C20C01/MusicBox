@@ -25,9 +25,9 @@ public class CCLootTableProvider extends LootTableProvider {
     }
 
     @SubscribeEvent
-    public static void onGatherData(GatherDataEvent event) {
+    public static void onGatherData(GatherDataEvent.Client event) {
         var generator = event.getGenerator();
-        generator.addProvider(event.includeServer(), new CCLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
+        generator.addProvider(event.includeDev(), new CCLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
     }
 
     private static class CCBlockLoot extends BlockLootSubProvider {

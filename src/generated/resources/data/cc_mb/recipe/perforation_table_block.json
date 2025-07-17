@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "N": {
-      "item": "cc_mb:note_grid"
-    },
-    "P": {
-      "tag": "minecraft:planks"
-    }
+    "N": "cc_mb:note_grid",
+    "P": "#minecraft:planks"
   },
   "pattern": [
     "NN",

@@ -7,18 +7,15 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
 public class SoundPlayer {
     public static void playInMind(SoundEvent event, long seed, float volume, float pitch) {
-        MusicBoxSoundInstance soundInstance = new MusicBoxSoundInstance(event.getLocation(), seed, volume, pitch, 0.0D, 0.0D, 0.0D, true);
+        MusicBoxSoundInstance soundInstance = new MusicBoxSoundInstance(event.location(), seed, volume, pitch, 0.0D, 0.0D, 0.0D, true);
         Minecraft.getInstance().getSoundManager().play(soundInstance);
     }
 
     public static void playInLevel(SoundEvent event, long seed, float volume, float pitch, Vec3 pos) {
-        MusicBoxSoundInstance soundInstance = new MusicBoxSoundInstance(event.getLocation(), seed, volume, pitch, pos.x, pos.y, pos.z, false);
+        MusicBoxSoundInstance soundInstance = new MusicBoxSoundInstance(event.location(), seed, volume, pitch, pos.x, pos.y, pos.z, false);
         Minecraft.getInstance().getSoundManager().play(soundInstance);
     }
 

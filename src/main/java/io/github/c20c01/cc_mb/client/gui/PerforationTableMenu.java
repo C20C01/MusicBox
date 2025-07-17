@@ -178,7 +178,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     private void hurtTool(int damage) {
         ACCESS.execute((level, blockPos) ->
                 TOOL_SLOT.getItem().hurtAndBreak(damage, (ServerLevel) level, INVENTORY.player,
-                        item -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F)
+                        item -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK.value(), SoundSource.PLAYERS)
                 )
         );
     }

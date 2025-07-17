@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -23,7 +23,7 @@ public class Awl extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack awl = player.getItemInHand(hand);
         byte current = awl.getOrDefault(CCMain.TICK_PER_BEAT.get(), TickPerBeat.DEFAULT);
         int next;
@@ -36,7 +36,7 @@ public class Awl extends Item {
         }
         awl.set(CCMain.TICK_PER_BEAT.get(), (byte) next);
         player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD), true);
-        return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
+        return InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
@@ -59,13 +59,13 @@ public class Awl extends Item {
      * Stops the creative player from breaking the music box with the awl.
      */
     @Override
-    public boolean canAttackBlock(BlockState state, Level level, BlockPos blockPos, Player player) {
-        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity && player.getAbilities().instabuild) {
+    public boolean canDestroyBlock(ItemStack stack, BlockState state, Level level, BlockPos blockPos, LivingEntity entity) {
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity && entity instanceof Player player && player.getAbilities().instabuild) {
             if (level instanceof ServerLevel serverLevel) {
                 blockEntity.setOctave(serverLevel, blockPos, player);
             }
             return false;
         }
-        return super.canAttackBlock(state, level, blockPos, player);
+        return super.canDestroyBlock(stack, state, level, blockPos, entity);
     }
 }

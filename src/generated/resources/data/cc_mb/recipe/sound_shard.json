@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    {
-      "item": "minecraft:gold_ingot"
-    },
-    {
-      "item": "minecraft:echo_shard"
-    }
+    "minecraft:gold_ingot",
+    "minecraft:echo_shard"
   ],
   "result": {
     "count": 1,

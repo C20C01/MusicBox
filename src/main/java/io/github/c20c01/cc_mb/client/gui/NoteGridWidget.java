@@ -1,14 +1,13 @@
 package io.github.c20c01.cc_mb.client.gui;
 
+import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.util.GuiUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
@@ -16,7 +15,6 @@ import javax.annotation.Nonnull;
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
  * And the {@link #onClick(double, double, int) button} to trigger note grid handling.
  */
-@OnlyIn(Dist.CLIENT)
 public class NoteGridWidget extends AbstractWidget {
     public static final int WIDTH = 68;
     public static final int HEIGHT = 53;
@@ -39,7 +37,7 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     private void renderBg(GuiGraphics guiGraphics) {
-        guiGraphics.blit(PerforationTableScreen.GUI_BACKGROUND, getX(), getY(), 0, 168, WIDTH, HEIGHT);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PerforationTableScreen.GUI_BACKGROUND, getX(), getY(), 0, 168, WIDTH, HEIGHT, 256, 256);
     }
 
     private void renderOneBeat(GuiGraphics guiGraphics, NoteGridData data, byte page, byte beat, int color) {

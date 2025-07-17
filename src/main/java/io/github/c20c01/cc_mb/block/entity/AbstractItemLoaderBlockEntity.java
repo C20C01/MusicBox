@@ -1,14 +1,14 @@
 package io.github.c20c01.cc_mb.block.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * A block entity that can hold a single item,
@@ -50,18 +50,16 @@ public abstract class AbstractItemLoaderBlockEntity extends BlockEntity implemen
     abstract public boolean canPlaceItem(ItemStack pStack);
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains(ITEM_TAG)) {
-            setItem(ItemStack.parseOptional(registries, tag.getCompound(ITEM_TAG)));
-        }
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        input.read(ITEM_TAG, ItemStack.CODEC).ifPresent(this::setItem);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
         if (!item.isEmpty()) {
-            tag.put(ITEM_TAG, item.save(registries));
+            output.store(ITEM_TAG, ItemStack.CODEC, item);
         }
     }
 

@@ -59,7 +59,7 @@ public class MobListenAndActHelper {
                 return false;
             }
 
-            ResourceLocation ambientSound = ((MixinMob) mob).invokeGetAmbientSound().getLocation();
+            ResourceLocation ambientSound = ((MixinMob) mob).invokeGetAmbientSound().location();
             if (soundLocation.equals(ambientSound)) {
                 Vec3 to = Vec3.atCenterOf(source);
                 navigation.moveTo(to.x, to.y, to.z, mob.getMoveControl().getSpeedModifier());

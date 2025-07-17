@@ -1,9 +1,9 @@
 package io.github.c20c01.cc_mb.client.gui;
 
+import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
-import io.github.c20c01.cc_mb.util.GuiUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.edit.EditDataSender;
 import io.github.c20c01.cc_mb.util.player.MindPlayer;
@@ -17,12 +17,9 @@ import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
-@OnlyIn(Dist.CLIENT)
 public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private static final int PAPER_COLOR = 0xFFFDF7EA;
     private static final int LINE_COLOR = 0x33000000;
@@ -55,6 +52,10 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private boolean paused = false;// Whether the player is waiting for the player to punch notes.
     private boolean punchFail = false;// Fail to punch at current beat, avoid punching fail repeatedly.
     private MenuMode mode = MenuMode.CHECK;
+
+    public static void open(NoteGridData data) {
+        Minecraft.getInstance().setScreen(new NoteGridScreen(data));
+    }
 
     /**
      * Opened from a note grid item.

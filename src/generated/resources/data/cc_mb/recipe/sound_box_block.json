@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "H": {
-      "tag": "minecraft:noteblock_top_instruments"
-    },
-    "P": {
-      "tag": "minecraft:planks"
-    }
+    "H": "#minecraft:noteblock_top_instruments",
+    "P": "#minecraft:planks"
   },
   "pattern": [
     "PPP",

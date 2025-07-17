@@ -9,18 +9,26 @@ import io.github.c20c01.cc_mb.CCMain;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteArraySet;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipProvider;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 /**
  * Component for storing note grid data.
  */
-public record NoteGridCode(byte[] code) {
+public record NoteGridCode(byte[] code) implements TooltipProvider {
     public static final Codec<NoteGridCode> CODEC = new PrimitiveCodec<>() {
         @Override
         public <T> DataResult<NoteGridCode> read(DynamicOps<T> ops, T input) {
@@ -61,6 +69,19 @@ public record NoteGridCode(byte[] code) {
             return Arrays.equals(code, other);
         }
         return false;
+    }
+
+    @Override
+    @ParametersAreNonnullByDefault
+    public void addToTooltip(Item.TooltipContext context, Consumer<Component> tooltipAdder, TooltipFlag flag, DataComponentGetter componentGetter) {
+        if (code[code.length - 1] != 0) {
+            tooltipAdder.accept(Component.translatable(CCMain.TEXT_PAGE_SIZE, 0).withStyle(ChatFormatting.RED));
+        }
+        byte size = 0;
+        for (byte b : code) {
+            if (b == 0) size++;
+        }
+        tooltipAdder.accept(Component.translatable(CCMain.TEXT_PAGE_SIZE, size).withStyle(ChatFormatting.GRAY));
     }
 
     private static class Decoder {

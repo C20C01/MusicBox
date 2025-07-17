@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "cc_mb:block/sound_box_block_empty"
+  }
+}

@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.util.player;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.SoundPlayer;
@@ -13,9 +14,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +32,6 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         this.LISTENER = listener;
     }
 
-    @OnlyIn(Dist.CLIENT)
     private void playBeatOnClient() {
         Vec3 pos = Vec3.atCenterOf(blockPos);
         // Sound
@@ -46,29 +46,32 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         }
     }
 
-    public void load(CompoundTag tag) {
-        setTickPerBeat(tag.getByte("tick_per_beat"));
-        tickSinceLastBeat = tag.getByte("interval");
-        beatNumber = tag.getByte("beat");
-        pageNumber = tag.getByte("page");
-        setOctave(tag.getByte("octave"));
+    public void load(ValueInput input) {
+        setTickPerBeat(input.getByteOr("tick_per_beat", TickPerBeat.DEFAULT));
+        tickSinceLastBeat = input.getByteOr("interval", (byte) 0);
+        beatNumber = input.getByteOr("beat", (byte) 0);
+        pageNumber = input.getByteOr("page", (byte) 0);
+        setOctave(input.getByteOr("octave", (byte) 0));
     }
 
-    public void saveAdditional(CompoundTag tag) {
-        tag.putByte("tick_per_beat", getTickPerBeat());
-        tag.putByte("interval", tickSinceLastBeat);
-        tag.putByte("beat", beatNumber);
-        tag.putByte("page", pageNumber);
-        tag.putByte("octave", getOctave());
+    public void saveAdditional(ValueOutput output) {
+        output.putByte("tick_per_beat", getTickPerBeat());
+        output.putByte("interval", tickSinceLastBeat);
+        output.putByte("beat", beatNumber);
+        output.putByte("page", pageNumber);
+        output.putByte("octave", getOctave());
     }
 
-    public void loadUpdateTag(CompoundTag tag) {
-        byte[] data = tag.getByteArray("player_data");
-        setTickPerBeat(data[0]);
-        tickSinceLastBeat = data[1];
-        beatNumber = data[2];
-        pageNumber = data[3];
-        setOctave(data[4]);
+    public void loadUpdateTag(ValueInput input) {
+        input.read("player_data", Codec.list(Codec.BYTE)).ifPresent(
+                data -> {
+                    setTickPerBeat(data.get(0));
+                    tickSinceLastBeat = data.get(1);
+                    beatNumber = data.get(2);
+                    pageNumber = data.get(3);
+                    setOctave(data.get(4));
+                }
+        );
     }
 
     public void saveUpdateTag(CompoundTag tag) {

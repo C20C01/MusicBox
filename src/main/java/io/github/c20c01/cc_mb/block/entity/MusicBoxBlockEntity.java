@@ -32,8 +32,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -54,31 +54,29 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        super.loadAdditional(tag, lookupProvider);
-        PLAYER.load(tag);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        PLAYER.load(input);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        super.saveAdditional(tag, lookupProvider);
-        PLAYER.saveAdditional(tag);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        PLAYER.saveAdditional(output);
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
-        CompoundTag tag = pkt.getTag();
-        if (!tag.isEmpty()) {
-            handleUpdateTag(tag, lookupProvider);
-        }
+    public void onDataPacket(Connection net, ValueInput input) {
+        handleUpdateTag(input);
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        if (tag.contains("note_grid_hash")) {
+    public void handleUpdateTag(ValueInput input) {
+        Optional<Integer> hash = input.getInt("note_grid_hash");
+        if (hash.isPresent()) {
             // has note grid, load data and play next beat if needed
-            NoteGridDataManager.getInstance().getNoteGridData(tag.getInt("note_grid_hash"), getBlockPos(), PLAYER::setData);
-            if (tag.getBoolean("play_next_beat")) {
+            NoteGridDataManager.getInstance().getNoteGridData(hash.get(), getBlockPos(), PLAYER::setData);
+            if (input.getBooleanOr("play_next_beat", false)) {
                 PLAYER.nextBeat(level, getBlockPos(), getBlockState());
             }
         } else {
@@ -90,7 +88,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
             }
         }
         // update the player's state
-        PLAYER.loadUpdateTag(tag);
+        PLAYER.loadUpdateTag(input);
     }
 
     public Optional<NoteGridData> getPlayerData() {
@@ -117,10 +115,10 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
+    // Client side only
     public void setRemoved() {
         super.setRemoved();
-        if (PLAYER.getData() != null) {
+        if (level != null && level.isClientSide && PLAYER.getData() != null) {
             NoteGridDataManager.getInstance().markRemovable(PLAYER.getData().hashCode());
         }
     }
@@ -158,7 +156,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
      */
     public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState) {
         Direction direction = blockState.getValue(MusicBoxBlock.FACING);
-        Container container = HopperBlockEntity.getContainerAt(level, blockPos.relative(direction.getOpposite()));
+        Container container = HopperBlockEntity.getContainerOrHandlerAt(level, blockPos.relative(direction.getOpposite()), direction).container();
         ItemStack itemStack = removeItem();
         if (container != null && !(container instanceof WorldlyContainer)) {
             int size = container.getContainerSize();
