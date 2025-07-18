@@ -1,14 +1,12 @@
 package io.github.c20c01.cc_mb.client.gui;
 
+import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.util.GuiUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 
@@ -16,7 +14,6 @@ import javax.annotation.Nonnull;
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
  * And the {@link #onClick(double, double) button} to trigger note grid handling.
  */
-@OnlyIn(Dist.CLIENT)
 public class NoteGridWidget extends AbstractWidget {
     public static final int WIDTH = 68;
     public static final int HEIGHT = 53;

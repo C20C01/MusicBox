@@ -1,18 +1,16 @@
 package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.client.Listener;
 import io.github.c20c01.cc_mb.network.CCNetwork;
 import io.github.c20c01.cc_mb.network.SoundShardUpdatePacket;
-import io.github.c20c01.cc_mb.util.Listener;
 import io.github.c20c01.cc_mb.util.MobListenAndActHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -33,8 +31,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -61,15 +57,6 @@ public class SoundShard extends Item {
      */
     public static boolean containSound(@Nullable CompoundTag tag) {
         return tag != null && tag.contains(SOUND_EVENT);
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private static MutableComponent getSoundEventTitle(ResourceLocation location) {
-        var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
-        if (sound != null && sound.getSubtitle() != null) {
-            return MutableComponent.create(sound.getSubtitle().getContents());
-        }
-        return Component.literal("? ? ?");
     }
 
     /**
@@ -146,7 +133,7 @@ public class SoundShard extends Item {
             ResourceLocation location = Listener.getLocation();
             if (location != null) {
                 // Display the sound event that the player is listening to.
-                player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.GOLD), true);
+                player.displayClientMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.GOLD), true);
             }
         }
         super.onUseTick(level, livingEntity, itemStack, tick);
@@ -157,7 +144,7 @@ public class SoundShard extends Item {
         if (level.isClientSide && livingEntity instanceof Player player) {
             ResourceLocation location = Listener.finish();
             if (location != null) {
-                player.displayClientMessage(getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
+                player.displayClientMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
                 // Send the sound event to the server to save it in the sound shard.
                 CCNetwork.CHANNEL.sendToServer(new SoundShardUpdatePacket(player.getInventory().selected, location.toString()));
             }
@@ -182,7 +169,7 @@ public class SoundShard extends Item {
                 // Display the sound event that saved in the sound shard.
                 // Green for the fixed seed, yellow for the random seed.
                 ChatFormatting color = tag.contains(SOUND_SEED) ? ChatFormatting.DARK_GREEN : ChatFormatting.GOLD;
-                components.add(getSoundEventTitle(location).withStyle(color));
+                components.add(Listener.getSoundEventTitle(location).withStyle(color));
             }
         }
         super.appendHoverText(itemStack, level, components, flag);
@@ -216,10 +203,10 @@ public class SoundShard extends Item {
                     tag.remove(SOUND_SEED);
                     LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
                     level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
-                    return InteractionResult.sidedSuccess(level.isClientSide);
+                    return InteractionResult.SUCCESS;
                 }
             }
-            return InteractionResult.PASS;
+            return InteractionResult.CONSUME;
         }
     }
 
