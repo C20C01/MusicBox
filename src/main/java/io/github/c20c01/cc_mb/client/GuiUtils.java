@@ -1,13 +1,10 @@
-package io.github.c20c01.cc_mb.util;
+package io.github.c20c01.cc_mb.client;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
 
-@Environment(EnvType.CLIENT)
 public class GuiUtils {
     public static final int BLACK = 0xFF000000;
     public static final int HELP_NOTE_COLOR = 0x441122BB;

@@ -6,8 +6,6 @@ import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.SoundPlayer;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +28,6 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         this.LISTENER = listener;
     }
 
-    @Environment(EnvType.CLIENT)
     private void playBeatOnClient() {
         Vec3 pos = Vec3.atCenterOf(blockPos);
         // Sound

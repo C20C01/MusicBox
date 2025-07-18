@@ -4,8 +4,6 @@ import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.BlockPos;
 
@@ -15,7 +13,6 @@ import java.util.function.Consumer;
 /**
  * Request and cache note grid data on the client side.
  */
-@Environment(EnvType.CLIENT)
 public class NoteGridDataManager {
     private static final int CACHE_SIZE = 16;// max size of REMOVABLE
     private static NoteGridDataManager instance;

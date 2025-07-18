@@ -1,7 +1,5 @@
 package io.github.c20c01.cc_mb.client;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractSoundInstance;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +8,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
-@Environment(EnvType.CLIENT)
 public class SoundPlayer {
     public static void playInMind(SoundEvent event, long seed, float volume, float pitch) {
         MusicBoxSoundInstance soundInstance = new MusicBoxSoundInstance(event.getLocation(), seed, volume, pitch, 0.0D, 0.0D, 0.0D, true);

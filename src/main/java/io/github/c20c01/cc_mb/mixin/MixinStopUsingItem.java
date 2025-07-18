@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.mixin;
 
 import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.util.Listener;
+import io.github.c20c01.cc_mb.client.Listener;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

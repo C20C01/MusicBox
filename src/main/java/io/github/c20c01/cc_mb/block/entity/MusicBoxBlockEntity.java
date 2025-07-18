@@ -8,8 +8,6 @@ import io.github.c20c01.cc_mb.util.BlockUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import io.github.c20c01.cc_mb.util.player.AbstractNoteGridPlayer;
 import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -110,10 +108,10 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
+    // Client side only
     public void setRemoved() {
         super.setRemoved();
-        if (PLAYER.getData() != null) {
+        if (level != null && level.isClientSide && PLAYER.getData() != null) {
             NoteGridDataManager.getInstance().markRemovable(PLAYER.getData().hashCode());
         }
     }

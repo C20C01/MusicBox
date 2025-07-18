@@ -3,10 +3,7 @@ package io.github.c20c01.cc_mb.item;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.NoteGridScreen;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -24,11 +21,6 @@ public class NoteGrid extends Item {
         super(properties);
     }
 
-    @Environment(EnvType.CLIENT)
-    private static void openGui(NoteGridData data) {
-        Minecraft.getInstance().setScreen(new NoteGridScreen(data));
-    }
-
     @Override
     public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> components, TooltipFlag flag) {
         super.appendHoverText(itemStack, level, components, flag);
@@ -37,10 +29,10 @@ public class NoteGrid extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (level.isClientSide()) {
+        if (level.isClientSide) {
             ItemStack itemStack = player.getItemInHand(hand);
-            openGui(NoteGridData.ofNoteGrid(itemStack));
+            NoteGridScreen.open(NoteGridData.ofNoteGrid(itemStack));
         }
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
     }
 }

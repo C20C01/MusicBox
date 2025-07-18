@@ -44,7 +44,7 @@ public class Awl extends Item {
         }
         tag.putByte(TICK_PER_BEAT_KEY, (byte) next);
         player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD), true);
-        return InteractionResultHolder.sidedSuccess(awl, level.isClientSide());
+        return InteractionResultHolder.sidedSuccess(awl, level.isClientSide);
     }
 
     @Override
