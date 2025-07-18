@@ -117,7 +117,7 @@ public class CCMain {
         SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
 
         NOTE_GRID_ITEM = ITEMS.register("note_grid", () -> new NoteGrid(new Item.Properties().stacksTo(1)));
-        AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024).component(TICK_PER_BEAT.get(), TickPerBeat.DEFAULT)));
+        AWL_ITEM = ITEMS.register("awl", () -> new Awl(new Item.Properties().durability(1024)));
         SOUND_SHARD_ITEM = ITEMS.register("sound_shard", () -> new SoundShard(new Item.Properties().stacksTo(1)));
         PAPER_PASTE_ITEM = ITEMS.register("paper_paste", () -> new PaperPaste(new Item.Properties()));
 

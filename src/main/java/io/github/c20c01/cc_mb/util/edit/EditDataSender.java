@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.util.edit;
 
-import io.github.c20c01.cc_mb.util.GuiUtils;
+import io.github.c20c01.cc_mb.client.GuiUtils;
 
 public class EditDataSender extends EditDataHandler {
     private final int CONTAINER_ID;

@@ -5,8 +5,6 @@ import io.github.c20c01.cc_mb.network.NoteGridDataPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import net.minecraft.core.BlockPos;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.LinkedList;
@@ -17,7 +15,6 @@ import java.util.function.Consumer;
  * <p>
  * Use hash code to identify the data.
  */
-@OnlyIn(Dist.CLIENT)
 public class NoteGridDataManager {
     private static final int CACHE_SIZE = 16;// max size of REMOVABLE
     private static NoteGridDataManager instance;

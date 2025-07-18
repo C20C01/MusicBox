@@ -32,8 +32,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -117,10 +115,10 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
+    // Client side only
     public void setRemoved() {
         super.setRemoved();
-        if (PLAYER.getData() != null) {
+        if (level != null && level.isClientSide && PLAYER.getData() != null) {
             NoteGridDataManager.getInstance().markRemovable(PLAYER.getData().hashCode());
         }
     }

@@ -14,8 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +29,6 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
         this.LISTENER = listener;
     }
 
-    @OnlyIn(Dist.CLIENT)
     private void playBeatOnClient() {
         Vec3 pos = Vec3.atCenterOf(blockPos);
         // Sound
