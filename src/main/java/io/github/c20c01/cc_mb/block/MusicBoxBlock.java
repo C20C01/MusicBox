@@ -68,14 +68,16 @@ public class MusicBoxBlock extends BaseEntityBlock {
     private BlockState setInstrument(LevelAccessor levelAccessor, BlockPos blockPos, BlockState blockState) {
         BlockState blockBelow = levelAccessor.getBlockState(blockPos.below());
         NoteBlockInstrument instrument = blockBelow.instrument();
-        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get());// is head
-        return blockState.setValue(INSTRUMENT, flag ? NoteBlockInstrument.HARP : instrument);
+        if (instrument.hasCustomSound() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get())) {
+            // only sound box can have custom sound
+            instrument = NoteBlockInstrument.HARP;
+        }
+        return blockState.setValue(INSTRUMENT, instrument);
     }
 
     @Override
     public BlockState updateShape(BlockState blockState, Direction direction, BlockState blockState1, LevelAccessor levelAccessor, BlockPos blockPos, BlockPos blockPos1) {
-        boolean flag = direction == Direction.DOWN;
-        return flag ? this.setInstrument(levelAccessor, blockPos, blockState) : super.updateShape(blockState, direction, blockState1, levelAccessor, blockPos, blockPos1);
+        return direction == Direction.DOWN ? this.setInstrument(levelAccessor, blockPos, blockState) : super.updateShape(blockState, direction, blockState1, levelAccessor, blockPos, blockPos1);
     }
 
     @Override
@@ -90,7 +92,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
     @Override
     public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos1, boolean b) {
-        BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), UPDATE_CLIENTS);
+        BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), UPDATE_ALL_IMMEDIATE);
     }
 
     @Override
@@ -131,7 +133,6 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
         if (level.isClientSide || !(level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity)) {
-            super.attack(blockState, level, blockPos, player);
             return;
         }
         if (player.getItemInHand(InteractionHand.MAIN_HAND).is(CCMain.AWL_ITEM)) {
@@ -156,7 +157,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             }
             byte tickPerBeat = itemStack.getOrDefault(CCMain.TICK_PER_BEAT, TickPerBeat.DEFAULT);
             blockEntity.setTickPerBeat((ServerLevel) level, blockPos, tickPerBeat);
-            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
+            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS);
             player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
             return ItemInteractionResult.CONSUME;
         }
@@ -178,9 +179,9 @@ public class MusicBoxBlock extends BaseEntityBlock {
                     }
                     if (blockEntity.joinData(itemStack)) {
                         blockEntity.ejectNoteGrid(level, blockPos, blockState);
-                        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, player.getSoundSource(), 1.0F, 1.0F);
-                        return ItemInteractionResult.CONSUME;
+                        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, SoundSource.PLAYERS);
                     }
+                    return ItemInteractionResult.CONSUME;
                 }
                 // play one beat
                 if (level.isClientSide) {

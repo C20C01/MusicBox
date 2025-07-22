@@ -224,9 +224,9 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         if (!blockState.getValue(MusicBoxBlock.HAS_NOTE_GRID) || blockState.getValue(MusicBoxBlock.POWERED)) {
             return;
         }
-        // play next beat on server (only for the level event)
+        // play next beat on server
         PLAYER.nextBeat(level, blockPos, blockState);
-        // ask the client to play next beat (for the sound and particles)
+        // ask the client to play next beat
         playNextBeat = true;
         BlockUtils.markForUpdate(level, blockPos);
     }
