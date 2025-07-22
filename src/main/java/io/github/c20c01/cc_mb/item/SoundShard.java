@@ -62,7 +62,7 @@ public class SoundShard extends Item {
      * @return The new sound seed or null.
      */
     @Nullable
-    public static Long tryToChangeSoundSeed(ItemStack soundShard, RandomSource random) {
+    public static Long changeSoundSeed(ItemStack soundShard, RandomSource random) {
         Optional<SoundInfo> info = SoundInfo.ofItemStack(soundShard);
         if (info.isPresent()) {
             long newSeed = random.nextLong();
@@ -70,6 +70,15 @@ public class SoundShard extends Item {
             return newSeed;
         }
         return null;
+    }
+
+    public static boolean setSoundEvent(ItemStack itemStack, ResourceLocation soundLocation) {
+        if (!itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
+            return false;
+        }
+        Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(soundLocation));
+        itemStack.set(CCMain.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
+        return true;
     }
 
     /**
@@ -100,7 +109,7 @@ public class SoundShard extends Item {
         if (player.getAbilities().instabuild) {
             if (player.isSecondaryUseActive()) {
                 // creative mode only: shift to change the sound seed.
-                Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
+                Long newSeed = changeSoundSeed(soundShard, level.random);
                 if (newSeed != null) {
                     level.playSeededSound(player, player, info.get().soundEvent, player.getSoundSource(), 1.0F, 1.0F, newSeed);
                 }

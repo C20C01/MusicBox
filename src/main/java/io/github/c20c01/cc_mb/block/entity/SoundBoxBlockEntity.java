@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
@@ -32,38 +33,29 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
         super(CCMain.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState, SOUND_SHARD);
     }
 
-    public static void tryToPlaySound(Level level, BlockPos blockPos) {
-        if (!level.isClientSide && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {
-            blockEntity.playSound(level, blockPos);
-        }
-    }
-
     /**
      * Change the sound seed of the sound shard in the sound box.
-     *
-     * @return True if the sound seed is successfully changed.
      */
-    public static boolean tryToChangeSoundSeed(Level level, BlockPos blockPos) {
-        if (!level.isClientSide && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity && blockEntity.containSound()) {
-            Long newSeed = SoundShard.tryToChangeSoundSeed(blockEntity.getItem(), level.random);
-            if (newSeed != null) {
-                blockEntity.soundSeed = newSeed;
-                blockEntity.setChanged();
-                return true;
-            }
+    public void changeSoundSeed(Level level, BlockPos blockPos) {
+        if (getSoundEvent() == null) {
+            return;
         }
-        return false;
+        Long newSeed = SoundShard.changeSoundSeed(this.getItem(), level.random);
+        if (newSeed != null) {
+            this.soundSeed = newSeed;
+            this.setChanged();
+            BlockUtils.markForUpdate((ServerLevel) level, blockPos);
+        }
     }
 
-    private void playSound(Level level, BlockPos blockPos) {
-        if (getSoundEvent() != null) {
-            Vec3 pos = blockPos.getCenter();
-            if (!level.isClientSide) {
-                MobListenAndActHelper.nearbyMobsListen(level, blockPos, soundEvent.value().getLocation());
-            }
-            level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
-            level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
+    public void playSound(Level level, BlockPos blockPos) {
+        if (getSoundEvent() == null) {
+            return;
         }
+        Vec3 pos = blockPos.getCenter();
+        level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
+        level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
+        MobListenAndActHelper.nearbyMobsListen(level, blockPos, soundEvent.value().getLocation());
     }
 
     @Override
@@ -101,10 +93,6 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     @Override
     public boolean canPlaceItem(ItemStack itemStack) {
         return itemStack.is(CCMain.SOUND_SHARD_ITEM.get()) && SoundShard.containSound(itemStack);
-    }
-
-    public boolean containSound() {
-        return soundEvent != null;
     }
 
     @Nullable

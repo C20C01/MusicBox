@@ -5,6 +5,7 @@ import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -79,38 +81,55 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos fromPos, boolean isMoving) {
-        boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK.get());
-        boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
-        if (!underMusicBox && powered) {
-            BlockState fromBlock = level.getBlockState(fromPos);
-            if (fromBlock.is(Blocks.LIGHTNING_ROD) && fromBlock.getValue(BlockStateProperties.POWERED) && blockPos.relative(fromBlock.getValue(DirectionalBlock.FACING)).equals(fromPos)) {
+    protected BlockState updateShape(BlockState blockState, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos blockPos, BlockPos neighborPos) {
+        if (direction != Direction.UP) {
+            return super.updateShape(blockState, direction, neighborState, level, blockPos, neighborPos);
+        }
+        return blockState.setValue(UNDER_MUSIC_BOX, neighborState.is(CCMain.MUSIC_BOX_BLOCK.get()));
+    }
+
+    @Override
+    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        if (level.isClientSide || !(level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity)) {
+            return;
+        }
+
+        boolean powered = level.hasNeighborSignal(blockPos);
+        if (!blockState.getValue(UNDER_MUSIC_BOX)) {
+            BlockState neighborState = level.getBlockState(neighborPos);
+            if (neighborState.is(Blocks.LIGHTNING_ROD) && neighborState.getValue(POWERED) && blockPos.relative(neighborState.getValue(DirectionalBlock.FACING)).equals(neighborPos)) {
                 // Change sound seed when powered by lightning rod pointing to this block.
-                if (SoundBoxBlockEntity.tryToChangeSoundSeed(level, blockPos)) {
-                    // show particles
-                    level.levelEvent(3002, blockPos, -1);
-                }
+                blockEntity.changeSoundSeed(level, blockPos);
+                // show particles
+                level.levelEvent(3002, blockPos, -1);
+                blockEntity.playSound(level, blockPos);
+                level.setBlock(blockPos, blockState.setValue(POWERED, true), UPDATE_CLIENTS);
+                return;
             }
-            if (!blockState.getValue(POWERED)) {
-                // play sound
-                SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
+
+            // play sound
+            if (powered && !blockState.getValue(POWERED)) {
+                blockEntity.playSound(level, blockPos);
+                level.setBlock(blockPos, blockState.setValue(POWERED, true), UPDATE_CLIENTS);
+                return;
             }
         }
-        level.setBlock(blockPos, blockState.setValue(POWERED, powered).setValue(UNDER_MUSIC_BOX, underMusicBox), UPDATE_CLIENTS);
+
+        // just update the powered state
+        level.setBlock(blockPos, blockState.setValue(POWERED, powered), UPDATE_CLIENTS);
     }
 
     @Override
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
-        if (!level.getBlockState(blockPos).getValue(UNDER_MUSIC_BOX)) {
-            SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
+        if (level.isClientSide || !(level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity)) {
+            return;
         }
-        super.attack(blockState, level, blockPos, player);
+        blockEntity.playSound(level, blockPos);
     }
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        SoundBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity be ? be : null;
-        if (blockEntity == null) {
+        if (!(level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity)) {
             return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
         }
 
@@ -123,30 +142,27 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
                 return ItemInteractionResult.CONSUME;
             }
-            if (!blockState.getValue(UNDER_MUSIC_BOX)) {
-                // play sound
+            // play sound
+            if (level.isClientSide) {
+                return ItemInteractionResult.SUCCESS;
+            }
+            blockEntity.playSound(level, blockPos);
+            return ItemInteractionResult.CONSUME;
+        } else {
+            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
                 if (level.isClientSide) {
                     return ItemInteractionResult.SUCCESS;
                 }
-                SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
-                return ItemInteractionResult.CONSUME;
-            }
-        } else {
-            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
                 if (blockEntity.canPlaceItem(itemStack)) {
                     // put in sound shard
-                    if (level.isClientSide) {
-                        return ItemInteractionResult.SUCCESS;
-                    }
                     blockEntity.setItem(itemStack);
+                    blockEntity.playSound(level, blockPos);
                     itemStack.shrink(1);// creative mode also need to shrink
-                    SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
-                    return ItemInteractionResult.CONSUME;
                 } else {
                     // show message
                     player.displayClientMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED), true);
-                    return ItemInteractionResult.sidedSuccess(level.isClientSide);
                 }
+                return ItemInteractionResult.CONSUME;
             }
         }
 
