@@ -14,6 +14,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 public class PaperPaste extends Item {
     public PaperPaste(Properties properties) {
@@ -31,8 +32,8 @@ public class PaperPaste extends Item {
                 return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             } else if (!level.isClientSide) {
                 itemStack.shrink(1);
-                level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
-                player.addItem(new ItemStack(CCMain.PAPER_PASTE_ITEM.get(), 16));
+                level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS);
+                ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(CCMain.PAPER_PASTE_ITEM.get(), 16));
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
