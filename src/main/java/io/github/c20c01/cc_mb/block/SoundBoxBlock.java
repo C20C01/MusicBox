@@ -76,7 +76,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         Level level = context.getLevel();
         BlockPos blockPos = context.getClickedPos();
         boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK.get());
-        boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
+        boolean powered = level.hasNeighborSignal(blockPos);
         return this.defaultBlockState().setValue(POWERED, powered).setValue(UNDER_MUSIC_BOX, underMusicBox);
     }
 
