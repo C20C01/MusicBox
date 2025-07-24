@@ -199,7 +199,7 @@ public class SoundShard extends Item {
             if (SoundShard.SoundInfo.ofItemStack(itemStack).isPresent() && !level.isClientSide) {
                 itemStack.remove(CCMain.SOUND_INFO.get());
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
-                level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS);
                 return ItemInteractionResult.SUCCESS;
             }
             return ItemInteractionResult.CONSUME;

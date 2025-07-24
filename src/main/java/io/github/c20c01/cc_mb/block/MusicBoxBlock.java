@@ -157,7 +157,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             }
             byte tickPerBeat = itemStack.getOrDefault(CCMain.TICK_PER_BEAT, TickPerBeat.DEFAULT);
             blockEntity.setTickPerBeat((ServerLevel) level, blockPos, tickPerBeat);
-            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS);
+            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
             player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
             return ItemInteractionResult.CONSUME;
         }
@@ -179,7 +179,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
                     }
                     if (blockEntity.joinData(itemStack)) {
                         blockEntity.ejectNoteGrid(level, blockPos, blockState);
-                        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, SoundSource.PLAYERS);
+                        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS);
                     }
                     return ItemInteractionResult.CONSUME;
                 }

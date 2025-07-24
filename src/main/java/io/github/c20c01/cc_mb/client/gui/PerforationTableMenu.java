@@ -134,7 +134,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 }
                 case CODE_CONNECT_NOTE_GRID -> {
                     NoteGridUtils.connect(data, helpData).saveToNoteGrid(NOTE_GRID_SLOT.getItem());
-                    ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1.0F, 1.0F));
+                    ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS));
                     TOOL_SLOT.getItem().shrink(1);
                     OTHER_GRID_SLOT.getItem().shrink(1);
                 }
@@ -148,7 +148,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
                 res[0].saveToNoteGrid(NOTE_GRID_SLOT.getItem());
                 res[1].saveToNoteGrid(otherGrid);
                 OTHER_GRID_SLOT.set(otherGrid);
-                ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SHEEP_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F));
+                ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SHEEP_SHEAR, SoundSource.BLOCKS));
                 hurtTool(1);
                 return true;
             }
@@ -178,7 +178,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     private void hurtTool(int damage) {
         ACCESS.execute((level, blockPos) ->
                 TOOL_SLOT.getItem().hurtAndBreak(damage, (ServerLevel) level, INVENTORY.player,
-                        item -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F)
+                        item -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK, SoundSource.PLAYERS)
                 )
         );
     }
