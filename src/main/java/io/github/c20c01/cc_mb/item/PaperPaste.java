@@ -28,15 +28,14 @@ public class PaperPaste extends Item {
     private static class MakePaperPaste implements CauldronInteraction {
         @Override
         public ItemInteractionResult interact(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand interactionHand, ItemStack itemStack) {
-            if (!itemStack.is(Items.PAPER)) {
-                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-            } else if (!level.isClientSide) {
-                itemStack.shrink(1);
-                level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS);
-                ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(CCMain.PAPER_PASTE_ITEM.get(), 16));
-                LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
+            if (level.isClientSide) {
+                return ItemInteractionResult.SUCCESS;
             }
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+            itemStack.shrink(1);
+            level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS);
+            ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(CCMain.PAPER_PASTE_ITEM.get(), 16));
+            LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
+            return ItemInteractionResult.CONSUME;
         }
     }
 }
