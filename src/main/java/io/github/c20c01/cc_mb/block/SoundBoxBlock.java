@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.block;
 
+import com.mojang.serialization.MapCodec;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.BlockUtils;
@@ -34,6 +35,7 @@ import net.neoforged.neoforge.items.ItemHandlerHelper;
 import javax.annotation.Nullable;
 
 public class SoundBoxBlock extends Block implements EntityBlock {
+    public static final MapCodec<SoundBoxBlock> CODEC = simpleCodec(SoundBoxBlock::new);
     public static final BooleanProperty HAS_SOUND_SHARD = BooleanProperty.create("has_sound_shard");
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final BooleanProperty UNDER_MUSIC_BOX = BooleanProperty.create("under_music_box");
@@ -45,6 +47,11 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 .setValue(POWERED, false)
                 .setValue(UNDER_MUSIC_BOX, false)
         );
+    }
+
+    @Override
+    public MapCodec<SoundBoxBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -95,28 +102,33 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         }
 
         boolean powered = level.hasNeighborSignal(blockPos);
-        if (!blockState.getValue(UNDER_MUSIC_BOX)) {
-            BlockState neighborState = level.getBlockState(neighborPos);
-            if (neighborState.is(Blocks.LIGHTNING_ROD) && neighborState.getValue(POWERED) && blockPos.relative(neighborState.getValue(DirectionalBlock.FACING)).equals(neighborPos)) {
-                // Change sound seed when powered by lightning rod pointing to this block.
-                blockEntity.changeSoundSeed(level, blockPos);
-                // show particles
-                level.levelEvent(3002, blockPos, -1);
-                blockEntity.playSound(level, blockPos);
-                level.setBlock(blockPos, blockState.setValue(POWERED, true), UPDATE_CLIENTS);
-                return;
+        boolean powerChanged = powered != blockState.getValue(POWERED);
+        if (blockState.getValue(UNDER_MUSIC_BOX)) {
+            if (powerChanged) {
+                level.setBlock(blockPos, blockState.setValue(POWERED, powered), UPDATE_CLIENTS);
             }
-
-            // play sound
-            if (powered && !blockState.getValue(POWERED)) {
-                blockEntity.playSound(level, blockPos);
-                level.setBlock(blockPos, blockState.setValue(POWERED, true), UPDATE_CLIENTS);
-                return;
-            }
+            return;
         }
 
-        // just update the powered state
-        level.setBlock(blockPos, blockState.setValue(POWERED, powered), UPDATE_CLIENTS);
+        BlockState neighborState = level.getBlockState(neighborPos);
+        // Change sound seed when powered by lightning rod pointing to this block.
+        if (neighborState.is(Blocks.LIGHTNING_ROD) && neighborState.getValue(POWERED) && blockPos.relative(neighborState.getValue(DirectionalBlock.FACING)).equals(neighborPos)) {
+            blockEntity.changeSoundSeed(level, blockPos);
+            // show particles
+            level.levelEvent(3002, blockPos, -1);
+            blockEntity.playSound(level, blockPos);
+            if (powerChanged) {
+                level.setBlock(blockPos, blockState.setValue(POWERED, powered), UPDATE_CLIENTS);
+            }
+            return;
+        }
+
+        if (powerChanged) {
+            if (powered) {
+                blockEntity.playSound(level, blockPos);
+            }
+            level.setBlock(blockPos, blockState.setValue(POWERED, powered), UPDATE_CLIENTS);
+        }
     }
 
     @Override

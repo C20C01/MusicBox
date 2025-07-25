@@ -1,5 +1,6 @@
 package io.github.c20c01.cc_mb.block;
 
+import com.mojang.serialization.MapCodec;
 import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import net.minecraft.core.BlockPos;
@@ -17,8 +18,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import javax.annotation.Nullable;
 
 public class PerforationTableBlock extends Block {
+    public static final MapCodec<PerforationTableBlock> CODEC = simpleCodec(PerforationTableBlock::new);
+
     public PerforationTableBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends Block> codec() {
+        return CODEC;
     }
 
     @Override

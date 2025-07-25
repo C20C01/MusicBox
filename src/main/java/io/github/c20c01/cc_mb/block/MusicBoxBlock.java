@@ -76,8 +76,8 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    public BlockState updateShape(BlockState blockState, Direction direction, BlockState blockState1, LevelAccessor levelAccessor, BlockPos blockPos, BlockPos blockPos1) {
-        return direction == Direction.DOWN ? this.setInstrument(levelAccessor, blockPos, blockState) : super.updateShape(blockState, direction, blockState1, levelAccessor, blockPos, blockPos1);
+    public BlockState updateShape(BlockState blockState, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos blockPos, BlockPos neighborPos) {
+        return direction == Direction.DOWN ? this.setInstrument(level, blockPos, blockState) : super.updateShape(blockState, direction, neighborState, level, blockPos, neighborPos);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, BlockPos blockPos1, boolean b) {
+    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
         BlockUtils.changeProperty(level, blockPos, blockState, POWERED, level.hasNeighborSignal(blockPos), UPDATE_ALL_IMMEDIATE);
     }
 
