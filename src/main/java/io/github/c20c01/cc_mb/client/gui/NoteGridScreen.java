@@ -294,10 +294,10 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         if (playing) {
             if (scrollY > 0) {
                 // roll up: speed up
-                PLAYER.setTickPerBeat(PLAYER.getTickPerBeat() - 1);
+                PLAYER.ticker.setTickPerBeat(PLAYER.ticker.getTickPerBeat() - 1);
             } else {
                 // roll down: speed down
-                PLAYER.setTickPerBeat(PLAYER.getTickPerBeat() + 1);
+                PLAYER.ticker.setTickPerBeat(PLAYER.ticker.getTickPerBeat() + 1);
             }
         } else {
             if (scrollY > 0) {
@@ -315,7 +315,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     public void tick() {
         super.tick();
         if (playing && !paused) {
-            PLAYER.tick();
+            PLAYER.ticker.tick();
         }
     }
 
@@ -406,7 +406,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
             // filled successfully at current beat
             return true;
         }
-        if (PLAYER.tickToNextBeat() > JUDGMENT_INTERVAL_TICK) {
+        if (PLAYER.ticker.tickToNextBeat() > JUDGMENT_INTERVAL_TICK) {
             // out of judgment interval
             return false;
         }
@@ -420,7 +420,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
      * @return True if player punched successfully at beat in judgment interval.
      */
     private boolean punchWithHelpDataInInterval(byte page, byte beat) {
-        int beatsInInterval = 1 + (JUDGMENT_INTERVAL_TICK - PLAYER.tickToNextBeat()) / PLAYER.getTickPerBeat();
+        int beatsInInterval = 1 + (JUDGMENT_INTERVAL_TICK - PLAYER.ticker.tickToNextBeat()) / PLAYER.ticker.getTickPerBeat();
         // check next several beats
         for (int i = 0; i < beatsInInterval; i++) {
             if (++beat >= Page.BEATS_SIZE) {
@@ -463,7 +463,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         }
         if (punchNewNote) {
             if (skipWaiting) {
-                PLAYER.skipWaiting();
+                PLAYER.ticker.skipWaiting();
             }
             paused = false;
             return true;
@@ -500,7 +500,7 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
-    public boolean onBeat(byte beatNumber) {
+    public boolean shouldPause(byte beatNumber) {
         this.beatNumber = beatNumber;
         updatePauseState();
         return paused;

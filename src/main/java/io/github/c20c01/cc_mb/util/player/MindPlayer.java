@@ -1,7 +1,6 @@
 package io.github.c20c01.cc_mb.util.player;
 
-import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.client.SoundPlayer;
+import io.github.c20c01.cc_mb.client.gui.NoteGridScreen;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import it.unimi.dsi.fastutil.bytes.ByteArraySet;
@@ -10,106 +9,32 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+
+import java.util.Optional;
+
 
 /**
  * A player that plays music in the player's mind.
- * Used in the {@link io.github.c20c01.cc_mb.client.gui.NoteGridScreen}.
+ * Used in the {@link NoteGridScreen}.
  */
-// Client side only
-public class MindPlayer extends AbstractNoteGridPlayer {
-    private static MindPlayer instance;
-    protected Level level;
-    private NoteGridData data;
+public class MindPlayer extends BasePlayer {
+    private static final MindPlayer INSTANCE = new MindPlayer();
+    public final Ticker ticker = new Ticker(this);
+    public final Sounder sounder = new Sounder();
     private Listener listener;
     private LocalPlayer player;
-    private boolean noSpecificSeed;
+    private ItemStack itemStackOnLastBeat = null;
 
-    private MindPlayer(NoteGridData data, Listener listener) {
-        this.data = data;
-        this.listener = listener;
+    private MindPlayer() {
+        // use getInstance() to create an instance
     }
 
     public static MindPlayer getInstance(NoteGridData data, Listener listener) {
-        if (instance == null) {
-            instance = new MindPlayer(data, listener);
-        }
-        instance.data = data;
-        instance.listener = listener;
-        instance.player = Minecraft.getInstance().player;
-        instance.updateSound();
-        return instance;
-    }
-
-    public void jumpPageTo(byte pageNumber) {
-        this.pageNumber = (byte) Mth.clamp(pageNumber, 0, dataSize());
-        this.beatNumber = 0;
-        this.tickSinceLastBeat = 0;
-    }
-
-    public int tickToNextBeat() {
-        return getTickPerBeat() - tickSinceLastBeat;
-    }
-
-    public void skipWaiting() {
-        tickSinceLastBeat = getTickPerBeat();
-    }
-
-    private void updateSound() {
-        // Get the sound shard in the player's MAIN_HAND or OFF_HAND
-        ItemStack mainHand = player.getMainHandItem();
-        ItemStack offHand = player.getOffhandItem();
-        ItemStack soundShard = mainHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? mainHand : offHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? offHand : ItemStack.EMPTY;
-
-        // Load the sound event and seed from the sound shard.
-        noSpecificSeed = true;
-        sound = SoundEvents.NOTE_BLOCK_HARP;
-        SoundShard.SoundInfo.ofItemStack(soundShard).ifPresent(info -> {
-            sound = info.soundEvent();
-            info.soundSeed().ifPresent(this::setSeed);
-        });
-    }
-
-    private void setSeed(long seed) {
-        this.seed = seed;
-        noSpecificSeed = false;
-    }
-
-    @Override
-    protected void playBeat() {
-        playNotes(currentBeat.getNotes());
-    }
-
-    public void playNotes(ByteArraySet notes) {
-        if (notes.isEmpty()) {
-            return;
-        }
-        level = Minecraft.getInstance().level;
-        if (level == null) {
-            return;
-        }
-        if (noSpecificSeed) {
-            seed = level.random.nextLong();
-        }
-        for (byte note : notes) {
-            float pitch = getPitchFromNote(note);
-            SoundPlayer.playInMind(sound.value(), seed, 3.0F, pitch);
-        }
-    }
-
-    @Override
-    protected void updateCurrentBeat() {
-        currentBeat = data.getPage(pageNumber).readBeat(beatNumber);
-    }
-
-    @Override
-    protected byte dataSize() {
-        return data.size();
-    }
-
-    @Override
-    protected boolean onBeat() {
-        return listener.onBeat(beatNumber);
+        INSTANCE.reset();
+        INSTANCE.data = data;
+        INSTANCE.listener = listener;
+        INSTANCE.player = Minecraft.getInstance().player;
+        return INSTANCE;
     }
 
     @Override
@@ -122,8 +47,68 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         listener.onFinish();
     }
 
+    @Override
+    protected boolean shouldPause() {
+        return listener.shouldPause(beatNumber);
+    }
+
+    @Override
+    protected void playBeat() {
+        if (shouldPlay()) {
+            playNotes(currentBeat.getNotes());
+        }
+    }
+
+    /**
+     * Update the sound and seed, and return whether the player should play the beat.
+     */
+    private boolean shouldPlay() {
+        if (currentBeat.isEmpty()) {
+            return false;
+        }
+        ItemStack itemStack = player.getOffhandItem();
+        if (itemStack != itemStackOnLastBeat) {
+            updateSounder(itemStack);
+        }
+        return true;
+    }
+
+    private void updateSounder(ItemStack itemStack) {
+        itemStackOnLastBeat = itemStack;
+        Optional<SoundShard.SoundInfo> soundInfo = SoundShard.SoundInfo.ofItemStack(itemStack);
+        if (soundInfo.isPresent()) {
+            sounder.sound = soundInfo.get().soundEvent();
+            sounder.seed = soundInfo.get().soundSeed().orElse(player.level().random.nextLong());
+        } else {
+            sounder.sound = SoundEvents.NOTE_BLOCK_HARP;
+            sounder.seed = player.level().random.nextLong();
+        }
+    }
+
+    public void playNotes(ByteArraySet notes) {
+        for (byte note : notes) {
+            sounder.playInMind(note);
+        }
+    }
+
+    public void jumpPageTo(byte pageNumber) {
+        this.pageNumber = (byte) Mth.clamp(pageNumber, 0, data != null ? data.size() : 0);
+        this.beatNumber = 0;
+        this.ticker.tickSinceLastBeat = 0;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        itemStackOnLastBeat = null;
+        ticker.tickSinceLastBeat = 0;
+    }
+
     public interface Listener {
-        boolean onBeat(byte beatNumber);
+        /**
+         * @return Whether the player should pause instead of playing the beat
+         */
+        boolean shouldPause(byte currentBeat);
 
         void onPageChange();
 
