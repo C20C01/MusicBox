@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 import javax.annotation.Nonnull;
 
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
-    protected static final ResourceLocation GUI_BACKGROUND = new ResourceLocation(CCMain.ID, "textures/gui/perforation_table_screen.png");
+    protected static final ResourceLocation GUI_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected NoteGridScreen noteGridScreen;
     protected byte currentPage = 0;
     private PageButton backButton;

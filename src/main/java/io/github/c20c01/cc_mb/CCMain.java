@@ -72,7 +72,7 @@ public class CCMain {
 
     // network
     public static final String NETWORK_VERSION = "1";
-    public static final ResourceLocation CHANNEL_ID = new ResourceLocation(ID, "network");
+    public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(ID, "network");
 
     // register
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
@@ -142,8 +142,8 @@ public class CCMain {
         );
     }
 
-    public CCMain() {
-        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public CCMain(FMLJavaModLoadingContext context) {
+        var modEventBus = context.getModEventBus();
         ITEMS.register(modEventBus);
         BLOCKS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
