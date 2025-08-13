@@ -10,11 +10,12 @@ public class EditDataSender extends EditDataHandler {
     }
 
     public void send(byte page, byte beat, byte note) {
-        if (page != this.page) {
+        boolean pageChanged = page != this.page;
+        if (pageChanged) {
             this.page = page;
             GuiUtils.sendCodeToMenu(CONTAINER_ID, mark(page));
         }
-        if (beat != this.beat) {
+        if (beat != this.beat || pageChanged) {
             this.beat = beat;
             GuiUtils.sendCodeToMenu(CONTAINER_ID, mark(beat));
         }
