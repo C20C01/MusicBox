@@ -1,6 +1,5 @@
 package io.github.c20c01.cc_mb.util.player;
 
-import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
@@ -38,7 +37,6 @@ public abstract class BasePlayer implements Ticker.Listener {
         if (data != null && pageNumber < data.size()) {
             currentBeat = data.getPage(pageNumber).readBeat(beatNumber);
         } else {
-            LogUtils.getLogger().warn("Visiting page number: {} is out of range: {}", pageNumber, data != null ? data.size() : "null");
             reset();
         }
     }

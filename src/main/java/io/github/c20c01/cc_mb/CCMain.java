@@ -1,9 +1,11 @@
 package io.github.c20c01.cc_mb;
 
 import com.mojang.datafixers.DSL;
+import io.github.c20c01.cc_mb.block.ControllerBoxBlock;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.PerforationTableBlock;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
+import io.github.c20c01.cc_mb.block.entity.ControllerBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
@@ -107,6 +109,10 @@ public class CCMain {
     public static final DeferredItem<BlockItem> SOUND_BOX_BLOCK_ITEM;
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SoundBoxBlockEntity>> SOUND_BOX_BLOCK_ENTITY;
 
+    public static final DeferredBlock<ControllerBoxBlock> CONTROLLER_BOX_BLOCK;
+    public static final DeferredItem<BlockItem> CONTROLLER_BOX_BLOCK_ITEM;
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ControllerBoxBlockEntity>> CONTROLLER_BOX_BLOCK_ENTITY;
+
     // menu
     public static final DeferredHolder<MenuType<?>, MenuType<PerforationTableMenu>> PERFORATION_TABLE_MENU;
 
@@ -132,6 +138,10 @@ public class CCMain {
         SOUND_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("sound_box_block", SOUND_BOX_BLOCK);
         SOUND_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("sound_box_block", () -> BlockEntityType.Builder.of(SoundBoxBlockEntity::new, SOUND_BOX_BLOCK.get()).build(DSL.remainderType()));
 
+        CONTROLLER_BOX_BLOCK = BLOCKS.register("controller_box_block", () -> new ControllerBoxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava()));
+        CONTROLLER_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("controller_box_block", CONTROLLER_BOX_BLOCK);
+        CONTROLLER_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("controller_box_block", () -> BlockEntityType.Builder.of(ControllerBoxBlockEntity::new, CONTROLLER_BOX_BLOCK.get()).build(DSL.remainderType()));
+
         PERFORATION_TABLE_MENU = MENU_TYPES.register("perforation_table_menu", () -> new MenuType<>(PerforationTableMenu::new, FeatureFlags.VANILLA_SET));
 
         CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
@@ -140,6 +150,7 @@ public class CCMain {
                     output.accept(MUSIC_BOX_BLOCK_ITEM);
                     output.accept(PERFORATION_TABLE_BLOCK_ITEM);
                     output.accept(SOUND_BOX_BLOCK_ITEM);
+//                    output.accept(CONTROLLER_BOX_BLOCK_ITEM);
                     output.accept(SOUND_SHARD_ITEM);
                     output.accept(AWL_ITEM);
                     output.accept(PAPER_PASTE_ITEM);

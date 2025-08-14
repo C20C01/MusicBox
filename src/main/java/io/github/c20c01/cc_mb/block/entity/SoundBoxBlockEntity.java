@@ -28,6 +28,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     public static final String SOUND_SHARD = "sound_shard";
     private Holder<SoundEvent> soundEvent = null;
     private Long soundSeed = null;
+    private float volume = 3.0F;
 
     public SoundBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(CCMain.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState, SOUND_SHARD);
@@ -37,7 +38,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
      * Change the sound seed of the sound shard in the sound box.
      */
     public void changeSoundSeed(Level level, BlockPos blockPos) {
-        if (getSoundEvent() == null) {
+        if (soundEvent == null) {
             return;
         }
         Long newSeed = SoundShard.changeSoundSeed(this.getItem(), level.random);
@@ -49,12 +50,12 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     }
 
     public void playSound(Level level, BlockPos blockPos) {
-        if (getSoundEvent() == null) {
+        if (soundEvent == null) {
             return;
         }
         Vec3 pos = blockPos.getCenter();
         level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
-        level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
+        level.playSeededSound(null, pos.x, pos.y, pos.z, soundEvent, SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
         MobListenAndActHelper.nearbyMobsListen(level, blockPos, soundEvent.value().getLocation());
     }
 
@@ -102,5 +103,9 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
 
     public Optional<Long> getSoundSeed() {
         return Optional.ofNullable(soundSeed);
+    }
+
+    public float getVolume() {
+        return volume;
     }
 }
