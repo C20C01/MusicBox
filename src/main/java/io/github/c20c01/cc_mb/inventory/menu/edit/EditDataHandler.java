@@ -3,12 +3,20 @@ package io.github.c20c01.cc_mb.inventory.menu.edit;
 /**
  * The edit data is transmitted with several positive bytes.
  * <p>
- * For each byte, after the 1st sign bit, the 2nd bit is used to represent the content of the code.
- * If the 2nd bit is 0, the code is a note, if it is 1, the code is a beat or a page.
+ * For each byte, after the 1st sign bit, the 2nd bit is used to represent the content of the code:
+ * <ul>
+ *     <li>0: note</li>
+ *     <li>1: beat or page</li>
+ * </ul>
  * <p>
- * The page and beat are cached in both the sender and the receiver, they will only be sent if there is a change.
+ * The page and beat are cached in both the sender and the receiver, they will only be transmitted when needed.
  * <p>
- * The flow of the data is as follows: page -> beat -> note.
+ * Because of the handler can not identify the page and beat by itself,
+ * data must be transmitted in one of the following two sequences:
+ * <ul>
+ *     <li>page -> beat -> note</li>
+ *     <li>beat -> note</li>
+ * </ul>
  */
 public class EditDataHandler {
     protected static final int MASK = 0b01000000;
