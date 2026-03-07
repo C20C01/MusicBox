@@ -229,12 +229,12 @@ Load and play sound shards.
 
 * Without sound shard:
     * Use a sound shard with sound to load the sound shard.
-    * The note block above will play silently.
+    * The music box above will play silently.
 * With sound shard:
     * When knocking, using, or activating with a redstone signal, play the sound of the sound shard:
-        * When the note block above is a note block, it will no longer play.
+        * When under a music box, it will no longer play.
         * Tempt mobs like the sound shard. (See [Sound Shard](#sound-shard-1))
-    * The note block above will play according to the sound of the sound shard.
+    * The music box above will play according to the sound of the sound shard.
     * When a lightning rod adjacent to and pointing to this sound box is struck by lightning, the sound seed of the
       sound shard will be refreshed and fixed.
 
