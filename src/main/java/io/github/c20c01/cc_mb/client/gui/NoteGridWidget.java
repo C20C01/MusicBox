@@ -3,17 +3,19 @@ package io.github.c20c01.cc_mb.client.gui;
 import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
 
 /**
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
- * And the {@link #onClick(double, double, int) button} to trigger note grid handling.
+ * And the {@link #onClick(MouseButtonEvent, boolean) button} to trigger note grid handling.
  */
 public class NoteGridWidget extends AbstractWidget {
     public static final int WIDTH = 68;
@@ -28,7 +30,7 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
         switch (MENU.mode) {
             case PUNCH, CHECK, FIX -> renderPunch(guiGraphics);
             case CONNECT -> renderConnect(guiGraphics);
@@ -36,11 +38,11 @@ public class NoteGridWidget extends AbstractWidget {
         }
     }
 
-    private void renderBg(GuiGraphics guiGraphics) {
+    private void renderBg(GuiGraphicsExtractor guiGraphics) {
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PerforationTableScreen.GUI_BACKGROUND, getX(), getY(), 0, 168, WIDTH, HEIGHT, 256, 256);
     }
 
-    private void renderOneBeat(GuiGraphics guiGraphics, NoteGridData data, byte page, byte beat, int color) {
+    private void renderOneBeat(GuiGraphicsExtractor guiGraphics, NoteGridData data, byte page, byte beat, int color) {
         Beat oneBeat = data.getPage(page).getBeat(beat);
         int x = getX() + 2 + beat;
         for (byte note : oneBeat.getNotes()) {
@@ -49,7 +51,7 @@ public class NoteGridWidget extends AbstractWidget {
         }
     }
 
-    private void renderPunch(GuiGraphics guiGraphics) {
+    private void renderPunch(GuiGraphicsExtractor guiGraphics) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
             renderOneBeat(guiGraphics, MENU.data, SCREEN.currentPage, beat, GuiUtils.BLACK);
@@ -59,20 +61,20 @@ public class NoteGridWidget extends AbstractWidget {
         }
     }
 
-    private void renderConnect(GuiGraphics guiGraphics) {
+    private void renderConnect(GuiGraphicsExtractor guiGraphics) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
             renderOneBeat(guiGraphics, MENU.displayData, SCREEN.currentPage, beat, GuiUtils.BLACK);
         }
     }
 
-    private void renderCut(GuiGraphics guiGraphics) {
+    private void renderCut(GuiGraphicsExtractor guiGraphics) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
             renderOneBeat(guiGraphics, MENU.data, SCREEN.currentPage, beat, GuiUtils.BLACK);
         }
         if (SCREEN.hasNextPage()) {
-            guiGraphics.vLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
+            guiGraphics.verticalLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
         }
     }
 
@@ -82,8 +84,8 @@ public class NoteGridWidget extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double x, double y, int button) {
-        super.onClick(x, y, button);
+    public void onClick(@NonNull MouseButtonEvent event, boolean doubleClick) {
+        super.onClick(event, doubleClick);
         switch (SCREEN.getMenu().mode) {
             case PUNCH, CHECK, FIX -> SCREEN.openNoteGridScreen();
             case CONNECT -> GuiUtils.sendCodeToMenu(MENU.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);

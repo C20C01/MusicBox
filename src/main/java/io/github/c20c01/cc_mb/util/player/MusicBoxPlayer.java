@@ -120,10 +120,10 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
             if (sound == null) {
                 return false;
             }
-            seed = blockEntity.getSoundSeed().orElse(level.random.nextLong());
+            seed = blockEntity.getSoundSeed().orElse(level.getRandom().nextLong());
         } else {
             sound = instrument.getSoundEvent();
-            seed = level.random.nextLong();
+            seed = level.getRandom().nextLong();
         }
         return true;
     }
@@ -142,7 +142,7 @@ public class MusicBoxPlayer extends AbstractNoteGridPlayer {
     protected void playBeat() {
         if (shouldPlay(level, blockPos, blockState)) {
             level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, blockPos);
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 playBeatOnClient();
             }
         }

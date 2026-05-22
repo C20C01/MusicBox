@@ -6,7 +6,6 @@ import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -14,7 +13,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -31,7 +29,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
@@ -142,15 +139,15 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         if (blockState.getValue(HAS_SOUND_SHARD)) {
             if (player.isSecondaryUseActive()) {
                 // take out sound shard
-                if (level.isClientSide) {
+                if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
-                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
+                player.getInventory().add(blockEntity.removeItem());
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(UNDER_MUSIC_BOX)) {
                 // play sound
-                if (level.isClientSide) {
+                if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
                 SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
@@ -160,7 +157,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
             if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
                 if (blockEntity.canPlaceItem(itemStack)) {
                     // put in sound shard
-                    if (level.isClientSide) {
+                    if (level.isClientSide()) {
                         return InteractionResult.SUCCESS;
                     }
                     blockEntity.setItem(itemStack);
@@ -169,7 +166,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                     return InteractionResult.CONSUME;
                 } else {
                     // show message
-                    player.displayClientMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED), true);
+                    player.sendOverlayMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED));
                     return InteractionResult.SUCCESS;
                 }
             }
@@ -179,12 +176,11 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity
-            livingEntity, ItemStack itemStack) {
-        super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
-        CustomData customdata = itemStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-        if (customdata.contains(SoundBoxBlockEntity.SOUND_SHARD)) {
-            BlockUtils.changeProperty(level, blockPos, blockState, HAS_SOUND_SHARD, true, UPDATE_CLIENTS);
+    public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
+        if (level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {
+            if (blockEntity.containSound()) {
+                BlockUtils.changeProperty(level, blockPos, blockState, HAS_SOUND_SHARD, true, UPDATE_CLIENTS);
+            }
         }
     }
 }

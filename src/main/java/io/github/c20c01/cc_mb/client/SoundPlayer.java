@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractSoundInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -20,7 +20,7 @@ public class SoundPlayer {
     }
 
     public static class MusicBoxSoundInstance extends AbstractSoundInstance {
-        public MusicBoxSoundInstance(ResourceLocation soundLocation, long seed, float volume, float pitch, double x, double y, double z, boolean relative) {
+        public MusicBoxSoundInstance(Identifier soundLocation, long seed, float volume, float pitch, double x, double y, double z, boolean relative) {
             super(soundLocation, SoundSource.RECORDS, RandomSource.create(seed));
             this.volume = volume;
             this.pitch = pitch;

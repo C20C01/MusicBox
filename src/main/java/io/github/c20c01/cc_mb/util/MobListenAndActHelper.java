@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.util;
 
 import io.github.c20c01.cc_mb.mixin.MixinMob;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -31,7 +31,7 @@ public class MobListenAndActHelper {
         LISTENERS.add(Listener.AMBIENT_SOUND);
     }
 
-    public static void nearbyMobsListen(Level level, BlockPos source, ResourceLocation soundLocation) {
+    public static void nearbyMobsListen(Level level, BlockPos source, Identifier soundLocation) {
         List<PathfinderMob> mobs = level.getEntities(
                 EntityTypeTest.forClass(PathfinderMob.class),
                 new AABB(source).inflate(8),
@@ -42,14 +42,14 @@ public class MobListenAndActHelper {
         }
     }
 
-    public static void listen(Level level, BlockPos source, Mob mob, ResourceLocation soundLocation) {
+    public static void listen(Level level, BlockPos source, Mob mob, Identifier soundLocation) {
         for (Listener listener : LISTENERS) {
             if (listener.listen(level, source, mob, soundLocation)) return;
         }
     }
 
     public interface Listener {
-        Listener AMBIENT_SOUND = (level, source, mob, soundLocation) -> {
+        Listener AMBIENT_SOUND = (_, source, mob, soundLocation) -> {
             PathNavigation navigation = mob.getNavigation();
             if (navigation.isInProgress()) {
                 return false;
@@ -59,7 +59,7 @@ public class MobListenAndActHelper {
                 return false;
             }
 
-            ResourceLocation ambientSound = ((MixinMob) mob).invokeGetAmbientSound().location();
+            Identifier ambientSound = ((MixinMob) mob).invokeGetAmbientSound().location();
             if (soundLocation.equals(ambientSound)) {
                 Vec3 to = Vec3.atCenterOf(source);
                 navigation.moveTo(to.x, to.y, to.z, mob.getMoveControl().getSpeedModifier());
@@ -69,6 +69,6 @@ public class MobListenAndActHelper {
             return false;
         };
 
-        boolean listen(Level level, BlockPos source, Mob mob, ResourceLocation soundLocation);
+        boolean listen(Level level, BlockPos source, Mob mob, Identifier soundLocation);
     }
 }

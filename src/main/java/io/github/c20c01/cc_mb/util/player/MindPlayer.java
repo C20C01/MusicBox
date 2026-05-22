@@ -89,7 +89,7 @@ public class MindPlayer extends AbstractNoteGridPlayer {
             return;
         }
         if (noSpecificSeed) {
-            seed = level.random.nextLong();
+            seed = level.getRandom().nextLong();
         }
         for (byte note : notes) {
             float pitch = getPitchFromNote(note);

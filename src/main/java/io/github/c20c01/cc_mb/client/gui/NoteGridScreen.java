@@ -10,15 +10,16 @@ import io.github.c20c01.cc_mb.util.player.MindPlayer;
 import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     private static final int PAPER_COLOR = 0xFFFDF7EA;
@@ -105,15 +106,15 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     protected void createMenuControls() {
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (b) -> onClose()).bounds((this.width - Button.DEFAULT_WIDTH) / 2, GRID_CENTER_Y + HALF_GRID_HEIGHT + 32, Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT).build());
+        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (_) -> onClose()).bounds((this.width - Button.DEFAULT_WIDTH) / 2, GRID_CENTER_Y + HALF_GRID_HEIGHT + 32, Button.DEFAULT_WIDTH, Button.DEFAULT_HEIGHT).build());
     }
 
     protected void createPageControlButtons() {
         final int GRID_CENTER_X = width / 2;
         final int Y = GRID_CENTER_Y + HALF_GRID_BACKGROUND_HEIGHT + 4;
         // 23 is the width of the button
-        forwardButton = this.addRenderableWidget(new PageButton(GRID_CENTER_X + HALF_GRID_BACKGROUND_WIDTH - 23, Y, true, (b) -> this.pageForward(true), false));
-        backButton = this.addRenderableWidget(new PageButton(GRID_CENTER_X - HALF_GRID_BACKGROUND_WIDTH, Y, false, (b) -> this.pageBack(), false));
+        forwardButton = this.addRenderableWidget(new PageButton(GRID_CENTER_X + HALF_GRID_BACKGROUND_WIDTH - 23, Y, true, (_) -> this.pageForward(true), false));
+        backButton = this.addRenderableWidget(new PageButton(GRID_CENTER_X - HALF_GRID_BACKGROUND_WIDTH, Y, false, (_) -> this.pageBack(), false));
         updatePageStuff(true);
     }
 
@@ -196,17 +197,17 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
-    public void renderBackground(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderTransparentBackground(graphics);
+    public void extractBackground(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        this.extractTransparentBackground(graphics);
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
         renderNoteGrid(graphics);
     }
 
-    protected void renderNoteGrid(GuiGraphics graphics) {
+    protected void renderNoteGrid(GuiGraphicsExtractor graphics) {
         final int GRID_CENTER_X = width / 2;
 
         // background
@@ -214,12 +215,12 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
 
         // hLines
         for (byte y = 0; y < 25; y++) {
-            graphics.hLine(GRID_CENTER_X - HALF_GRID_WIDTH, GRID_CENTER_X + HALF_GRID_WIDTH, GRID_CENTER_Y - HALF_GRID_HEIGHT + y * GRID_SIZE, LINE_COLOR);
+            graphics.horizontalLine(GRID_CENTER_X - HALF_GRID_WIDTH, GRID_CENTER_X + HALF_GRID_WIDTH, GRID_CENTER_Y - HALF_GRID_HEIGHT + y * GRID_SIZE, LINE_COLOR);
         }
 
         // vLines & notes
         for (byte x = 0; x < 64; x++) {
-            graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + x * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, LINE_COLOR);
+            graphics.verticalLine(GRID_CENTER_X - HALF_GRID_WIDTH + x * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, LINE_COLOR);
             Beat mainBeat = MAIN_DATA.getPage(currentPage).getBeat(x);
             final int CROSS_RECTANGLE_LEFT = GRID_CENTER_X - HALF_GRID_WIDTH + x * GRID_SIZE;
             for (byte note : mainBeat.getNotes()) {
@@ -239,15 +240,15 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
 
         if (playing) {
             // playing progress line
-            graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + beatNumber * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, playProgressLineColor);
+            graphics.verticalLine(GRID_CENTER_X - HALF_GRID_WIDTH + beatNumber * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, playProgressLineColor);
         } else if (editMode && pointNote()) {
             // selection lines
-            graphics.hLine(GRID_CENTER_X - HALF_GRID_WIDTH, GRID_CENTER_X + HALF_GRID_WIDTH, GRID_CENTER_Y + HALF_GRID_HEIGHT - MOUSE_POS[1] * GRID_SIZE, SELECTION_COLOR);
-            graphics.vLine(GRID_CENTER_X - HALF_GRID_WIDTH + MOUSE_POS[0] * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, SELECTION_COLOR);
+            graphics.horizontalLine(GRID_CENTER_X - HALF_GRID_WIDTH, GRID_CENTER_X + HALF_GRID_WIDTH, GRID_CENTER_Y + HALF_GRID_HEIGHT - MOUSE_POS[1] * GRID_SIZE, SELECTION_COLOR);
+            graphics.verticalLine(GRID_CENTER_X - HALF_GRID_WIDTH + MOUSE_POS[0] * GRID_SIZE, GRID_CENTER_Y - HALF_GRID_HEIGHT - 1, GRID_CENTER_Y + HALF_GRID_HEIGHT + 1, SELECTION_COLOR);
         }
 
         // tip
-        graphics.drawCenteredString(font, tip, GRID_CENTER_X, GRID_CENTER_Y + HALF_GRID_HEIGHT + 16, PAPER_COLOR);
+        graphics.centeredText(font, tip, GRID_CENTER_X, GRID_CENTER_Y + HALF_GRID_HEIGHT + 16, PAPER_COLOR);
     }
 
     /**
@@ -261,15 +262,16 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
-    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-        switch (pKeyCode) {
+    public boolean keyPressed(KeyEvent event) {
+        int key = event.key();
+        switch (key) {
             case 90, 88 -> {
                 // Z, X: punch with help data
                 if (mode == MenuMode.PUNCH && playing) {
                     tryToPunchWithHelpData();
                     return true;
                 }
-                return super.keyPressed(pKeyCode, pScanCode, pModifiers);
+                return super.keyPressed(event);
             }
             case 32 -> {
                 // SPACE: play/pause
@@ -279,12 +281,12 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
                 return true;
             }
             default -> {
-                if (pKeyCode == Minecraft.getInstance().options.keyInventory.getKey().getValue()) {
+                if (key == Minecraft.getInstance().options.keyInventory.getKey().getValue()) {
                     // INVENTORY: close
                     onClose();
                     return true;
                 }
-                return super.keyPressed(pKeyCode, pScanCode, pModifiers);
+                return super.keyPressed(event);
             }
         }
     }
@@ -320,17 +322,18 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
     }
 
     @Override
-    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-        if (super.mouseClicked(pMouseX, pMouseY, pButton)) {
+    public boolean mouseClicked(@NonNull MouseButtonEvent event, boolean doubleClick) {
+        if (super.mouseClicked(event, doubleClick)) {
             return true;
         }
+        int button = event.button();
         if (mode == MenuMode.PUNCH) {
             if (playing) {
                 tryToPunchWithHelpData();
             } else if (pointNote()) {
-                if (pButton == 0) {
+                if (button == 0) {
                     tryToPunch();
-                } else if (pButton == 1) {
+                } else if (button == 1) {
                     previewBeat(true);
                 }
             }
@@ -338,9 +341,9 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
         }
         if (mode == MenuMode.FIX) {
             if (!playing && pointNote()) {
-                if (pButton == 0) {
+                if (button == 0) {
                     tryToFix();
-                } else if (pButton == 1) {
+                } else if (button == 1) {
                     previewBeat(false);
                 }
             }

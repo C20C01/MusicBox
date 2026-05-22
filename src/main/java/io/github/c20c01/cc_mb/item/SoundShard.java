@@ -10,13 +10,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -48,7 +49,7 @@ public class SoundShard extends Item {
 
     public SoundShard(Properties properties) {
         super(properties);
-        CauldronInteraction.POWDER_SNOW.map().put(this, new ResetSoundShard());
+        CauldronInteractions.POWDER_SNOW.put(this, new ResetSoundShard());
     }
 
     /**
@@ -93,7 +94,7 @@ public class SoundShard extends Item {
         Optional<SoundInfo> info = SoundInfo.ofItemStack(soundShard);
         if (info.isEmpty() || info.get().soundEvent == null) {
             // start listening to the sound event
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 Listener.start();
             }
             player.startUsingItem(hand);
@@ -102,7 +103,7 @@ public class SoundShard extends Item {
         if (player.getAbilities().instabuild) {
             if (player.isSecondaryUseActive()) {
                 // creative mode only: shift to change the sound seed.
-                Long newSeed = tryToChangeSoundSeed(soundShard, level.random);
+                Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
                 if (newSeed != null) {
                     level.playSeededSound(player, player, info.get().soundEvent, player.getSoundSource(), 1.0F, 1.0F, newSeed);
                 }
@@ -116,8 +117,8 @@ public class SoundShard extends Item {
         }
         var soundEvent = info.get().soundEvent;
         // play the sound event that saved in the sound shard
-        level.playSeededSound(player, player, soundEvent, player.getSoundSource(), 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.random::nextLong));
-        if (!level.isClientSide) {
+        level.playSeededSound(player, player, soundEvent, player.getSoundSource(), 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.getRandom()::nextLong));
+        if (!level.isClientSide()) {
             MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().location());
         }
         level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
@@ -126,11 +127,11 @@ public class SoundShard extends Item {
 
     @Override
     public void onUseTick(Level level, LivingEntity livingEntity, ItemStack itemStack, int tick) {
-        if (level.isClientSide && livingEntity instanceof Player player) {
-            ResourceLocation location = Listener.getLocation();
+        if (level.isClientSide() && livingEntity instanceof Player player) {
+            Identifier location = Listener.getLocation();
             if (location != null) {
                 // Display the sound event that the player is listening to.
-                player.displayClientMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.GOLD), true);
+                player.sendOverlayMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.GOLD));
             }
         }
         super.onUseTick(level, livingEntity, itemStack, tick);
@@ -138,10 +139,10 @@ public class SoundShard extends Item {
 
     @Override
     public boolean releaseUsing(ItemStack itemStack, Level level, LivingEntity livingEntity, int tick) {
-        if (level.isClientSide && livingEntity instanceof Player player) {
-            ResourceLocation location = Listener.finish();
+        if (level.isClientSide() && livingEntity instanceof Player player) {
+            Identifier location = Listener.finish();
             if (location != null) {
-                player.displayClientMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN), true);
+                player.sendOverlayMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.DARK_GREEN));
                 // Send the sound event to the server to save it in the sound shard.
                 ClientPacketDistributor.sendToServer(new SoundShardUpdatePacket(player.getInventory().getSelectedSlot(), location));
                 return true;
@@ -152,7 +153,7 @@ public class SoundShard extends Item {
 
     @Override
     public void onStopUsing(ItemStack stack, LivingEntity entity, int count) {
-        if (entity.level().isClientSide) {
+        if (entity.level().isClientSide()) {
             // make sure the listener is removed.
             Listener.finish();
         }

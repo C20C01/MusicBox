@@ -6,7 +6,7 @@ import net.minecraft.client.sounds.SoundEventListener;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +19,7 @@ public class Listener implements SoundEventListener {
     private static final Listener LISTENER = new Listener();
     private boolean listening = false;
     private boolean shown = false;
-    private ResourceLocation soundLocation = null;
+    private Identifier soundLocation = null;
 
     public static void start() {
         LISTENER.soundLocation = null;
@@ -30,7 +30,7 @@ public class Listener implements SoundEventListener {
     }
 
     @Nullable
-    public static ResourceLocation getLocation() {
+    public static Identifier getLocation() {
         if (LISTENER.shown) {
             return null;
         } else {
@@ -40,7 +40,7 @@ public class Listener implements SoundEventListener {
     }
 
     @Nullable
-    public static ResourceLocation finish() {
+    public static Identifier finish() {
         Minecraft.getInstance().getSoundManager().removeListener(LISTENER);
         if (LISTENER.listening) {
             LISTENER.listening = false;
@@ -58,7 +58,7 @@ public class Listener implements SoundEventListener {
         }
     }
 
-    public static MutableComponent getSoundEventTitle(ResourceLocation location) {
+    public static MutableComponent getSoundEventTitle(Identifier location) {
         var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
         if (sound != null && sound.getSubtitle() != null) {
             return MutableComponent.create(sound.getSubtitle().getContents());
@@ -70,7 +70,7 @@ public class Listener implements SoundEventListener {
     public void onPlaySound(@NotNull SoundInstance soundInstance, @NotNull WeighedSoundEvents accessor, float range) {
         if (isAudible(soundInstance, range)) {
             shown = false;
-            soundLocation = soundInstance.getLocation();
+            soundLocation = soundInstance.getIdentifier();
         }
     }
 }

@@ -30,7 +30,7 @@ public class NoteGrid extends Item {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             ItemStack itemStack = player.getItemInHand(hand);
             NoteGridScreen.open(NoteGridData.ofNoteGrid(itemStack));
         }

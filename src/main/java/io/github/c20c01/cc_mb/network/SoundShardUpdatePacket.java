@@ -6,7 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -20,15 +20,15 @@ import java.util.Optional;
 /**
  * Packet to update the sound shard with specific sound event name.
  */
-public record SoundShardUpdatePacket(int slot, ResourceLocation sound) implements CustomPacketPayload {
+public record SoundShardUpdatePacket(int slot, Identifier sound) implements CustomPacketPayload {
     public static final StreamCodec<FriendlyByteBuf, SoundShardUpdatePacket> STREAM_CODEC = CustomPacketPayload.codec(SoundShardUpdatePacket::encode, SoundShardUpdatePacket::decode);
-    public static final CustomPacketPayload.Type<SoundShardUpdatePacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(CCMain.ID, "sound_shard_update"));
+    public static final CustomPacketPayload.Type<SoundShardUpdatePacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CCMain.ID, "sound_shard_update"));
 
     public static SoundShardUpdatePacket decode(FriendlyByteBuf friendlyByteBuf) {
-        return new SoundShardUpdatePacket(friendlyByteBuf.readVarInt(), friendlyByteBuf.readResourceLocation());
+        return new SoundShardUpdatePacket(friendlyByteBuf.readVarInt(), friendlyByteBuf.readIdentifier());
     }
 
-    private static void saveSoundEvent(ServerPlayer player, int slot, ResourceLocation location) {
+    private static void saveSoundEvent(ServerPlayer player, int slot, Identifier location) {
         if (!Inventory.isHotbarSlot(slot) && slot != Inventory.SLOT_OFFHAND) {
             return;
         }
@@ -46,7 +46,7 @@ public record SoundShardUpdatePacket(int slot, ResourceLocation sound) implement
 
     public void encode(FriendlyByteBuf friendlyByteBuf) {
         friendlyByteBuf.writeVarInt(slot);
-        friendlyByteBuf.writeResourceLocation(sound);
+        friendlyByteBuf.writeIdentifier(sound);
     }
 
     @Override

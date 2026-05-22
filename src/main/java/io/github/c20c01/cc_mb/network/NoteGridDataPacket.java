@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 public class NoteGridDataPacket {
     public record Request(int hash, BlockPos blockPos) implements CustomPacketPayload {
         public static final StreamCodec<FriendlyByteBuf, Request> STREAM_CODEC = CustomPacketPayload.codec(Request::encode, Request::decode);
-        public static final CustomPacketPayload.Type<Request> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(CCMain.ID, "note_grid_data_request"));
+        public static final CustomPacketPayload.Type<Request> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CCMain.ID, "note_grid_data_request"));
 
         public static Request decode(FriendlyByteBuf friendlyByteBuf) {
             return new Request(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
@@ -62,7 +62,7 @@ public class NoteGridDataPacket {
 
     public record Reply(int hash, byte[] data) implements CustomPacketPayload {
         public static final StreamCodec<FriendlyByteBuf, Reply> STREAM_CODEC = CustomPacketPayload.codec(Reply::encode, Reply::decode);
-        public static final CustomPacketPayload.Type<Reply> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(CCMain.ID, "note_grid_data_reply"));
+        public static final CustomPacketPayload.Type<Reply> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CCMain.ID, "note_grid_data_reply"));
 
         public static Reply decode(FriendlyByteBuf friendlyByteBuf) {
             return new Reply(friendlyByteBuf.readInt(), friendlyByteBuf.readByteArray());

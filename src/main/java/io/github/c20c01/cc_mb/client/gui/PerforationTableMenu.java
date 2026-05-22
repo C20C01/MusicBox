@@ -93,7 +93,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     @Override
     public void removed(@Nonnull Player player) {
         super.removed(player);
-        this.ACCESS.execute((level, blockPos) -> this.clearContainer(player, CONTAINER));
+        this.ACCESS.execute((_, _) -> this.clearContainer(player, CONTAINER));
     }
 
     @Override
@@ -178,7 +178,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     private void hurtTool(int damage) {
         ACCESS.execute((level, blockPos) ->
                 TOOL_SLOT.getItem().hurtAndBreak(damage, (ServerLevel) level, INVENTORY.player,
-                        item -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK.value(), SoundSource.PLAYERS)
+                        _ -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK.value(), SoundSource.PLAYERS)
                 )
         );
     }

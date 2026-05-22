@@ -23,7 +23,7 @@ public class PerforationTableBlock extends Block {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
             player.openMenu(state.getMenuProvider(level, pos));
@@ -34,6 +34,6 @@ public class PerforationTableBlock extends Block {
     @Override
     @Nullable
     public MenuProvider getMenuProvider(BlockState blockState, Level level, BlockPos blockPos) {
-        return new SimpleMenuProvider((containerId, inventory, player) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.translatable(CCMain.PERFORATION_TABLE_BLOCK.get().getDescriptionId()));
+        return new SimpleMenuProvider((containerId, inventory, _) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.translatable(CCMain.PERFORATION_TABLE_BLOCK.get().getDescriptionId()));
     }
 }

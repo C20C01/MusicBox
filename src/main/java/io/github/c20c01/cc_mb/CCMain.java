@@ -26,7 +26,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
@@ -115,19 +114,19 @@ public class CCMain {
         TICK_PER_BEAT = DATA_COMPONENTS.registerComponentType("tick_per_beat", builder -> builder.persistent(TickPerBeat.CODEC).networkSynchronized(ByteBufCodecs.BYTE).cacheEncoding());
         SOUND_INFO = DATA_COMPONENTS.registerComponentType("sound_info", builder -> builder.persistent(SoundShard.SoundInfo.CODEC).networkSynchronized(SoundShard.SoundInfo.STREAM_CODEC).cacheEncoding());
 
-        NOTE_GRID_ITEM = ITEMS.registerItem("note_grid", NoteGrid::new, new Item.Properties().stacksTo(1));
-        AWL_ITEM = ITEMS.registerItem("awl", Awl::new, new Item.Properties().durability(1024));
-        SOUND_SHARD_ITEM = ITEMS.registerItem("sound_shard", SoundShard::new, new Item.Properties().stacksTo(1));
+        NOTE_GRID_ITEM = ITEMS.registerItem("note_grid", NoteGrid::new, p -> p.stacksTo(1));
+        AWL_ITEM = ITEMS.registerItem("awl", Awl::new, p -> p.durability(1024));
+        SOUND_SHARD_ITEM = ITEMS.registerItem("sound_shard", SoundShard::new, p -> p.stacksTo(1));
         PAPER_PASTE_ITEM = ITEMS.registerItem("paper_paste", PaperPaste::new);
 
-        MUSIC_BOX_BLOCK = BLOCKS.registerBlock("music_box_block", MusicBoxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
+        MUSIC_BOX_BLOCK = BLOCKS.registerBlock("music_box_block", MusicBoxBlock::new, p -> p.mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
         MUSIC_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("music_box_block", MUSIC_BOX_BLOCK);
         MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("music_box_block", () -> new BlockEntityType<>(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()));
 
-        PERFORATION_TABLE_BLOCK = BLOCKS.registerBlock("perforation_table_block", PerforationTableBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava());
+        PERFORATION_TABLE_BLOCK = BLOCKS.registerBlock("perforation_table_block", PerforationTableBlock::new, p -> p.mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava());
         PERFORATION_TABLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("perforation_table_block", PERFORATION_TABLE_BLOCK);
 
-        SOUND_BOX_BLOCK = BLOCKS.registerBlock("sound_box_block", SoundBoxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
+        SOUND_BOX_BLOCK = BLOCKS.registerBlock("sound_box_block", SoundBoxBlock::new, p -> p.mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.CUSTOM_HEAD).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
         SOUND_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("sound_box_block", SOUND_BOX_BLOCK);
         SOUND_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("sound_box_block", () -> new BlockEntityType<>(SoundBoxBlockEntity::new, SOUND_BOX_BLOCK.get()));
 
@@ -135,7 +134,7 @@ public class CCMain {
 
         CREATIVE_MODE_TABS.register(ID + "_tab", () -> CreativeModeTab.builder()
                 .icon(MUSIC_BOX_BLOCK_ITEM::toStack)
-                .displayItems((parameters, output) -> {
+                .displayItems((_, output) -> {
                     output.accept(MUSIC_BOX_BLOCK_ITEM);
                     output.accept(PERFORATION_TABLE_BLOCK_ITEM);
                     output.accept(SOUND_BOX_BLOCK_ITEM);

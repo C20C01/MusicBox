@@ -2,19 +2,20 @@ package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.CCMain;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
 
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
-    protected static final ResourceLocation GUI_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CCMain.ID, "textures/gui/perforation_table_screen.png");
+    protected static final Identifier GUI_BACKGROUND = Identifier.fromNamespaceAndPath(CCMain.ID, "textures/gui/perforation_table_screen.png");
     protected NoteGridScreen noteGridScreen;
     protected byte currentPage = 0;
     private PageButton backButton;
@@ -30,17 +31,17 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     protected void init() {
         super.init();
         int top = this.topPos + 57;
-        this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, false, (button) -> pageBack(), true));
-        this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, true, (button) -> pageForward(), true));
+        this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, false, (_) -> pageBack(), true));
+        this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, true, (_) -> pageForward(), true));
         this.gridOnTableWidget = this.addRenderableWidget(new NoteGridWidget(this.leftPos + 79, this.topPos + 15, this));
         updateWidget();
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void extractRenderState(@Nonnull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
         if (Minecraft.getInstance().screen == this) {
-            super.render(guiGraphics, mouseX, mouseY, partialTicks);
-            this.renderTooltip(guiGraphics, mouseX, mouseY);
+            super.extractRenderState(guiGraphics, mouseX, mouseY, a);
+            this.extractTooltip(guiGraphics, mouseX, mouseY);
         }
     }
 
@@ -56,7 +57,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int x, int y) {
+    public void extractBackground(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
         int left = (this.width - this.imageWidth) / 2;
         int up = (this.height - this.imageHeight) / 2;
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_BACKGROUND, left, up, 0, 0, this.imageWidth, this.imageHeight, 256, 256);

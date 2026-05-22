@@ -9,7 +9,6 @@ import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -21,7 +20,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -41,7 +39,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
@@ -104,7 +101,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos) {
+    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos, Direction direction) {
         if (blockState.getValue(HAS_NOTE_GRID)) {
             BlockEntity blockentity = level.getBlockEntity(blockPos);
             return blockentity instanceof MusicBoxBlockEntity be ? be.getSignal() : 0;
@@ -135,7 +132,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
      */
     @Override
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
-        if (level.isClientSide || !(level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity)) {
+        if (level.isClientSide() || !(level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity)) {
             super.attack(blockState, level, blockPos, player);
             return;
         }
@@ -156,29 +153,29 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
         if (itemStack.is(CCMain.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
             // modify tick per beat
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 return InteractionResult.SUCCESS;
             }
             byte tickPerBeat = itemStack.getOrDefault(CCMain.TICK_PER_BEAT, TickPerBeat.DEFAULT);
             blockEntity.setTickPerBeat((ServerLevel) level, blockPos, tickPerBeat);
             level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
-            player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA), true);
+            player.sendOverlayMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA));
             return InteractionResult.CONSUME;
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
                 // take out note grid
-                if (level.isClientSide) {
+                if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
-                ItemHandlerHelper.giveItemToPlayer(player, blockEntity.removeItem());
+                player.getInventory().add(blockEntity.removeItem());
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(POWERED)) {
                 if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
                     // creative only: join the new data to the note grid
-                    if (level.isClientSide) {
+                    if (level.isClientSide()) {
                         return InteractionResult.SUCCESS;
                     }
                     if (blockEntity.joinData(itemStack)) {
@@ -188,7 +185,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
                     }
                 }
                 // play one beat
-                if (level.isClientSide) {
+                if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
                 blockEntity.playNextBeat((ServerLevel) level, blockPos, blockState);
@@ -197,7 +194,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
         } else {
             if (blockEntity.canPlaceItem(itemStack)) {
                 // put in note grid
-                if (level.isClientSide) {
+                if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
                 blockEntity.setItem(itemStack);
@@ -212,10 +209,10 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
-        super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
-        CustomData customdata = itemStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-        if (customdata.contains(MusicBoxBlockEntity.NOTE_GRID)) {
-            BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true, UPDATE_CLIENTS);
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity) {
+            if (!blockEntity.isEmpty()) {
+                BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true, UPDATE_CLIENTS);
+            }
         }
     }
 

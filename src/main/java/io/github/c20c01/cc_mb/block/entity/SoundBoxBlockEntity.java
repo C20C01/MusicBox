@@ -33,7 +33,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     }
 
     public static void tryToPlaySound(Level level, BlockPos blockPos) {
-        if (!level.isClientSide && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {
+        if (!level.isClientSide() && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {
             blockEntity.playSound(level, blockPos);
         }
     }
@@ -44,8 +44,8 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
      * @return True if the sound seed is successfully changed.
      */
     public static boolean tryToChangeSoundSeed(Level level, BlockPos blockPos) {
-        if (!level.isClientSide && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity && blockEntity.containSound()) {
-            Long newSeed = SoundShard.tryToChangeSoundSeed(blockEntity.getItem(), level.random);
+        if (!level.isClientSide() && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity && blockEntity.containSound()) {
+            Long newSeed = SoundShard.tryToChangeSoundSeed(blockEntity.getItem(), level.getRandom());
             if (newSeed != null) {
                 blockEntity.soundSeed = newSeed;
                 blockEntity.setChanged();
@@ -58,11 +58,11 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     private void playSound(Level level, BlockPos blockPos) {
         if (getSoundEvent() != null) {
             Vec3 pos = blockPos.getCenter();
-            if (!level.isClientSide) {
+            if (!level.isClientSide()) {
                 MobListenAndActHelper.nearbyMobsListen(level, blockPos, soundEvent.value().location());
             }
             level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
-            level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.random.nextLong()));
+            level.playSeededSound(null, pos.x, pos.y, pos.z, getSoundEvent(), SoundSource.BLOCKS, 3.0F, 1.0F, getSoundSeed().orElse(level.getRandom().nextLong()));
         }
     }
 

@@ -35,7 +35,7 @@ public class Awl extends Item {
             next = current < TickPerBeat.MAX ? current + 1 : TickPerBeat.MIN;
         }
         awl.set(CCMain.TICK_PER_BEAT.get(), (byte) next);
-        player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD), true);
+        player.sendOverlayMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD));
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -45,9 +45,9 @@ public class Awl extends Item {
         Level level = context.getLevel();
         if (level.getBlockEntity(context.getClickedPos()) instanceof MusicBoxBlockEntity blockEntity) {
             Player player = context.getPlayer();
-            if (player != null && !level.isClientSide) {
+            if (player != null && !level.isClientSide()) {
                 String tickPerBeat = String.valueOf(blockEntity.getTickPerBeat());
-                player.displayClientMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN), true);
+                player.sendOverlayMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN));
                 return InteractionResult.CONSUME;
             }
             return InteractionResult.SUCCESS;

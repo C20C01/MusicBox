@@ -118,7 +118,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     // Client side only
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && level.isClientSide && PLAYER.getData() != null) {
+        if (level != null && level.isClientSide() && PLAYER.getData() != null) {
             NoteGridDataManager.getInstance().markRemovable(PLAYER.getData().hashCode());
         }
     }
@@ -201,7 +201,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         }
         setOctave(level, blockPos, (byte) next);
         level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
-        player.displayClientMessage(Component.translatable(CCMain.TEXT_CHANGE_OCTAVE).append(String.valueOf(next)).withStyle(ChatFormatting.DARK_AQUA), true);
+        player.sendOverlayMessage(Component.translatable(CCMain.TEXT_CHANGE_OCTAVE).append(String.valueOf(next)).withStyle(ChatFormatting.DARK_AQUA));
     }
 
     private void setOctave(ServerLevel level, BlockPos blockPos, byte octave) {
