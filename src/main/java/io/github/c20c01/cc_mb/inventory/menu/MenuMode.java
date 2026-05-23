@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.inventory;
+package io.github.c20c01.cc_mb.inventory.menu;
 
 import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.client.gui.NoteGridWidget;

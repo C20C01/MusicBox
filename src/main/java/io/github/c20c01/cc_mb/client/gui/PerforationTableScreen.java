@@ -1,8 +1,8 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.MusicBox;
-import io.github.c20c01.cc_mb.inventory.MenuMode;
-import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
+import io.github.c20c01.cc_mb.inventory.menu.MenuMode;
+import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;

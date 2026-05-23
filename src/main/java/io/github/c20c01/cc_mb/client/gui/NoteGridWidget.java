@@ -3,7 +3,7 @@ package io.github.c20c01.cc_mb.client.gui;
 import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
+import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;

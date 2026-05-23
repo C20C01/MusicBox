@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.MusicBox;
-import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
+import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;

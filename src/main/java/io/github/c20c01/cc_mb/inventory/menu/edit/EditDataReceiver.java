@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.inventory.edit;
+package io.github.c20c01.cc_mb.inventory.menu.edit;
 
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;

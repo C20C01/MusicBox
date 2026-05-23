@@ -7,7 +7,7 @@ import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.NoteGridCode;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
-import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
+import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.PaperPaste;
