@@ -1,6 +1,6 @@
-package io.github.c20c01.cc_mb.util.player;
+package io.github.c20c01.cc_mb.player;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.client.SoundPlayer;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
@@ -59,7 +59,7 @@ public class MindPlayer extends AbstractNoteGridPlayer {
         // Get the sound shard in the player's MAIN_HAND or OFF_HAND
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
-        ItemStack soundShard = mainHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? mainHand : offHand.is(CCMain.SOUND_SHARD_ITEM.get()) ? offHand : ItemStack.EMPTY;
+        ItemStack soundShard = mainHand.is(MusicBox.SOUND_SHARD_ITEM.get()) ? mainHand : offHand.is(MusicBox.SOUND_SHARD_ITEM.get()) ? offHand : ItemStack.EMPTY;
 
         // Load the sound event and seed from the sound shard.
         noSpecificSeed = true;

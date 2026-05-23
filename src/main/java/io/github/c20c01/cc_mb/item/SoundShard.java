@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.client.Listener;
 import io.github.c20c01.cc_mb.network.SoundShardUpdatePacket;
 import io.github.c20c01.cc_mb.util.MobListenAndActHelper;
@@ -56,7 +56,7 @@ public class SoundShard extends Item {
      * @return True if the item has a sound event. (The sound seed is not necessary)
      */
     public static boolean containSound(ItemStack itemStack) {
-        return itemStack.get(CCMain.SOUND_INFO.get()) != null;
+        return itemStack.get(MusicBox.SOUND_INFO.get()) != null;
     }
 
     /**
@@ -69,7 +69,7 @@ public class SoundShard extends Item {
         Optional<SoundInfo> info = SoundInfo.ofItemStack(soundShard);
         if (info.isPresent()) {
             long newSeed = random.nextLong();
-            soundShard.set(CCMain.SOUND_INFO.get(), new SoundInfo(info.get().soundEvent(), Optional.of(newSeed)));
+            soundShard.set(MusicBox.SOUND_INFO.get(), new SoundInfo(info.get().soundEvent(), Optional.of(newSeed)));
             return newSeed;
         }
         return null;
@@ -111,7 +111,7 @@ public class SoundShard extends Item {
             }
             if (hand == InteractionHand.OFF_HAND) {
                 // creative mode only: off-hand to reset the sound shard.
-                soundShard.remove(CCMain.SOUND_INFO.get());
+                soundShard.remove(MusicBox.SOUND_INFO.get());
                 return InteractionResult.SUCCESS_SERVER;
             }
         }
@@ -188,7 +188,7 @@ public class SoundShard extends Item {
         @Override
         public InteractionResult interact(BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, ItemStack itemStack) {
             if (SoundShard.SoundInfo.ofItemStack(itemStack).isPresent() && !level.isClientSide()) {
-                itemStack.remove(CCMain.SOUND_INFO.get());
+                itemStack.remove(MusicBox.SOUND_INFO.get());
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
                 level.playSound(null, blockPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
                 return InteractionResult.SUCCESS_SERVER;
@@ -227,7 +227,7 @@ public class SoundShard extends Item {
         }
 
         public static Optional<SoundInfo> ofItemStack(ItemStack soundShard) {
-            return Optional.ofNullable(soundShard.get(CCMain.SOUND_INFO.get()));
+            return Optional.ofNullable(soundShard.get(MusicBox.SOUND_INFO.get()));
         }
 
         @Override

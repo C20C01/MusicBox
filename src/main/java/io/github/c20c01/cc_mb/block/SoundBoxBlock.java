@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.block;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
@@ -74,7 +74,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Level level = context.getLevel();
         BlockPos blockPos = context.getClickedPos();
-        boolean underMusicBox = level.getBlockState(blockPos.above()).is(CCMain.MUSIC_BOX_BLOCK.get());
+        boolean underMusicBox = level.getBlockState(blockPos.above()).is(MusicBox.MUSIC_BOX_BLOCK.get());
         boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
         return this.defaultBlockState().setValue(POWERED, powered).setValue(UNDER_MUSIC_BOX, underMusicBox);
     }
@@ -84,7 +84,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         if (direction != Direction.UP) {
             return super.updateShape(blockState, level, scheduledTickAccess, blockPos, direction, neighborPos, neighborState, random);
         }
-        return blockState.setValue(UNDER_MUSIC_BOX, neighborState.is(CCMain.MUSIC_BOX_BLOCK.get()));
+        return blockState.setValue(UNDER_MUSIC_BOX, neighborState.is(MusicBox.MUSIC_BOX_BLOCK.get()));
     }
 
     @Override
@@ -154,7 +154,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 return InteractionResult.CONSUME;
             }
         } else {
-            if (itemStack.is(CCMain.SOUND_SHARD_ITEM.get())) {
+            if (itemStack.is(MusicBox.SOUND_SHARD_ITEM.get())) {
                 if (blockEntity.canPlaceItem(itemStack)) {
                     // put in sound shard
                     if (level.isClientSide()) {
@@ -166,7 +166,7 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                     return InteractionResult.CONSUME;
                 } else {
                     // show message
-                    player.sendOverlayMessage(Component.translatable(CCMain.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED));
+                    player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED));
                     return InteractionResult.SUCCESS;
                 }
             }

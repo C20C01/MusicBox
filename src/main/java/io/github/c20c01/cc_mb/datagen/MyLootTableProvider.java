@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.datagen;
 
 import com.google.common.collect.Iterables;
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -18,16 +18,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = CCMain.ID)
-public class CCLootTableProvider extends LootTableProvider {
-    private CCLootTableProvider(PackOutput gen, CompletableFuture<HolderLookup.Provider> lookup) {
+@EventBusSubscriber(modid = MusicBox.ID)
+public class MyLootTableProvider extends LootTableProvider {
+    private MyLootTableProvider(PackOutput gen, CompletableFuture<HolderLookup.Provider> lookup) {
         super(gen, Set.of(), List.of(new SubProviderEntry(CCBlockLoot::new, LootContextParamSets.BLOCK)), lookup);
     }
 
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent.Client event) {
         var generator = event.getGenerator();
-        generator.addProvider(event.includeDev(), new CCLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
+        generator.addProvider(event.includeDev(), new MyLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
     }
 
     private static class CCBlockLoot extends BlockLootSubProvider {
@@ -42,7 +42,7 @@ public class CCLootTableProvider extends LootTableProvider {
 
         @Override
         protected Iterable<Block> getKnownBlocks() {
-            return Iterables.transform(CCMain.BLOCKS.getEntries(), DeferredHolder::get);
+            return Iterables.transform(MusicBox.BLOCKS.getEntries(), DeferredHolder::get);
         }
     }
 }

@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.data;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
@@ -59,7 +59,7 @@ public class NoteGridData {
     }
 
     public void saveToNoteGrid(ItemStack noteGrid) {
-        noteGrid.set(CCMain.NOTE_GRID_DATA.get(), NoteGridCode.of(this));
+        noteGrid.set(MusicBox.NOTE_GRID_DATA.get(), NoteGridCode.of(this));
     }
 
     public void markDirty() {

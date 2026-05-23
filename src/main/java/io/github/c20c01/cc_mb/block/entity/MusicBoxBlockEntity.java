@@ -1,13 +1,13 @@
 package io.github.c20c01.cc_mb.block.entity;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.player.AbstractNoteGridPlayer;
+import io.github.c20c01.cc_mb.player.MusicBoxPlayer;
 import io.github.c20c01.cc_mb.util.BlockUtils;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
-import io.github.c20c01.cc_mb.util.player.AbstractNoteGridPlayer;
-import io.github.c20c01.cc_mb.util.player.MusicBoxPlayer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,7 +44,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
     private boolean playNextBeat = false; // whether ask the client to play next beat
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
-        super(CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState, NOTE_GRID);
+        super(MusicBox.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState, NOTE_GRID);
         PLAYER = new MusicBoxPlayer(this);
     }
 
@@ -141,7 +141,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
 
     @Override
     public boolean canPlaceItem(ItemStack itemStack) {
-        return itemStack.is(CCMain.NOTE_GRID_ITEM.get());
+        return itemStack.is(MusicBox.NOTE_GRID_ITEM.get());
     }
 
     @Override
@@ -201,7 +201,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
         }
         setOctave(level, blockPos, (byte) next);
         level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
-        player.sendOverlayMessage(Component.translatable(CCMain.TEXT_CHANGE_OCTAVE).append(String.valueOf(next)).withStyle(ChatFormatting.DARK_AQUA));
+        player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_OCTAVE).append(String.valueOf(next)).withStyle(ChatFormatting.DARK_AQUA));
     }
 
     private void setOctave(ServerLevel level, BlockPos blockPos, byte octave) {
@@ -236,7 +236,7 @@ public class MusicBoxBlockEntity extends AbstractItemLoaderBlockEntity implement
      */
     public boolean joinData(ItemStack itemStack) {
         NoteGridData newData = null;
-        if (itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
+        if (itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) {
             newData = NoteGridData.ofNoteGrid(itemStack);
         } else if (itemStack.is(Items.WRITABLE_BOOK)) {
             newData = NoteGridData.ofBook(itemStack);

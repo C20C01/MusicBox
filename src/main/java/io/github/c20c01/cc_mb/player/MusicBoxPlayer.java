@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.util.player;
+package io.github.c20c01.cc_mb.player;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;

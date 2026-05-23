@@ -1,11 +1,10 @@
-package io.github.c20c01.cc_mb.client.gui;
+package io.github.c20c01.cc_mb.inventory;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.inventory.edit.EditDataReceiver;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
-import io.github.c20c01.cc_mb.util.SlotBuilder;
-import io.github.c20c01.cc_mb.util.edit.EditDataReceiver;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -33,38 +32,38 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     private final Slot TOOL_SLOT;
     private final Slot OTHER_GRID_SLOT;
     private final Inventory INVENTORY;
-    protected PerforationTableScreen screen;
-    protected MenuMode mode = MenuMode.EMPTY;
-    protected NoteGridData data;
-    protected NoteGridData helpData;
-    protected NoteGridData displayData;// display result of connect
+    private Runnable itemChangedCallback;
+    private MenuMode mode = MenuMode.EMPTY;
+    private NoteGridData data;
+    private NoteGridData helpData;
+    private NoteGridData displayData;// display result of connect
 
     public PerforationTableMenu(int id, Inventory inventory) {
         this(id, inventory, ContainerLevelAccess.NULL);
     }
 
     public PerforationTableMenu(int id, Inventory inventory, final ContainerLevelAccess access) {
-        super(CCMain.PERFORATION_TABLE_MENU.get(), id);
+        super(MusicBox.PERFORATION_TABLE_MENU.get(), id);
         this.ACCESS = access;
         this.INVENTORY = inventory;
         this.EDIT_DATA_RECEIVER = new EditDataReceiver();
 
         this.NOTE_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 0, 15, 22)
-                .accept(CCMain.NOTE_GRID_ITEM.get())
+                .accept(MusicBox.NOTE_GRID_ITEM.get())
                 .maxStackSize(1)
                 .onChanged(this::itemChanged)
                 .build()
         );
 
         this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
-                .accept(CCMain.PAPER_PASTE_ITEM.get(), CCMain.AWL_ITEM.get(), Items.SLIME_BALL, Items.SHEARS)
+                .accept(MusicBox.PAPER_PASTE_ITEM.get(), MusicBox.AWL_ITEM.get(), Items.SLIME_BALL, Items.SHEARS)
                 .maxStackSize(64)
                 .onChanged(this::itemChanged)
                 .build()
         );
 
         this.OTHER_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 2, 35, 22)
-                .accept(CCMain.NOTE_GRID_ITEM.get(), Items.WRITABLE_BOOK)
+                .accept(MusicBox.NOTE_GRID_ITEM.get(), Items.WRITABLE_BOOK)
                 .maxStackSize(1)
                 .onChanged(this::itemChanged)
                 .build()
@@ -87,7 +86,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(@Nonnull Player player) {
-        return stillValid(this.ACCESS, player, CCMain.PERFORATION_TABLE_BLOCK.get());
+        return stillValid(this.ACCESS, player, MusicBox.PERFORATION_TABLE_BLOCK.get());
     }
 
     @Override
@@ -123,7 +122,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(@Nonnull Player player, int code) {
         if (code < 0) {
-            // handel flags
+            // handle flags
             switch (code) {
                 case CODE_SAVE_NOTE_GRID -> {
                     if (EDIT_DATA_RECEIVER.dirty()) {
@@ -186,9 +185,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     protected void itemChanged() {
         updateMode();
         updateData();
-        if (screen != null) {
-            screen.onItemChanged();
-        }
+        if (itemChangedCallback != null) itemChangedCallback.run();
     }
 
     /**
@@ -215,5 +212,25 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         if (mode == MenuMode.CONNECT) {
             this.displayData = NoteGridUtils.connect(data.deepCopy(), helpData);
         }
+    }
+
+    public void setItemChangedCallback(Runnable callback) {
+        this.itemChangedCallback = callback;
+    }
+
+    public NoteGridData getData() {
+        return data;
+    }
+
+    public NoteGridData getDisplayData() {
+        return displayData;
+    }
+
+    public NoteGridData getHelpData() {
+        return helpData;
+    }
+
+    public MenuMode getMode() {
+        return mode;
     }
 }

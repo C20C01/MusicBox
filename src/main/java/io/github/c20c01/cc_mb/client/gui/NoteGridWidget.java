@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.client.gui;
 import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -31,10 +32,10 @@ public class NoteGridWidget extends AbstractWidget {
 
     @Override
     protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
-        switch (MENU.mode) {
-            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics);
-            case CONNECT -> renderConnect(guiGraphics);
-            case CUT -> renderCut(guiGraphics);
+        switch (MENU.getMode()) {
+            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics, MENU.getData(), MENU.getHelpData());
+            case CONNECT -> renderConnect(guiGraphics, MENU.getDisplayData());
+            case CUT -> renderCut(guiGraphics, MENU.getData());
         }
     }
 
@@ -51,27 +52,27 @@ public class NoteGridWidget extends AbstractWidget {
         }
     }
 
-    private void renderPunch(GuiGraphicsExtractor guiGraphics) {
+    private void renderPunch(GuiGraphicsExtractor guiGraphics, NoteGridData data, NoteGridData helpData) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, MENU.data, SCREEN.currentPage, beat, GuiUtils.BLACK);
-            if (MENU.helpData != null && MENU.helpData.size() > SCREEN.currentPage) {
-                renderOneBeat(guiGraphics, MENU.helpData, SCREEN.currentPage, beat, GuiUtils.HELP_NOTE_COLOR);
+            renderOneBeat(guiGraphics, data, SCREEN.currentPage, beat, GuiUtils.BLACK);
+            if (helpData != null && helpData.size() > SCREEN.currentPage) {
+                renderOneBeat(guiGraphics, helpData, SCREEN.currentPage, beat, GuiUtils.HELP_NOTE_COLOR);
             }
         }
     }
 
-    private void renderConnect(GuiGraphicsExtractor guiGraphics) {
+    private void renderConnect(GuiGraphicsExtractor guiGraphics, NoteGridData displayData) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, MENU.displayData, SCREEN.currentPage, beat, GuiUtils.BLACK);
+            renderOneBeat(guiGraphics, displayData, SCREEN.currentPage, beat, GuiUtils.BLACK);
         }
     }
 
-    private void renderCut(GuiGraphicsExtractor guiGraphics) {
+    private void renderCut(GuiGraphicsExtractor guiGraphics, NoteGridData data) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, MENU.data, SCREEN.currentPage, beat, GuiUtils.BLACK);
+            renderOneBeat(guiGraphics, data, SCREEN.currentPage, beat, GuiUtils.BLACK);
         }
         if (SCREEN.hasNextPage()) {
             guiGraphics.verticalLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
@@ -86,7 +87,7 @@ public class NoteGridWidget extends AbstractWidget {
     @Override
     public void onClick(@NonNull MouseButtonEvent event, boolean doubleClick) {
         super.onClick(event, doubleClick);
-        switch (SCREEN.getMenu().mode) {
+        switch (MENU.getMode()) {
             case PUNCH, CHECK, FIX -> SCREEN.openNoteGridScreen();
             case CONNECT -> GuiUtils.sendCodeToMenu(MENU.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
             case CUT -> {

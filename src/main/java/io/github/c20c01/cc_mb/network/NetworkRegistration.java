@@ -1,18 +1,18 @@
 package io.github.c20c01.cc_mb.network;
 
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = CCMain.ID)
-public class CCNetwork {
+@EventBusSubscriber(modid = MusicBox.ID)
+public class NetworkRegistration {
 
     @SubscribeEvent
     public static void registerPayload(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar(CCMain.NETWORK_VERSION);
+        final PayloadRegistrar registrar = event.registrar(MusicBox.NETWORK_VERSION);
 
         // Request the note grid data from the server.
         registrar.playToServer(NoteGridDataPacket.Request.TYPE, NoteGridDataPacket.Request.STREAM_CODEC, NoteGridDataPacket.Request::handle);

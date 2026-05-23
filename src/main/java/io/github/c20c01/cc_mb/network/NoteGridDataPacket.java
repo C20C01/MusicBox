@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.network;
 
 import com.mojang.logging.LogUtils;
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import net.minecraft.core.BlockPos;
@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 public class NoteGridDataPacket {
     public record Request(int hash, BlockPos blockPos) implements CustomPacketPayload {
         public static final StreamCodec<FriendlyByteBuf, Request> STREAM_CODEC = CustomPacketPayload.codec(Request::encode, Request::decode);
-        public static final CustomPacketPayload.Type<Request> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CCMain.ID, "note_grid_data_request"));
+        public static final CustomPacketPayload.Type<Request> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MusicBox.ID, "note_grid_data_request"));
 
         public static Request decode(FriendlyByteBuf friendlyByteBuf) {
             return new Request(friendlyByteBuf.readInt(), friendlyByteBuf.readBlockPos());
@@ -36,7 +36,7 @@ public class NoteGridDataPacket {
 
         private static void tryToReply(IPayloadContext context, int hash, BlockPos blockPos) {
             ServerLevel level = (ServerLevel) context.player().level();
-            level.getBlockEntity(blockPos, CCMain.MUSIC_BOX_BLOCK_ENTITY.get())
+            level.getBlockEntity(blockPos, MusicBox.MUSIC_BOX_BLOCK_ENTITY.get())
                     .flatMap(MusicBoxBlockEntity::getPlayerData)
                     .ifPresent(noteGridData -> context.reply(new Reply(hash, noteGridData.toBytes())));
         }
@@ -62,7 +62,7 @@ public class NoteGridDataPacket {
 
     public record Reply(int hash, byte[] data) implements CustomPacketPayload {
         public static final StreamCodec<FriendlyByteBuf, Reply> STREAM_CODEC = CustomPacketPayload.codec(Reply::encode, Reply::decode);
-        public static final CustomPacketPayload.Type<Reply> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CCMain.ID, "note_grid_data_reply"));
+        public static final CustomPacketPayload.Type<Reply> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MusicBox.ID, "note_grid_data_reply"));
 
         public static Reply decode(FriendlyByteBuf friendlyByteBuf) {
             return new Reply(friendlyByteBuf.readInt(), friendlyByteBuf.readByteArray());

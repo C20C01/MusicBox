@@ -4,9 +4,11 @@ import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
+import io.github.c20c01.cc_mb.inventory.MenuMode;
+import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
+import io.github.c20c01.cc_mb.inventory.edit.EditDataSender;
+import io.github.c20c01.cc_mb.player.MindPlayer;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
-import io.github.c20c01.cc_mb.util.edit.EditDataSender;
-import io.github.c20c01.cc_mb.util.player.MindPlayer;
 import it.unimi.dsi.fastutil.bytes.ByteArraySet;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
@@ -74,12 +76,12 @@ public class NoteGridScreen extends Screen implements MindPlayer.Listener {
      */
     public NoteGridScreen(PerforationTableScreen screen) {
         super(GameNarrator.NO_TITLE);
-        MAIN_DATA = screen.getMenu().data;
-        HELP_DATA = screen.getMenu().helpData;
+        MAIN_DATA = screen.getMenu().getData();
+        HELP_DATA = screen.getMenu().getHelpData();
         EDIT_DATA_SENDER = new EditDataSender(screen.getMenu().containerId);
         tableScreen = screen;
         currentPage = (byte) Math.min(screen.currentPage, getNumPages() - 1);
-        mode = screen.getMenu().mode;
+        mode = screen.getMenu().getMode();
         editMode = mode == MenuMode.PUNCH || mode == MenuMode.FIX;
         playProgressLineColor = mode == MenuMode.PUNCH ? EDIT_PROGRESS_COLOR : SELECTION_COLOR;
         PLAYER = MindPlayer.getInstance(MAIN_DATA, this);

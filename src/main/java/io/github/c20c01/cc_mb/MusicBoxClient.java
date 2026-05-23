@@ -1,6 +1,5 @@
-package io.github.c20c01.cc_mb.client;
+package io.github.c20c01.cc_mb;
 
-import io.github.c20c01.cc_mb.CCMain;
 import io.github.c20c01.cc_mb.client.gui.PerforationTableScreen;
 import io.github.c20c01.cc_mb.util.InstrumentBlocksHelper;
 import net.neoforged.api.distmarker.Dist;
@@ -9,12 +8,12 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-@EventBusSubscriber(modid = CCMain.ID, value = Dist.CLIENT)
-public class Setup {
+@EventBusSubscriber(modid = MusicBox.ID, value = Dist.CLIENT)
+public class MusicBoxClient {
     @SubscribeEvent
     public static void setupMenuScreen(RegisterMenuScreensEvent event) {
         // register the perforation table menu and screen
-        event.register(CCMain.PERFORATION_TABLE_MENU.get(), PerforationTableScreen::new);
+        event.register(MusicBox.PERFORATION_TABLE_MENU.get(), PerforationTableScreen::new);
     }
 
     @SubscribeEvent

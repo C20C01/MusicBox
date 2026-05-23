@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.item;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.client.gui.NoteGridScreen;
 import io.github.c20c01.cc_mb.data.NoteGridCode;
 import io.github.c20c01.cc_mb.data.NoteGridData;
@@ -25,7 +25,7 @@ public class NoteGrid extends Item {
     @SuppressWarnings("deprecation")
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
-        stack.getOrDefault(CCMain.NOTE_GRID_DATA.get(), new NoteGridCode(new byte[]{0})).addToTooltip(context, tooltipAdder, flag, stack);
+        stack.getOrDefault(MusicBox.NOTE_GRID_DATA.get(), new NoteGridCode(new byte[]{0})).addToTooltip(context, tooltipAdder, flag, stack);
     }
 
     @Override

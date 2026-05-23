@@ -5,15 +5,15 @@ import io.github.c20c01.cc_mb.block.PerforationTableBlock;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
-import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
 import io.github.c20c01.cc_mb.data.NoteGridCode;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
+import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
 import io.github.c20c01.cc_mb.item.Awl;
 import io.github.c20c01.cc_mb.item.NoteGrid;
 import io.github.c20c01.cc_mb.item.PaperPaste;
 import io.github.c20c01.cc_mb.item.SoundShard;
+import io.github.c20c01.cc_mb.player.TickPerBeat;
 import io.github.c20c01.cc_mb.util.InstrumentBlocksHelper;
-import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -35,8 +35,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-@Mod(CCMain.ID)
-public class CCMain {
+@Mod(MusicBox.ID)
+public class MusicBox {
     public static final String ID = "cc_mb";
 
     // text
@@ -152,7 +152,7 @@ public class CCMain {
         );
     }
 
-    public CCMain(IEventBus modEventBus) {
+    public MusicBox(IEventBus modEventBus) {
         DATA_COMPONENTS.register(modEventBus);
         ITEMS.register(modEventBus);
         BLOCKS.register(modEventBus);

@@ -1,8 +1,8 @@
 package io.github.c20c01.cc_mb.item;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
-import io.github.c20c01.cc_mb.util.player.TickPerBeat;
+import io.github.c20c01.cc_mb.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ public class Awl extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack awl = player.getItemInHand(hand);
-        byte current = awl.getOrDefault(CCMain.TICK_PER_BEAT.get(), TickPerBeat.DEFAULT);
+        byte current = awl.getOrDefault(MusicBox.TICK_PER_BEAT.get(), TickPerBeat.DEFAULT);
         int next;
         if (player.isSecondaryUseActive()) {
             // decrease octave
@@ -34,8 +34,8 @@ public class Awl extends Item {
             // increase octave
             next = current < TickPerBeat.MAX ? current + 1 : TickPerBeat.MIN;
         }
-        awl.set(CCMain.TICK_PER_BEAT.get(), (byte) next);
-        player.sendOverlayMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD));
+        awl.set(MusicBox.TICK_PER_BEAT.get(), (byte) next);
+        player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD));
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -47,7 +47,7 @@ public class Awl extends Item {
             Player player = context.getPlayer();
             if (player != null && !level.isClientSide()) {
                 String tickPerBeat = String.valueOf(blockEntity.getTickPerBeat());
-                player.sendOverlayMessage(Component.translatable(CCMain.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN));
+                player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN));
                 return InteractionResult.CONSUME;
             }
             return InteractionResult.SUCCESS;

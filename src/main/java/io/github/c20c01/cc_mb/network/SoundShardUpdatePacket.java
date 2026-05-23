@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.network;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import net.minecraft.core.Holder;
 import net.minecraft.network.FriendlyByteBuf;
@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 public record SoundShardUpdatePacket(int slot, Identifier sound) implements CustomPacketPayload {
     public static final StreamCodec<FriendlyByteBuf, SoundShardUpdatePacket> STREAM_CODEC = CustomPacketPayload.codec(SoundShardUpdatePacket::encode, SoundShardUpdatePacket::decode);
-    public static final CustomPacketPayload.Type<SoundShardUpdatePacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(CCMain.ID, "sound_shard_update"));
+    public static final CustomPacketPayload.Type<SoundShardUpdatePacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MusicBox.ID, "sound_shard_update"));
 
     public static SoundShardUpdatePacket decode(FriendlyByteBuf friendlyByteBuf) {
         return new SoundShardUpdatePacket(friendlyByteBuf.readVarInt(), friendlyByteBuf.readIdentifier());
@@ -33,9 +33,9 @@ public record SoundShardUpdatePacket(int slot, Identifier sound) implements Cust
             return;
         }
         ItemStack soundShard = player.getInventory().getItem(slot);
-        if (soundShard.is(CCMain.SOUND_SHARD_ITEM.get())) {
+        if (soundShard.is(MusicBox.SOUND_SHARD_ITEM.get())) {
             Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(location));
-            soundShard.set(CCMain.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
+            soundShard.set(MusicBox.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
             player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, player.getSoundSource(), 1.0F, 1.0F);
         }
     }

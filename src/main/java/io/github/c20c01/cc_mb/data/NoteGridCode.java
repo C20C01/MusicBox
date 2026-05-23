@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteArraySet;
@@ -51,7 +51,7 @@ public record NoteGridCode(byte[] code) implements TooltipProvider {
     }
 
     public static NoteGridCode of(ItemStack itemStack) {
-        return itemStack.getOrDefault(CCMain.NOTE_GRID_DATA.get(), NoteGridCode.of(NoteGridData.empty()));
+        return itemStack.getOrDefault(MusicBox.NOTE_GRID_DATA.get(), NoteGridCode.of(NoteGridData.empty()));
     }
 
     public NoteGridData toData() {
@@ -75,13 +75,13 @@ public record NoteGridCode(byte[] code) implements TooltipProvider {
     @ParametersAreNonnullByDefault
     public void addToTooltip(Item.TooltipContext context, Consumer<Component> tooltipAdder, TooltipFlag flag, DataComponentGetter componentGetter) {
         if (code[code.length - 1] != 0) {
-            tooltipAdder.accept(Component.translatable(CCMain.TEXT_PAGE_SIZE, 0).withStyle(ChatFormatting.RED));
+            tooltipAdder.accept(Component.translatable(MusicBox.TEXT_PAGE_SIZE, 0).withStyle(ChatFormatting.RED));
         }
         byte size = 0;
         for (byte b : code) {
             if (b == 0) size++;
         }
-        tooltipAdder.accept(Component.translatable(CCMain.TEXT_PAGE_SIZE, size).withStyle(ChatFormatting.GRAY));
+        tooltipAdder.accept(Component.translatable(MusicBox.TEXT_PAGE_SIZE, size).withStyle(ChatFormatting.GRAY));
     }
 
     private static class Decoder {

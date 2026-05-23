@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.util.player;
+package io.github.c20c01.cc_mb.player;
 
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.Page;

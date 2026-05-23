@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.util;
+package io.github.c20c01.cc_mb.inventory;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;

@@ -1,11 +1,11 @@
 package io.github.c20c01.cc_mb.block;
 
 import com.mojang.serialization.MapCodec;
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.item.Awl;
+import io.github.c20c01.cc_mb.player.TickPerBeat;
 import io.github.c20c01.cc_mb.util.BlockUtils;
-import io.github.c20c01.cc_mb.util.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,7 +70,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     private BlockState setInstrument(LevelReader level, BlockPos blockPos, BlockState blockState) {
         BlockState blockBelow = level.getBlockState(blockPos.below());
         NoteBlockInstrument instrument = blockBelow.instrument();
-        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(CCMain.SOUND_BOX_BLOCK.get());// is head
+        boolean flag = instrument.worksAboveNoteBlock() && !blockBelow.is(MusicBox.SOUND_BOX_BLOCK.get());// is head
         return blockState.setValue(INSTRUMENT, flag ? NoteBlockInstrument.HARP : instrument);
     }
 
@@ -136,7 +136,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             super.attack(blockState, level, blockPos, player);
             return;
         }
-        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(CCMain.AWL_ITEM)) {
+        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(MusicBox.AWL_ITEM)) {
             blockEntity.setOctave((ServerLevel) level, blockPos, player);
             return;
         }
@@ -151,15 +151,15 @@ public class MusicBoxBlock extends BaseEntityBlock {
             return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
         }
 
-        if (itemStack.is(CCMain.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
+        if (itemStack.is(MusicBox.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
             // modify tick per beat
             if (level.isClientSide()) {
                 return InteractionResult.SUCCESS;
             }
-            byte tickPerBeat = itemStack.getOrDefault(CCMain.TICK_PER_BEAT, TickPerBeat.DEFAULT);
+            byte tickPerBeat = itemStack.getOrDefault(MusicBox.TICK_PER_BEAT, TickPerBeat.DEFAULT);
             blockEntity.setTickPerBeat((ServerLevel) level, blockPos, tickPerBeat);
             level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.BLOCKS);
-            player.sendOverlayMessage(Component.translatable(CCMain.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA));
+            player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(blockEntity.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA));
             return InteractionResult.CONSUME;
         }
 
@@ -173,7 +173,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
                 return InteractionResult.CONSUME;
             }
             if (!blockState.getValue(POWERED)) {
-                if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(CCMain.NOTE_GRID_ITEM.get())) {
+                if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) {
                     // creative only: join the new data to the note grid
                     if (level.isClientSide()) {
                         return InteractionResult.SUCCESS;
@@ -220,7 +220,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pType) {
         if (pState.getValue(POWERED) && pState.getValue(HAS_NOTE_GRID)) {
-            return createTickerHelper(pType, CCMain.MUSIC_BOX_BLOCK_ENTITY.get(), MusicBoxBlockEntity::tick);
+            return createTickerHelper(pType, MusicBox.MUSIC_BOX_BLOCK_ENTITY.get(), MusicBoxBlockEntity::tick);
         }
         return null;
     }

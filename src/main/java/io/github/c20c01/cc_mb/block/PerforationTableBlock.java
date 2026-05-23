@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.block;
 
-import io.github.c20c01.cc_mb.CCMain;
-import io.github.c20c01.cc_mb.client.gui.PerforationTableMenu;
+import io.github.c20c01.cc_mb.MusicBox;
+import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -34,6 +34,6 @@ public class PerforationTableBlock extends Block {
     @Override
     @Nullable
     public MenuProvider getMenuProvider(BlockState blockState, Level level, BlockPos blockPos) {
-        return new SimpleMenuProvider((containerId, inventory, _) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.translatable(CCMain.PERFORATION_TABLE_BLOCK.get().getDescriptionId()));
+        return new SimpleMenuProvider((containerId, inventory, _) -> new PerforationTableMenu(containerId, inventory, ContainerLevelAccess.create(level, blockPos)), Component.translatable(MusicBox.PERFORATION_TABLE_BLOCK.get().getDescriptionId()));
     }
 }

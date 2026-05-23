@@ -1,6 +1,8 @@
 package io.github.c20c01.cc_mb.client.gui;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
+import io.github.c20c01.cc_mb.inventory.MenuMode;
+import io.github.c20c01.cc_mb.inventory.PerforationTableMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
@@ -15,7 +17,7 @@ import org.jspecify.annotations.NonNull;
 import javax.annotation.Nonnull;
 
 public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
-    protected static final Identifier GUI_BACKGROUND = Identifier.fromNamespaceAndPath(CCMain.ID, "textures/gui/perforation_table_screen.png");
+    protected static final Identifier GUI_BACKGROUND = Identifier.fromNamespaceAndPath(MusicBox.ID, "textures/gui/perforation_table_screen.png");
     protected NoteGridScreen noteGridScreen;
     protected byte currentPage = 0;
     private PageButton backButton;
@@ -24,7 +26,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
 
     public PerforationTableScreen(PerforationTableMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
-        menu.screen = this;
+        menu.setItemChangedCallback(this::onItemChanged);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
     protected void onItemChanged() {
         currentPage = 0;
         updateWidget();
-        if (noteGridScreen != null && menu.mode != MenuMode.PUNCH && menu.mode != MenuMode.FIX) {
+        if (noteGridScreen != null && menu.getMode() != MenuMode.PUNCH && menu.getMode() != MenuMode.FIX) {
             noteGridScreen.exitEditMode();
         }
     }
@@ -72,8 +74,8 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         if (currentPage > 0) {
             --currentPage;
         }
-        if (menu.mode == MenuMode.CUT && currentPage == getPageSize() - 2) {
-            gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
+        if (menu.getMode() == MenuMode.CUT && currentPage == getPageSize() - 2) {
+            gridOnTableWidget.setTooltip(Tooltip.create(menu.getMode().getTip()));
         }
         updateWidget();
     }
@@ -82,19 +84,19 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         if (currentPage < getPageSize() - 1) {
             ++this.currentPage;
         }
-        if (menu.mode == MenuMode.CUT && currentPage == getPageSize() - 1) {
-            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(CCMain.TEXT_CANNOT_CUT)));
+        if (menu.getMode() == MenuMode.CUT && currentPage == getPageSize() - 1) {
+            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(MusicBox.TEXT_CANNOT_CUT)));
         }
         updateWidget();
     }
 
     private int getPageSize() {
-        switch (menu.mode) {
+        switch (menu.getMode()) {
             case PUNCH, CHECK, CUT -> {
-                return menu.data == null ? 0 : menu.data.size();
+                return menu.getData() == null ? 0 : menu.getData().size();
             }
             case CONNECT -> {
-                return menu.displayData == null ? 0 : menu.displayData.size();
+                return menu.getDisplayData() == null ? 0 : menu.getDisplayData().size();
             }
             default -> {
                 return 0;
@@ -115,10 +117,10 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
         }
 
         // tooltip
-        if (menu.mode == MenuMode.CUT && !hasNextPage) {
-            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(CCMain.TEXT_CANNOT_CUT)));
+        if (menu.getMode() == MenuMode.CUT && !hasNextPage) {
+            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(MusicBox.TEXT_CANNOT_CUT)));
         } else {
-            gridOnTableWidget.setTooltip(Tooltip.create(menu.mode.getTip()));
+            gridOnTableWidget.setTooltip(Tooltip.create(menu.getMode().getTip()));
         }
     }
 

@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.util.edit;
+package io.github.c20c01.cc_mb.inventory.edit;
 
 /**
  * The edit data is transmitted with several positive bytes.

@@ -1,7 +1,7 @@
 package io.github.c20c01.cc_mb.util;
 
 import com.mojang.logging.LogUtils;
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -22,22 +22,22 @@ public class InstrumentBlocksHelper {
     private static final HashMap<NoteBlockInstrument, String> INSTRUMENT_TRANSLATION_KEY_MAP = new HashMap<>(16);
 
     static {
-        add(Blocks.CHERRY_LEAVES, CCMain.TEXT_SOUND_HARP);
-        add(Blocks.DARK_OAK_WOOD, CCMain.TEXT_SOUND_BASS);
-        add(Blocks.SAND, CCMain.TEXT_SOUND_SNARE);
-        add(Blocks.GREEN_STAINED_GLASS, CCMain.TEXT_SOUND_HAT);
-        add(Blocks.SMOOTH_STONE, CCMain.TEXT_SOUND_BASS_DRUM);
-        add(Blocks.GOLD_BLOCK, CCMain.TEXT_SOUND_BELL);
-        add(Blocks.CLAY, CCMain.TEXT_SOUND_FLUTE);
-        add(Blocks.PACKED_ICE, CCMain.TEXT_SOUND_CHIME);
-        add(Blocks.PINK_WOOL, CCMain.TEXT_SOUND_GUITAR);
-        add(Blocks.BONE_BLOCK, CCMain.TEXT_SOUND_XYLOPHONE);
-        add(Blocks.IRON_BLOCK, CCMain.TEXT_SOUND_IRON_XYLOPHONE);
-        add(Blocks.SOUL_SAND, CCMain.TEXT_SOUND_COW_BELL);
-        add(Blocks.PUMPKIN, CCMain.TEXT_SOUND_DIDGERIDOO);
-        add(Blocks.EMERALD_BLOCK, CCMain.TEXT_SOUND_BIT);
-        add(Blocks.HAY_BLOCK, CCMain.TEXT_SOUND_BANJO);
-        add(Blocks.GLOWSTONE, CCMain.TEXT_SOUND_PLING);
+        add(Blocks.CHERRY_LEAVES, MusicBox.TEXT_SOUND_HARP);
+        add(Blocks.DARK_OAK_WOOD, MusicBox.TEXT_SOUND_BASS);
+        add(Blocks.SAND, MusicBox.TEXT_SOUND_SNARE);
+        add(Blocks.GREEN_STAINED_GLASS, MusicBox.TEXT_SOUND_HAT);
+        add(Blocks.SMOOTH_STONE, MusicBox.TEXT_SOUND_BASS_DRUM);
+        add(Blocks.GOLD_BLOCK, MusicBox.TEXT_SOUND_BELL);
+        add(Blocks.CLAY, MusicBox.TEXT_SOUND_FLUTE);
+        add(Blocks.PACKED_ICE, MusicBox.TEXT_SOUND_CHIME);
+        add(Blocks.PINK_WOOL, MusicBox.TEXT_SOUND_GUITAR);
+        add(Blocks.BONE_BLOCK, MusicBox.TEXT_SOUND_XYLOPHONE);
+        add(Blocks.IRON_BLOCK, MusicBox.TEXT_SOUND_IRON_XYLOPHONE);
+        add(Blocks.SOUL_SAND, MusicBox.TEXT_SOUND_COW_BELL);
+        add(Blocks.PUMPKIN, MusicBox.TEXT_SOUND_DIDGERIDOO);
+        add(Blocks.EMERALD_BLOCK, MusicBox.TEXT_SOUND_BIT);
+        add(Blocks.HAY_BLOCK, MusicBox.TEXT_SOUND_BANJO);
+        add(Blocks.GLOWSTONE, MusicBox.TEXT_SOUND_PLING);
     }
 
     /**

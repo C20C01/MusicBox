@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.block.entity;
 
-import io.github.c20c01.cc_mb.CCMain;
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.item.SoundShard;
 import io.github.c20c01.cc_mb.util.BlockUtils;
@@ -29,7 +29,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
     private Long soundSeed = null;
 
     public SoundBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
-        super(CCMain.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState, SOUND_SHARD);
+        super(MusicBox.SOUND_BOX_BLOCK_ENTITY.get(), blockPos, blockState, SOUND_SHARD);
     }
 
     public static void tryToPlaySound(Level level, BlockPos blockPos) {
@@ -100,7 +100,7 @@ public class SoundBoxBlockEntity extends AbstractItemLoaderBlockEntity {
 
     @Override
     public boolean canPlaceItem(ItemStack itemStack) {
-        return itemStack.is(CCMain.SOUND_SHARD_ITEM.get()) && SoundShard.containSound(itemStack);
+        return itemStack.is(MusicBox.SOUND_SHARD_ITEM.get()) && SoundShard.containSound(itemStack);
     }
 
     public boolean containSound() {
