@@ -32,7 +32,7 @@ public class PaperPaste extends Item {
                 return InteractionResult.PASS;
             } else if (!level.isClientSide()) {
                 itemStack.shrink(1);
-                level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1.0F, 1.0F);
                 player.addItem(new ItemStack(MusicBox.PAPER_PASTE_ITEM.get(), 16));
                 LayeredCauldronBlock.lowerFillLevel(blockState, level, blockPos);
             }

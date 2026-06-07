@@ -21,21 +21,21 @@ import javax.annotation.Nonnull;
 public class NoteGridWidget extends AbstractWidget {
     public static final int WIDTH = 68;
     public static final int HEIGHT = 53;
-    private final PerforationTableScreen SCREEN;
-    private final PerforationTableMenu MENU;
+    private final PerforationTableScreen screen;
+    private final PerforationTableMenu menu;
 
     public NoteGridWidget(int x, int y, PerforationTableScreen screen) {
         super(x, y, WIDTH, HEIGHT, Component.empty());
-        this.SCREEN = screen;
-        this.MENU = screen.getMenu();
+        this.screen = screen;
+        this.menu = screen.getMenu();
     }
 
     @Override
     protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
-        switch (MENU.getMode()) {
-            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics, MENU.getData(), MENU.getHelpData());
-            case CONNECT -> renderConnect(guiGraphics, MENU.getDisplayData());
-            case CUT -> renderCut(guiGraphics, MENU.getData());
+        switch (menu.getMode()) {
+            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics, menu.getData(), menu.getHelpData());
+            case CONNECT -> renderConnect(guiGraphics, menu.getDisplayData());
+            case CUT -> renderCut(guiGraphics, menu.getData());
         }
     }
 
@@ -55,9 +55,9 @@ public class NoteGridWidget extends AbstractWidget {
     private void renderPunch(GuiGraphicsExtractor guiGraphics, NoteGridData data, NoteGridData helpData) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, data, SCREEN.currentPage, beat, GuiUtils.BLACK);
-            if (helpData != null && helpData.size() > SCREEN.currentPage) {
-                renderOneBeat(guiGraphics, helpData, SCREEN.currentPage, beat, GuiUtils.HELP_NOTE_COLOR);
+            renderOneBeat(guiGraphics, data, screen.currentPage, beat, GuiUtils.BLACK);
+            if (helpData != null && helpData.size() > screen.currentPage) {
+                renderOneBeat(guiGraphics, helpData, screen.currentPage, beat, GuiUtils.HELP_NOTE_COLOR);
             }
         }
     }
@@ -65,16 +65,16 @@ public class NoteGridWidget extends AbstractWidget {
     private void renderConnect(GuiGraphicsExtractor guiGraphics, NoteGridData displayData) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, displayData, SCREEN.currentPage, beat, GuiUtils.BLACK);
+            renderOneBeat(guiGraphics, displayData, screen.currentPage, beat, GuiUtils.BLACK);
         }
     }
 
     private void renderCut(GuiGraphicsExtractor guiGraphics, NoteGridData data) {
         renderBg(guiGraphics);
         for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, data, SCREEN.currentPage, beat, GuiUtils.BLACK);
+            renderOneBeat(guiGraphics, data, screen.currentPage, beat, GuiUtils.BLACK);
         }
-        if (SCREEN.hasNextPage()) {
+        if (screen.hasNextPage()) {
             guiGraphics.verticalLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
         }
     }
@@ -87,12 +87,12 @@ public class NoteGridWidget extends AbstractWidget {
     @Override
     public void onClick(@NonNull MouseButtonEvent event, boolean doubleClick) {
         super.onClick(event, doubleClick);
-        switch (MENU.getMode()) {
-            case PUNCH, CHECK, FIX -> SCREEN.openNoteGridScreen();
-            case CONNECT -> GuiUtils.sendCodeToMenu(MENU.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
+        switch (menu.getMode()) {
+            case PUNCH, CHECK, FIX -> screen.openNoteGridScreen();
+            case CONNECT -> GuiUtils.sendCodeToMenu(menu.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
             case CUT -> {
-                if (SCREEN.hasNextPage()) {
-                    GuiUtils.sendCodeToMenu(MENU.containerId, SCREEN.currentPage);
+                if (screen.hasNextPage()) {
+                    GuiUtils.sendCodeToMenu(menu.containerId, screen.currentPage);
                 }
             }
         }

@@ -60,6 +60,7 @@ public class PerforationTableScreen extends AbstractContainerScreen<PerforationT
 
     @Override
     public void extractBackground(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, a);
         int left = (this.width - this.imageWidth) / 2;
         int up = (this.height - this.imageHeight) / 2;
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_BACKGROUND, left, up, 0, 0, this.imageWidth, this.imageHeight, 256, 256);

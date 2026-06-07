@@ -10,11 +10,6 @@ public class TickPerBeat {
     public static final byte MIN = 1;
     public static final byte MAX = 20;
     public static final byte DEFAULT = (MIN + MAX) / 2;
-
-    public static byte clamp(int value) {
-        return (byte) Mth.clamp(value, MIN, MAX);
-    }
-
     public static final Codec<Byte> CODEC = new PrimitiveCodec<>() {
         @Override
         public <T> DataResult<Byte> read(DynamicOps<T> ops, T input) {
@@ -26,4 +21,8 @@ public class TickPerBeat {
             return ops.createByte(value);
         }
     };
+
+    public static byte clamp(int value) {
+        return (byte) Mth.clamp(value, MIN, MAX);
+    }
 }

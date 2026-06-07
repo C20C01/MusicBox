@@ -49,6 +49,14 @@ public class Listener implements SoundEventListener {
         return null;
     }
 
+    public static MutableComponent getSoundEventTitle(Identifier location) {
+        var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
+        if (sound != null && sound.getSubtitle() != null) {
+            return MutableComponent.create(sound.getSubtitle().getContents());
+        }
+        return Component.literal("? ? ?");
+    }
+
     private boolean isAudible(SoundInstance sound, float range) {
         if (Float.isInfinite(range)) {
             return true;
@@ -56,14 +64,6 @@ public class Listener implements SoundEventListener {
             Vec3 listenerPos = Minecraft.getInstance().getSoundManager().getListenerTransform().position();
             return listenerPos.distanceToSqr(sound.getX(), sound.getY(), sound.getZ()) <= (double) (range * range);
         }
-    }
-
-    public static MutableComponent getSoundEventTitle(Identifier location) {
-        var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
-        if (sound != null && sound.getSubtitle() != null) {
-            return MutableComponent.create(sound.getSubtitle().getContents());
-        }
-        return Component.literal("? ? ?");
     }
 
     @Override

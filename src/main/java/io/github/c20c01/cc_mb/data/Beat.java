@@ -8,9 +8,9 @@ import java.util.Collection;
 /**
  * A beat is a set of notes that can be played together.
  */
-public class Beat {
+public final class Beat {
     public static final Beat EMPTY_BEAT = new Beat();// Read only
-    private final ByteArraySet NOTES = new ByteArraySet();
+    private final ByteArraySet notes = new ByteArraySet();
     private byte minNote = Byte.MAX_VALUE;
 
     public static Beat ofNotes(Collection<Byte> notes) {
@@ -77,35 +77,35 @@ public class Beat {
 
     @Override
     public String toString() {
-        return "Beat:" + NOTES;
+        return "Beat:" + notes;
     }
 
     public boolean isEmpty() {
-        return NOTES.isEmpty();
+        return notes.isEmpty();
     }
 
     public ByteArraySet getNotes() {
-        return NOTES;
+        return notes;
     }
 
     private Beat setNotes(Collection<Byte> notes) {
-        NOTES.clear();
+        this.notes.clear();
         minNote = Byte.MAX_VALUE;
         for (byte note : notes) {
             if (note < minNote) {
                 minNote = note;
             }
-            NOTES.add(note);
+            this.notes.add(note);
         }
         return this;
     }
 
     public byte getMinNote() {
-        return NOTES.isEmpty() ? -1 : minNote;
+        return notes.isEmpty() ? -1 : minNote;
     }
 
     public boolean addNote(byte note) {
-        if (isAvailableNote(note) && NOTES.add(note)) {
+        if (isAvailableNote(note) && notes.add(note)) {
             if (note < minNote) {
                 minNote = note;
             }
@@ -115,10 +115,10 @@ public class Beat {
     }
 
     public boolean removeNote(byte note) {
-        if (NOTES.remove(note)) {
+        if (notes.remove(note)) {
             if (note == minNote) {
                 minNote = Byte.MAX_VALUE;
-                for (byte n : NOTES) {
+                for (byte n : notes) {
                     if (n < minNote) {
                         minNote = n;
                     }
@@ -131,13 +131,13 @@ public class Beat {
 
     @Override
     public int hashCode() {
-        return NOTES.hashCode();
+        return notes.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Beat beat) {
-            return NOTES.containsAll(beat.NOTES);
+            return notes.containsAll(beat.notes);
         }
         return super.equals(obj);
     }

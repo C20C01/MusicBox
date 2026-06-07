@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.mixin;
 
-import io.github.c20c01.cc_mb.client.SoundPlayer;
+import io.github.c20c01.cc_mb.client.Speaker;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,11 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinSoundEngine {
     /**
      * @author C20C01 @ GitHub
-     * @reason Skip the pitch calculation for {@link SoundPlayer.MusicBoxSoundInstance} to expand the pitch range.
+     * @reason Skip the pitch calculation for {@link Speaker.MusicBoxSoundInstance} to expand the pitch range.
      */
     @Inject(method = "calculatePitch", at = @At("HEAD"), cancellable = true, require = 0)
     private void expandPitch(SoundInstance sound, CallbackInfoReturnable<Float> cir) {
-        if (sound instanceof SoundPlayer.MusicBoxSoundInstance) {
+        if (sound instanceof Speaker.MusicBoxSoundInstance) {
             cir.setReturnValue(sound.getPitch());
             cir.cancel();
         }

@@ -10,24 +10,24 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 public class SlotBuilder {
-    private final Container CONTAINER;
-    private final int INDEX;
-    private final int X;
-    private final int Y;
-    private final HashSet<Item> ACCEPTED_ITEMS = new HashSet<>();
+    private final Container container;
+    private final int index;
+    private final int x;
+    private final int y;
+    private final HashSet<Item> acceptedItems = new HashSet<>();
     private int maxStackSize = 64;
     private Runnable onChanged = () -> {
     };
 
     public SlotBuilder(Container container, int index, int x, int y) {
-        this.CONTAINER = container;
-        this.INDEX = index;
-        this.X = x;
-        this.Y = y;
+        this.container = container;
+        this.index = index;
+        this.x = x;
+        this.y = y;
     }
 
     public SlotBuilder accept(Item... items) {
-        ACCEPTED_ITEMS.addAll(Arrays.asList(items));
+        acceptedItems.addAll(Arrays.asList(items));
         return this;
     }
 
@@ -42,10 +42,10 @@ public class SlotBuilder {
     }
 
     public Slot build() {
-        return new Slot(CONTAINER, INDEX, X, Y) {
+        return new Slot(container, index, x, y) {
             @Override
             public boolean mayPlace(@Nonnull ItemStack itemStack) {
-                return ACCEPTED_ITEMS.contains(itemStack.getItem()) || ACCEPTED_ITEMS.isEmpty();
+                return acceptedItems.contains(itemStack.getItem()) || acceptedItems.isEmpty();
             }
 
             @Override

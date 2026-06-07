@@ -6,7 +6,6 @@ import io.github.c20c01.cc_mb.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,10 +42,10 @@ public class Awl extends Item {
     public InteractionResult useOn(UseOnContext context) {
         // check tick per beat
         Level level = context.getLevel();
-        if (level.getBlockEntity(context.getClickedPos()) instanceof MusicBoxBlockEntity blockEntity) {
+        if (level.getBlockEntity(context.getClickedPos()) instanceof MusicBoxBlockEntity musicBox) {
             Player player = context.getPlayer();
             if (player != null && !level.isClientSide()) {
-                String tickPerBeat = String.valueOf(blockEntity.getTickPerBeat());
+                String tickPerBeat = String.valueOf(musicBox.getTickPerBeat());
                 player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN));
                 return InteractionResult.CONSUME;
             }
@@ -60,9 +59,9 @@ public class Awl extends Item {
      */
     @Override
     public boolean canDestroyBlock(ItemStack stack, BlockState state, Level level, BlockPos blockPos, LivingEntity entity) {
-        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity blockEntity && entity instanceof Player player && player.getAbilities().instabuild) {
-            if (level instanceof ServerLevel serverLevel) {
-                blockEntity.setOctave(serverLevel, blockPos, player);
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity musicBox && entity instanceof Player player && player.getAbilities().instabuild) {
+            if (!level.isClientSide()) {
+                musicBox.cycleOctave(level, player);
             }
             return false;
         }

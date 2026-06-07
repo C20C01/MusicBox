@@ -17,17 +17,15 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.LightningRodBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
@@ -35,15 +33,17 @@ import javax.annotation.Nullable;
 public class SoundBoxBlock extends Block implements EntityBlock {
     public static final BooleanProperty HAS_SOUND_SHARD = BooleanProperty.create("has_sound_shard");
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
-    public static final BooleanProperty UNDER_MUSIC_BOX = BooleanProperty.create("under_music_box");
 
     public SoundBoxBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(HAS_SOUND_SHARD, false)
                 .setValue(POWERED, false)
-                .setValue(UNDER_MUSIC_BOX, false)
         );
+    }
+
+    private static boolean notUnderMusicBox(LevelReader level, BlockPos blockPos) {
+        return !level.getBlockState(blockPos.above()).is(MusicBox.MUSIC_BOX_BLOCK.get());
     }
 
     @Override
@@ -53,86 +53,52 @@ public class SoundBoxBlock extends Block implements EntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(HAS_SOUND_SHARD, POWERED, UNDER_MUSIC_BOX);
-    }
-
-    /**
-     * Remove sound shard when the block state is changed to no sound shard.
-     * Use this method because the update tag with empty item will not be sent.
-     */
-    @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-        if (level.getBlockEntity(pos) instanceof SoundBoxBlockEntity blockEntity) {
-            if (!newState.getValue(HAS_SOUND_SHARD) && !blockEntity.isEmpty()) {
-                blockEntity.removeItem();
-            }
-        }
-        super.onBlockStateChange(level, pos, oldState, newState);
+        builder.add(HAS_SOUND_SHARD, POWERED);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Level level = context.getLevel();
-        BlockPos blockPos = context.getClickedPos();
-        boolean underMusicBox = level.getBlockState(blockPos.above()).is(MusicBox.MUSIC_BOX_BLOCK.get());
-        boolean powered = level.hasNeighborSignal(blockPos) || underMusicBox;
-        return this.defaultBlockState().setValue(POWERED, powered).setValue(UNDER_MUSIC_BOX, underMusicBox);
+        return this.defaultBlockState().setValue(POWERED, context.getLevel().hasNeighborSignal(context.getClickedPos()));
+    }
+
+    private void tryToPlaySound(Level level, BlockPos blockPos) {
+        if (!level.isClientSide() && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox) {
+            soundBox.playSound(level, blockPos);
+        }
     }
 
     @Override
-    protected BlockState updateShape(BlockState blockState, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos blockPos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
-        if (direction != Direction.UP) {
-            return super.updateShape(blockState, level, scheduledTickAccess, blockPos, direction, neighborPos, neighborState, random);
-        }
-        return blockState.setValue(UNDER_MUSIC_BOX, neighborState.is(MusicBox.MUSIC_BOX_BLOCK.get()));
-    }
-
-    @Override
-    public void neighborChanged(BlockState blockState, Level level, BlockPos blockPos, Block block, @Nullable Orientation orientation, boolean isMoving) {
-        boolean underMusicBox = blockState.getValue(UNDER_MUSIC_BOX);
-        boolean powered = false;
-
-        for (Direction direction : SignalGetter.DIRECTIONS) {
-            BlockPos fromPos = blockPos.relative(direction);
-            if (!level.hasSignal(fromPos, direction)) {
-                continue;
-            }
-            powered = true;
-            if (underMusicBox) {
-                continue;
-            }
-            BlockState fromBlock = level.getBlockState(fromPos);
-            if (fromBlock.is(Blocks.LIGHTNING_ROD) && blockPos.relative(fromBlock.getValue(DirectionalBlock.FACING)).equals(fromPos)) {
-                // Change sound seed when powered by lightning rod pointing to this block.
-                if (SoundBoxBlockEntity.tryToChangeSoundSeed(level, blockPos)) {
-                    // show particles
-                    level.levelEvent(3002, blockPos, -1);
-                }
-                break;
+    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+        if (state.getValue(HAS_SOUND_SHARD)
+                && neighbourState.getBlock() instanceof LightningRodBlock
+                && neighbourState.getValue(LightningRodBlock.POWERED)
+                && directionToNeighbour == neighbourState.getValue(DirectionalBlock.FACING)
+        ) {
+            // Try to change sound seed when lightning rod that pointing this block is powered by lightning.
+            if (SoundBoxBlockEntity.tryToChangeSoundSeed((Level) level, pos)) {
+                // Remove oxidation from copper blocks.
+                ((Level) level).levelEvent(3002, pos, -1);
             }
         }
 
-        if (!underMusicBox && !blockState.getValue(POWERED) && powered) {
-            // play sound
-            SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
+        boolean hasSignal = level.hasNeighborSignal(pos);
+        if (state.getValue(POWERED) != hasSignal) {
+            if (hasSignal && notUnderMusicBox(level, pos)) tryToPlaySound((Level) level, pos);
+            return state.setValue(POWERED, hasSignal);
         }
 
-        level.setBlock(blockPos, blockState.setValue(POWERED, powered), UPDATE_CLIENTS);
+        return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
     }
 
     @Override
     public void attack(BlockState blockState, Level level, BlockPos blockPos, Player player) {
-        if (!level.getBlockState(blockPos).getValue(UNDER_MUSIC_BOX)) {
-            SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
-        }
+        if (notUnderMusicBox(level, blockPos)) tryToPlaySound(level, blockPos);
         super.attack(blockState, level, blockPos, player);
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos
-            blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        SoundBoxBlockEntity blockEntity = level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity be ? be : null;
-        if (blockEntity == null) {
+    protected InteractionResult useItemOn(ItemStack itemStack, BlockState blockState, Level level, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (!(level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox)) {
             return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
         }
 
@@ -142,27 +108,27 @@ public class SoundBoxBlock extends Block implements EntityBlock {
                 if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
-                player.getInventory().add(blockEntity.removeItem());
+                player.getInventory().add(soundBox.removeItem());
                 return InteractionResult.CONSUME;
             }
-            if (!blockState.getValue(UNDER_MUSIC_BOX)) {
+            if (notUnderMusicBox(level, blockPos)) {
                 // play sound
                 if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
                 }
-                SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
+                tryToPlaySound(level, blockPos);
                 return InteractionResult.CONSUME;
             }
         } else {
             if (itemStack.is(MusicBox.SOUND_SHARD_ITEM.get())) {
-                if (blockEntity.canPlaceItem(itemStack)) {
+                if (soundBox.canPlaceItem(itemStack)) {
                     // put in sound shard
                     if (level.isClientSide()) {
                         return InteractionResult.SUCCESS;
                     }
-                    blockEntity.setItem(itemStack);
+                    soundBox.setItem(itemStack.copy());
                     itemStack.shrink(1);// creative mode also need to shrink
-                    SoundBoxBlockEntity.tryToPlaySound(level, blockPos);
+                    tryToPlaySound(level, blockPos);
                     return InteractionResult.CONSUME;
                 } else {
                     // show message
@@ -177,8 +143,9 @@ public class SoundBoxBlock extends Block implements EntityBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
-        if (level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity blockEntity) {
-            if (blockEntity.containSound()) {
+        super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
+        if (level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox) {
+            if (!soundBox.isEmpty()) {
                 BlockUtils.changeProperty(level, blockPos, blockState, HAS_SOUND_SHARD, true, UPDATE_CLIENTS);
             }
         }

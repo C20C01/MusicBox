@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class Page {
+public final class Page {
     public static final byte BEATS_SIZE = 64;
-    private final Beat[] BEATS = new Beat[BEATS_SIZE];
+    private final Beat[] beats = new Beat[BEATS_SIZE];
 
     public static Page ofBeats(Collection<Beat> beats) {
         return new Page().loadBeats(beats);
@@ -31,29 +31,29 @@ public class Page {
 
     @Override
     public String toString() {
-        return "Page:" + Arrays.toString(BEATS);
+        return "Page:" + Arrays.toString(beats);
     }
 
     public Beat getBeat(byte index) {
-        if (BEATS[index] == null) {
-            BEATS[index] = new Beat();
+        if (beats[index] == null) {
+            beats[index] = new Beat();
         }
-        return BEATS[index];
+        return beats[index];
     }
 
     /**
      * Read only! If you want to modify the beat, use {@link #getBeat(byte)} instead.
      */
     public Beat readBeat(byte index) {
-        return BEATS[index] == null ? Beat.EMPTY_BEAT : BEATS[index];
+        return beats[index] == null ? Beat.EMPTY_BEAT : beats[index];
     }
 
     public boolean isEmptyBeat(byte index) {
-        return BEATS[index] == null || BEATS[index].isEmpty();
+        return beats[index] == null || beats[index].isEmpty();
     }
 
     public Page setBeats(Beat[] beats) {
-        System.arraycopy(beats, 0, BEATS, 0, Math.min(beats.length, BEATS_SIZE));
+        System.arraycopy(beats, 0, this.beats, 0, Math.min(beats.length, BEATS_SIZE));
         return this;
     }
 
@@ -63,13 +63,13 @@ public class Page {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(BEATS);
+        return Arrays.hashCode(beats);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Page page) {
-            return Arrays.equals(BEATS, page.BEATS);
+            return Arrays.equals(beats, page.beats);
         }
         return super.equals(obj);
     }

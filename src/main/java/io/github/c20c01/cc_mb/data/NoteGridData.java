@@ -12,19 +12,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class NoteGridData {
+public final class NoteGridData {
     public static final byte MAX_SIZE = 64;
-    private final ArrayList<Page> PAGES;
+    private final ArrayList<Page> pages;
     private boolean dirty = true;
     private int hashCode = 0;
 
     private NoteGridData() {
-        this.PAGES = new ArrayList<>(List.of(new Page()));
+        this.pages = new ArrayList<>(List.of(new Page()));
     }
 
     public NoteGridData(Collection<Page> pages) {
-        this.PAGES = new ArrayList<>(pages);
-        this.PAGES.replaceAll(page -> page == null ? new Page() : page);
+        this.pages = new ArrayList<>(pages);
+        this.pages.replaceAll(page -> page == null ? new Page() : page);
     }
 
     public static NoteGridData empty() {
@@ -68,13 +68,13 @@ public class NoteGridData {
 
     @Override
     public String toString() {
-        return "NoteGrid:" + PAGES;
+        return "NoteGrid:" + pages;
     }
 
     @Override
     public int hashCode() {
         if (dirty) {
-            hashCode = PAGES.hashCode();
+            hashCode = pages.hashCode();
             dirty = false;
         }
         return hashCode;
@@ -83,20 +83,20 @@ public class NoteGridData {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof NoteGridData noteGridData) {
-            return PAGES.equals(noteGridData.PAGES);
+            return pages.equals(noteGridData.pages);
         }
         return super.equals(obj);
     }
 
     public Page getPage(byte index) {
-        return PAGES.get(index);
+        return pages.get(index);
     }
 
     public ArrayList<Page> getPages() {
-        return PAGES;
+        return pages;
     }
 
     public byte size() {
-        return (byte) PAGES.size();
+        return (byte) pages.size();
     }
 }

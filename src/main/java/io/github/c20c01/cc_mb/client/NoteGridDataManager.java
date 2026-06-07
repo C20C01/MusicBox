@@ -16,11 +16,11 @@ import java.util.function.Consumer;
  * Use hash code to identify the data.
  */
 public class NoteGridDataManager {
-    private static final int CACHE_SIZE = 16;// max size of REMOVABLE
+    private static final int REMOVABLE_SIZE = 16;
     private static NoteGridDataManager instance;
-    private final Int2ObjectOpenHashMap<NoteGridData> CACHE = new Int2ObjectOpenHashMap<>();
-    private final Int2ObjectOpenHashMap<LinkedList<Consumer<NoteGridData>>> CALLBACKS = new Int2ObjectOpenHashMap<>();
-    private final IntLinkedOpenHashSet REMOVABLE = new IntLinkedOpenHashSet(CACHE_SIZE);
+    private final Int2ObjectOpenHashMap<NoteGridData> cache = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectOpenHashMap<LinkedList<Consumer<NoteGridData>>> callbacks = new Int2ObjectOpenHashMap<>();
+    private final IntLinkedOpenHashSet removable = new IntLinkedOpenHashSet(REMOVABLE_SIZE);
 
     private NoteGridDataManager() {
     }
@@ -35,27 +35,27 @@ public class NoteGridDataManager {
     public void handleReply(int hash, byte[] data) {
         // cache the data and call the callbacks
         NoteGridData noteGridData = NoteGridData.ofBytes(data);
-        CACHE.put(hash, noteGridData);
-        if (CALLBACKS.containsKey(hash)) {
-            CALLBACKS.remove(hash).forEach(callback -> callback.accept(noteGridData));
+        cache.put(hash, noteGridData);
+        if (callbacks.containsKey(hash)) {
+            callbacks.remove(hash).forEach(callback -> callback.accept(noteGridData));
         }
     }
 
     public void getNoteGridData(int hash, BlockPos blockPos, Consumer<NoteGridData> callback) {
-        if (CACHE.containsKey(hash)) {
+        if (cache.containsKey(hash)) {
             // get from cache
-            callback.accept(CACHE.get(hash));
-            REMOVABLE.remove(hash);
+            callback.accept(cache.get(hash));
+            removable.remove(hash);
         } else {
             callback.accept(null);
-            if (CALLBACKS.containsKey(hash)) {
+            if (callbacks.containsKey(hash)) {
                 // add to the callback list
-                CALLBACKS.get(hash).add(callback);
+                callbacks.get(hash).add(callback);
             } else {
                 // new a callback list and send a request
                 LinkedList<Consumer<NoteGridData>> callbacks = new LinkedList<>();
                 callbacks.add(callback);
-                CALLBACKS.put(hash, callbacks);
+                this.callbacks.put(hash, callbacks);
                 ClientPacketDistributor.sendToServer(new NoteGridDataPacket.Request(hash, blockPos));
             }
         }
@@ -66,10 +66,10 @@ public class NoteGridDataManager {
      * It will be removed from the cache when the cache is full.
      */
     public void markRemovable(int hash) {
-        if (REMOVABLE.size() >= CACHE_SIZE) {
+        if (removable.size() >= REMOVABLE_SIZE) {
             // remove the oldest one
-            CACHE.remove(REMOVABLE.removeFirstInt());
+            cache.remove(removable.removeFirstInt());
         }
-        REMOVABLE.add(hash);
+        removable.add(hash);
     }
 }

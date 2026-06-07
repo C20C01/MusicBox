@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
+import io.github.c20c01.cc_mb.data.NoteGridData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -36,14 +37,10 @@ public class NoteGridDataPacket {
 
         private static void tryToReply(IPayloadContext context, int hash, BlockPos blockPos) {
             ServerLevel level = (ServerLevel) context.player().level();
-            level.getBlockEntity(blockPos, MusicBox.MUSIC_BOX_BLOCK_ENTITY.get())
-                    .flatMap(MusicBoxBlockEntity::getPlayerData)
-                    .ifPresent(noteGridData -> context.reply(new Reply(hash, noteGridData.toBytes())));
-        }
-
-        public void encode(FriendlyByteBuf friendlyByteBuf) {
-            friendlyByteBuf.writeInt(hash);
-            friendlyByteBuf.writeBlockPos(blockPos);
+            NoteGridData data = level.getBlockEntity(blockPos, MusicBox.MUSIC_BOX_BLOCK_ENTITY.get()).map(MusicBoxBlockEntity::getData).orElse(null);
+            if (data != null && data.hashCode() == hash) {
+                context.reply(new Reply(hash, data.toBytes()));
+            }
         }
 
         public static void handle(final Request packet, final IPayloadContext context) {
@@ -52,6 +49,11 @@ public class NoteGridDataPacket {
                     tryToReply(context, packet.hash, packet.blockPos);
                 }
             });
+        }
+
+        public void encode(FriendlyByteBuf friendlyByteBuf) {
+            friendlyByteBuf.writeInt(hash);
+            friendlyByteBuf.writeBlockPos(blockPos);
         }
 
         @Override
@@ -68,13 +70,13 @@ public class NoteGridDataPacket {
             return new Reply(friendlyByteBuf.readInt(), friendlyByteBuf.readByteArray());
         }
 
+        public static void handle(final Reply packet, final IPayloadContext context) {
+            context.enqueueWork(() -> NoteGridDataManager.getInstance().handleReply(packet.hash, packet.data));
+        }
+
         public void encode(FriendlyByteBuf friendlyByteBuf) {
             friendlyByteBuf.writeInt(hash);
             friendlyByteBuf.writeByteArray(data);
-        }
-
-        public static void handle(final Reply packet, final IPayloadContext context) {
-            context.enqueueWork(() -> NoteGridDataManager.getInstance().handleReply(packet.hash, packet.data));
         }
 
         @Override
