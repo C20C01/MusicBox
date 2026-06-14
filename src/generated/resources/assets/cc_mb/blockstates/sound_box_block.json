@@ -1,10 +1,10 @@
 {
   "variants": {
     "has_sound_shard=false": {
-      "model": "cc_mb:block/sound_box_block_empty"
+      "model": "cc_mb:block/sound_box_block"
     },
     "has_sound_shard=true": {
-      "model": "cc_mb:block/sound_box_block"
+      "model": "cc_mb:block/sound_box_block_loaded"
     }
   }
 }

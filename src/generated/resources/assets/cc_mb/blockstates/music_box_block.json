@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=east,has_note_grid=false,powered=false": {
+      "model": "cc_mb:block/music_box_block",
+      "y": 90
+    },
+    "facing=east,has_note_grid=false,powered=true": {
+      "model": "cc_mb:block/music_box_block_powered",
+      "y": 90
+    },
+    "facing=east,has_note_grid=true,powered=false": {
+      "model": "cc_mb:block/music_box_block_loaded",
+      "y": 90
+    },
+    "facing=east,has_note_grid=true,powered=true": {
+      "model": "cc_mb:block/music_box_block_loaded_powered",
+      "y": 90
+    },
+    "facing=north,has_note_grid=false,powered=false": {
+      "model": "cc_mb:block/music_box_block"
+    },
+    "facing=north,has_note_grid=false,powered=true": {
+      "model": "cc_mb:block/music_box_block_powered"
+    },
+    "facing=north,has_note_grid=true,powered=false": {
+      "model": "cc_mb:block/music_box_block_loaded"
+    },
+    "facing=north,has_note_grid=true,powered=true": {
+      "model": "cc_mb:block/music_box_block_loaded_powered"
+    },
+    "facing=south,has_note_grid=false,powered=false": {
+      "model": "cc_mb:block/music_box_block",
+      "y": 180
+    },
+    "facing=south,has_note_grid=false,powered=true": {
+      "model": "cc_mb:block/music_box_block_powered",
+      "y": 180
+    },
+    "facing=south,has_note_grid=true,powered=false": {
+      "model": "cc_mb:block/music_box_block_loaded",
+      "y": 180
+    },
+    "facing=south,has_note_grid=true,powered=true": {
+      "model": "cc_mb:block/music_box_block_loaded_powered",
+      "y": 180
+    },
+    "facing=west,has_note_grid=false,powered=false": {
+      "model": "cc_mb:block/music_box_block",
+      "y": 270
+    },
+    "facing=west,has_note_grid=false,powered=true": {
+      "model": "cc_mb:block/music_box_block_powered",
+      "y": 270
+    },
+    "facing=west,has_note_grid=true,powered=false": {
+      "model": "cc_mb:block/music_box_block_loaded",
+      "y": 270
+    },
+    "facing=west,has_note_grid=true,powered=true": {
+      "model": "cc_mb:block/music_box_block_loaded_powered",
+      "y": 270
+    }
+  }
+}

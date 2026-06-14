@@ -1,9 +1,0 @@
-{
-  "parent": "block/orientable_with_bottom",
-  "textures": {
-    "top": "cc_mb:block/music_box_block_top",
-    "bottom": "cc_mb:block/music_box_block_bottom",
-    "side": "cc_mb:block/music_box_block_side",
-    "front": "cc_mb:block/music_box_block_face"
-  }
-}

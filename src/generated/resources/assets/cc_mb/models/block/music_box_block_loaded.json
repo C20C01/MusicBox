@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "cc_mb:block/music_box_block_bottom",
+    "front": "cc_mb:block/music_box_block_front_loaded",
+    "side": "cc_mb:block/music_box_block_side",
+    "top": "cc_mb:block/music_box_block_top"
+  }
+}

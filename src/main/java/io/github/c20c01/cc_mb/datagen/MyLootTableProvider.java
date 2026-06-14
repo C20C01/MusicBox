@@ -21,17 +21,17 @@ import java.util.concurrent.CompletableFuture;
 @EventBusSubscriber(modid = MusicBox.ID)
 public class MyLootTableProvider extends LootTableProvider {
     private MyLootTableProvider(PackOutput gen, CompletableFuture<HolderLookup.Provider> lookup) {
-        super(gen, Set.of(), List.of(new SubProviderEntry(CCBlockLoot::new, LootContextParamSets.BLOCK)), lookup);
+        super(gen, Set.of(), List.of(new SubProviderEntry(MyBlockLoot::new, LootContextParamSets.BLOCK)), lookup);
     }
 
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent.Client event) {
         var generator = event.getGenerator();
-        generator.addProvider(event.includeDev(), new MyLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
+        generator.addProvider(true, new MyLootTableProvider(generator.getPackOutput(), event.getLookupProvider()));
     }
 
-    private static class CCBlockLoot extends BlockLootSubProvider {
-        protected CCBlockLoot(HolderLookup.Provider lookupProvider) {
+    private static class MyBlockLoot extends BlockLootSubProvider {
+        protected MyBlockLoot(HolderLookup.Provider lookupProvider) {
             super(Set.of(), FeatureFlags.REGISTRY.allFlags(), lookupProvider);
         }
 

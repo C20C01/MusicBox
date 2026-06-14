@@ -1,6 +1,0 @@
-{
-  "parent": "cc_mb:block/music_box_block",
-  "textures": {
-    "front": "cc_mb:block/music_box_block_face_empty_powered"
-  }
-}
