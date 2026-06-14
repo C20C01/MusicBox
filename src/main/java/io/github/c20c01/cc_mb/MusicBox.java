@@ -70,6 +70,10 @@ public class MusicBox {
     public static final String TEXT_SOUND_BANJO = "text." + ID + ".banjo";
     public static final String TEXT_SOUND_PLING = "text." + ID + ".pling";
     public static final String TEXT_SOUND_HARP = "text." + ID + ".harp";
+    public static final String TEXT_SOUND_TRUMPET = "text." + ID + ".trumpet";
+    public static final String TEXT_SOUND_TRUMPET_EXPOSED = "text." + ID + ".trumpet_exposed";
+    public static final String TEXT_SOUND_TRUMPET_OXIDIZED = "text." + ID + ".trumpet_oxidized";
+    public static final String TEXT_SOUND_TRUMPET_WEATHERED = "text." + ID + ".trumpet_weathered";
 
     // network
     public static final String NETWORK_VERSION = "1";

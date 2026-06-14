@@ -38,6 +38,10 @@ public class InstrumentBlocksHelper {
         add(Blocks.EMERALD_BLOCK, MusicBox.TEXT_SOUND_BIT);
         add(Blocks.HAY_BLOCK, MusicBox.TEXT_SOUND_BANJO);
         add(Blocks.GLOWSTONE, MusicBox.TEXT_SOUND_PLING);
+        add(Blocks.WAXED_COPPER_BLOCK, MusicBox.TEXT_SOUND_TRUMPET);
+        add(Blocks.WAXED_EXPOSED_COPPER, MusicBox.TEXT_SOUND_TRUMPET_EXPOSED);
+        add(Blocks.WAXED_WEATHERED_COPPER, MusicBox.TEXT_SOUND_TRUMPET_WEATHERED);
+        add(Blocks.WAXED_OXIDIZED_COPPER, MusicBox.TEXT_SOUND_TRUMPET_OXIDIZED);
     }
 
     /**

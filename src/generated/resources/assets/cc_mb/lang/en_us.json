@@ -33,5 +33,9 @@
   "text.cc_mb.shard_without_sound": "The shard doesn't have a sound",
   "text.cc_mb.snare": "Snare",
   "text.cc_mb.tick_per_beat": "Ticks per beat: ",
+  "text.cc_mb.trumpet": "Trumpet",
+  "text.cc_mb.trumpet_exposed": "Trumpet (Exposed)",
+  "text.cc_mb.trumpet_oxidized": "Trumpet (Oxidized)",
+  "text.cc_mb.trumpet_weathered": "Trumpet (Weathered)",
   "text.cc_mb.xylophone": "Xylophone"
 }

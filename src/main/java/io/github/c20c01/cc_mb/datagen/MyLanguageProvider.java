@@ -206,5 +206,25 @@ public class MyLanguageProvider extends LanguageProvider {
             case ZH_CN -> "竖琴";
             default -> throw new IllegalStateException();
         });
+        this.add(MusicBox.TEXT_SOUND_TRUMPET, switch (this.locale) {
+            case EN_US -> "Trumpet";
+            case ZH_CN -> "小号";
+            default -> throw new IllegalStateException();
+        });
+        this.add(MusicBox.TEXT_SOUND_TRUMPET_EXPOSED, switch (this.locale) {
+            case EN_US -> "Trumpet (Exposed)";
+            case ZH_CN -> "小号（斑驳）";
+            default -> throw new IllegalStateException();
+        });
+        this.add(MusicBox.TEXT_SOUND_TRUMPET_WEATHERED, switch (this.locale) {
+            case EN_US -> "Trumpet (Weathered)";
+            case ZH_CN -> "小号（锈蚀）";
+            default -> throw new IllegalStateException();
+        });
+        this.add(MusicBox.TEXT_SOUND_TRUMPET_OXIDIZED, switch (this.locale) {
+            case EN_US -> "Trumpet (Oxidized)";
+            case ZH_CN -> "小号（氧化）";
+            default -> throw new IllegalStateException();
+        });
     }
 }

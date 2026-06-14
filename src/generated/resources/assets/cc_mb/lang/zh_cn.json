@@ -33,5 +33,9 @@
   "text.cc_mb.shard_without_sound": "碎片还没有记录声音",
   "text.cc_mb.snare": "小军鼓",
   "text.cc_mb.tick_per_beat": "每拍所用刻数: ",
+  "text.cc_mb.trumpet": "小号",
+  "text.cc_mb.trumpet_exposed": "小号（斑驳）",
+  "text.cc_mb.trumpet_oxidized": "小号（氧化）",
+  "text.cc_mb.trumpet_weathered": "小号（锈蚀）",
   "text.cc_mb.xylophone": "木琴"
 }
