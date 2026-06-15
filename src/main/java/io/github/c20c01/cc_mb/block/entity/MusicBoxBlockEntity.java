@@ -114,9 +114,8 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
      * @param below the position below the music box
      */
     public void updateInstrumentFromBelow(Level level, BlockPos below) {
-        if (level.isClientSide()) return;
         if (level.getBlockEntity(below) instanceof SoundBoxBlockEntity soundBox) {
-            updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
+            if (!level.isClientSide()) updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
         } else {
             NoteBlockInstrument instrument = level.getBlockState(below).instrument();
             Holder<SoundEvent> soundEvent = instrument.worksAboveNoteBlock() ? NoteBlockInstrument.HARP.getSoundEvent() : instrument.getSoundEvent();
@@ -132,7 +131,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
             syncSoundData();
         }
     }
-
 
     public int getSignal() {
         byte minNote = player.getMinNote();
