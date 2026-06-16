@@ -136,9 +136,12 @@ public final class Beat {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof Beat beat) {
             return notes.containsAll(beat.notes);
         }
-        return super.equals(obj);
+        return false;
     }
 }

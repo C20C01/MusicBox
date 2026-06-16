@@ -219,6 +219,9 @@ public class SoundShard extends Item {
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (obj instanceof SoundInfo(Holder<SoundEvent> event, Optional<Long> seed)) {
                 return soundSeed.equals(seed) && soundEvent.value().location().equals(event.value().location());
             }

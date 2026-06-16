@@ -40,7 +40,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 
-public class MusicBoxBlock extends BaseEntityBlock {
+public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final MapCodec<MusicBoxBlock> CODEC = simpleCodec(MusicBoxBlock::new);
@@ -49,7 +49,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(NoteGridBoxBlock.HAS_NOTE_GRID, false)
+                .setValue(HAS_NOTE_GRID, false)
                 .setValue(POWERED, false)
         );
     }
@@ -86,7 +86,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
     @Override
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos, Direction direction) {
-        if (blockState.getValue(NoteGridBoxBlock.HAS_NOTE_GRID)) {
+        if (blockState.getValue(HAS_NOTE_GRID)) {
             BlockEntity blockentity = level.getBlockEntity(blockPos);
             return blockentity instanceof MusicBoxBlockEntity be ? be.getSignal() : 0;
         } else {
@@ -96,7 +96,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, NoteGridBoxBlock.HAS_NOTE_GRID, POWERED);
+        builder.add(FACING, HAS_NOTE_GRID, POWERED);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             musicBox.cycleOctave(level, player);
             return;
         }
-        if (blockState.getValue(NoteGridBoxBlock.HAS_NOTE_GRID) && !blockState.getValue(MusicBoxBlock.POWERED)) {
+        if (blockState.getValue(HAS_NOTE_GRID) && !blockState.getValue(MusicBoxBlock.POWERED)) {
             musicBox.playNextBeat(level);
         }
     }
@@ -147,7 +147,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
             return InteractionResult.CONSUME;
         }
 
-        if (blockState.getValue(NoteGridBoxBlock.HAS_NOTE_GRID)) {
+        if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
                 // take out note grid
                 if (level.isClientSide()) {
@@ -197,7 +197,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
         if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity musicBox) {
             musicBox.updateInstrumentFromBelow(level, blockPos.below());
             if (!musicBox.isEmpty()) {
-                BlockUtils.changeProperty(level, blockPos, blockState, NoteGridBoxBlock.HAS_NOTE_GRID, true, UPDATE_CLIENTS);
+                BlockUtils.changeProperty(level, blockPos, blockState, HAS_NOTE_GRID, true, UPDATE_CLIENTS);
             }
         }
     }
@@ -205,7 +205,7 @@ public class MusicBoxBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (state.getValue(POWERED) && state.getValue(NoteGridBoxBlock.HAS_NOTE_GRID)) {
+        if (state.getValue(POWERED) && state.getValue(HAS_NOTE_GRID)) {
             return createTickerHelper(type, MusicBox.MUSIC_BOX_BLOCK_ENTITY.get(), MusicBoxBlockEntity::tick);
         }
         return null;

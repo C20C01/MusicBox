@@ -82,10 +82,13 @@ public final class NoteGridData {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof NoteGridData noteGridData) {
             return pages.equals(noteGridData.pages);
         }
-        return super.equals(obj);
+        return false;
     }
 
     public Page getPage(byte index) {

@@ -65,6 +65,9 @@ public record NoteGridCode(byte[] code) implements TooltipProvider {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof NoteGridCode(byte[] other)) {
             return Arrays.equals(code, other);
         }

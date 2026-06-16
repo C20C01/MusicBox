@@ -68,9 +68,12 @@ public final class Page {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof Page page) {
             return Arrays.equals(beats, page.beats);
         }
-        return super.equals(obj);
+        return false;
     }
 }

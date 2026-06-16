@@ -10,16 +10,15 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Find all blocks that provide a tunable instrument according to {@link NoteBlockInstrument},
  * also support new instruments added by other mods.
  */
 public class InstrumentBlocksHelper {
-    private static final ArrayList<Block> INSTRUMENT_BLOCKS = new ArrayList<>(16);
-    private static final HashMap<NoteBlockInstrument, String> INSTRUMENT_TRANSLATION_KEY_MAP = new HashMap<>(16);
+    private static final List<Block> INSTRUMENT_BLOCKS = new ArrayList<>(16);
+    private static final Map<NoteBlockInstrument, String> INSTRUMENT_TRANSLATION_KEY_MAP = new HashMap<>(16);
 
     static {
         add(Blocks.CHERRY_LEAVES, MusicBox.TEXT_SOUND_HARP);
@@ -55,7 +54,7 @@ public class InstrumentBlocksHelper {
         }
     }
 
-    public static ArrayList<ItemStack> getItems() {
+    public static List<ItemStack> getItems() {
         updateBlockList();
         ArrayList<ItemStack> items = new ArrayList<>(INSTRUMENT_BLOCKS.size());
         for (Block block : INSTRUMENT_BLOCKS) {
@@ -66,19 +65,17 @@ public class InstrumentBlocksHelper {
 
     private static ItemStack getItem(Block block) {
         NoteBlockInstrument instrument = block.defaultBlockState().instrument();
-        Component hoverName;
-        if (INSTRUMENT_TRANSLATION_KEY_MAP.containsKey(instrument)) {
-            hoverName = Component.translatable(INSTRUMENT_TRANSLATION_KEY_MAP.get(instrument));
-        } else {
-            hoverName = Component.literal(instrument.getSerializedName());
-        }
+        String key = INSTRUMENT_TRANSLATION_KEY_MAP.get(instrument);
+        Component hoverName = key != null
+                ? Component.translatable(key)
+                : Component.literal(instrument.getSerializedName());
         ItemStack itemStack = new ItemStack(block);
         itemStack.set(DataComponents.CUSTOM_NAME, hoverName);
         return itemStack;
     }
 
     public static void updateBlockList() {
-        ArrayList<NoteBlockInstrument> instruments = new ArrayList<>();
+        Set<NoteBlockInstrument> instruments = new HashSet<>();
         for (NoteBlockInstrument instrument : NoteBlockInstrument.values()) {
             if (instrument.isTunable()) {
                 instruments.add(instrument);
