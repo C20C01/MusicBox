@@ -16,13 +16,14 @@ import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import static net.minecraft.client.data.models.BlockModelGenerators.plainVariant;
 
-@EventBusSubscriber(modid = MusicBox.ID)
+@EventBusSubscriber(modid = MusicBox.ID, value = Dist.CLIENT)
 public class MyModelProvider extends ModelProvider {
     public MyModelProvider(PackOutput output) {
         super(output, MusicBox.ID);
@@ -90,7 +91,7 @@ public class MyModelProvider extends ModelProvider {
         blockModels.createTrivialBlock(MusicBox.PERFORATION_TABLE_BLOCK.get(), TexturedModel.CUBE_TOP);
 
         itemModels.generateFlatItem(MusicBox.NOTE_GRID_ITEM.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(MusicBox.AWL_ITEM.get(),  ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModels.generateFlatItem(MusicBox.AWL_ITEM.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModels.generateFlatItem(MusicBox.SOUND_SHARD_ITEM.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(MusicBox.PAPER_PASTE_ITEM.get(), ModelTemplates.FLAT_ITEM);
     }
