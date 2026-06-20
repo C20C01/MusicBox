@@ -20,8 +20,8 @@ package io.github.c20c01.cc_mb.inventory.menu.edit;
  */
 public class EditDataHandler {
     protected static final int MASK = 0b01000000;
-    protected byte page = -1;
-    protected byte beat = -1;
+    protected byte pageNum = -1;
+    protected byte beatNum = -1;
 
     /**
      * Check if the code is a note.
@@ -42,11 +42,11 @@ public class EditDataHandler {
     }
 
     public void reset() {
-        page = -1;
-        beat = -1;
+        pageNum = -1;
+        beatNum = -1;
     }
 
     public boolean dirty() {
-        return page != -1 || beat != -1;
+        return pageNum != -1 || beatNum != -1;
     }
 }

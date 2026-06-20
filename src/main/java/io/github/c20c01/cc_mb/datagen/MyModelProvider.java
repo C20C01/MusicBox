@@ -35,25 +35,25 @@ public class MyModelProvider extends ModelProvider {
     }
 
     private static void createMusicBoxBlock(BlockModelGenerators blockModels, Block block) {
-        final String POWERED = "_powered";
-        final String LOADED = "_loaded";
+        final String poweredSuffix = "_powered";
+        final String loadedSuffix = "_loaded";
 
         MultiVariant base = plainVariant(TexturedModel.ORIENTABLE.create(block, blockModels.modelOutput));
         MultiVariant powered = plainVariant(
                 TexturedModel.ORIENTABLE
                         .updateTexture(m -> m
-                                .put(TextureSlot.FRONT, TextureMapping.getBlockTexture(block, "_front" + POWERED)))
-                        .createWithSuffix(block, POWERED, blockModels.modelOutput));
+                                .put(TextureSlot.FRONT, TextureMapping.getBlockTexture(block, "_front" + poweredSuffix)))
+                        .createWithSuffix(block, poweredSuffix, blockModels.modelOutput));
         MultiVariant loaded = plainVariant(
                 TexturedModel.ORIENTABLE
                         .updateTexture(m -> m
-                                .put(TextureSlot.FRONT, TextureMapping.getBlockTexture(block, "_front" + LOADED)))
-                        .createWithSuffix(block, LOADED, blockModels.modelOutput));
+                                .put(TextureSlot.FRONT, TextureMapping.getBlockTexture(block, "_front" + loadedSuffix)))
+                        .createWithSuffix(block, loadedSuffix, blockModels.modelOutput));
         MultiVariant poweredLoaded = plainVariant(
                 TexturedModel.ORIENTABLE
                         .updateTexture(m -> m
-                                .put(TextureSlot.FRONT, TextureMapping.getBlockTexture(block, "_front" + LOADED + POWERED)))
-                        .createWithSuffix(block, LOADED + POWERED, blockModels.modelOutput));
+                                .put(TextureSlot.FRONT, TextureMapping.getBlockTexture(block, "_front" + loadedSuffix + poweredSuffix)))
+                        .createWithSuffix(block, loadedSuffix + poweredSuffix, blockModels.modelOutput));
         blockModels.blockStateOutput.accept(
                 MultiVariantGenerator.dispatch(block)
                         .with(PropertyDispatch.initial(MusicBoxBlock.POWERED, NoteGridBoxBlock.HAS_NOTE_GRID)
@@ -65,7 +65,7 @@ public class MyModelProvider extends ModelProvider {
     }
 
     private static void createSoundBoxBlock(BlockModelGenerators blockModels, Block block) {
-        final String LOADED = "_loaded";
+        final String loadedSuffix = "_loaded";
 
         MultiVariant base = plainVariant(
                 TexturedModel.CUBE_TOP
@@ -75,8 +75,8 @@ public class MyModelProvider extends ModelProvider {
                 TexturedModel.CUBE_TOP
                         .updateTexture(m -> m
                                 .put(TextureSlot.SIDE, TextureMapping.getBlockTexture(MusicBox.MUSIC_BOX_BLOCK.get(), "_side"))
-                                .put(TextureSlot.TOP, TextureMapping.getBlockTexture(block, "_top" + LOADED)))
-                        .createWithSuffix(block, LOADED, blockModels.modelOutput));
+                                .put(TextureSlot.TOP, TextureMapping.getBlockTexture(block, "_top" + loadedSuffix)))
+                        .createWithSuffix(block, loadedSuffix, blockModels.modelOutput));
         blockModels.blockStateOutput.accept(
                 MultiVariantGenerator.dispatch(block)
                         .with(PropertyDispatch.initial(SoundBoxBlock.HAS_SOUND_SHARD)

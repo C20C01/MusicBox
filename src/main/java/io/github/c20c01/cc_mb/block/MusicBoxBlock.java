@@ -158,12 +158,13 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
             }
             if (!blockState.getValue(POWERED)) {
                 if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) {
-                    // creative only: join the new data to the note grid
+                    // creative only: creat note grid with book or note grid item
                     if (level.isClientSide()) {
                         return InteractionResult.SUCCESS;
                     }
-                    if (musicBox.joinData(itemStack)) {
-                        musicBox.ejectNoteGrid(level, blockPos, blockState);
+                    ItemStack created = musicBox.createNoteGridMerge(itemStack);
+                    if (created != null) {
+                        musicBox.ejectNoteGrid(level, blockPos, blockState, created);
                         level.playSound(null, blockPos, SoundEvents.ANVIL_USE, player.getSoundSource(), 1.0F, 1.0F);
                         return InteractionResult.CONSUME;
                     }

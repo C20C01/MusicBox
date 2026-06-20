@@ -5,7 +5,7 @@ import io.github.c20c01.cc_mb.client.Speaker;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.item.SoundShard;
-import it.unimi.dsi.fastutil.bytes.ByteArraySet;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +50,11 @@ public class MindPlayer implements NoteGridDataHolder, NoteGridIteratorListener 
         this.ticker = new NoteGridTicker(this, this);
     }
 
-    public void jumpPageTo(byte pageNumber) {
+    public byte getBeatNum() {
+        return ticker.beatNum;
+    }
+
+    public void jumpPageTo(int pageNumber) {
         ticker.pageNum = (byte) Math.max(0, Math.min(pageNumber, data.size() - 1));
         ticker.beatNum = 0;
         ticker.tickSinceLastBeat = 0;
@@ -65,7 +69,7 @@ public class MindPlayer implements NoteGridDataHolder, NoteGridIteratorListener 
     }
 
     @Override
-    public boolean onBeat(Beat beat, byte beatNumber) {
+    public boolean onBeat(Beat beat, int beatNumber) {
         boolean pause = listener.onBeat(beat, beatNumber);
         if (pause) return false;
         if (beat.isEmpty()) return true;
@@ -73,12 +77,12 @@ public class MindPlayer implements NoteGridDataHolder, NoteGridIteratorListener 
         return true;
     }
 
-    public void playNotes(ByteArraySet notes) {
+    public void playNotes(ByteList notes) {
         Speaker.playMind(config, notes);
     }
 
     @Override
-    public void onPageChanged(byte pageNum) {
+    public void onPageChanged(int pageNum) {
         listener.onPageChanged(pageNum);
     }
 
@@ -98,12 +102,12 @@ public class MindPlayer implements NoteGridDataHolder, NoteGridIteratorListener 
     }
 
     @Override
-    public byte getDataSize() {
+    public int getDataSize() {
         return data.size();
     }
 
     @Override
-    public Beat getBeat(byte pageNum, byte beatNum) {
-        return data.getPage(pageNum).readBeat(beatNum);
+    public Beat getBeat(int pageNum, int beatNum) {
+        return data.getPage(pageNum).getBeat(beatNum);
     }
 }

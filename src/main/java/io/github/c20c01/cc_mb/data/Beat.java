@@ -1,24 +1,49 @@
 package io.github.c20c01.cc_mb.data;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
-import it.unimi.dsi.fastutil.bytes.ByteArraySet;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 
-import java.util.Collection;
+import javax.annotation.Nullable;
 
-/**
- * A beat is a set of notes that can be played together.
- */
 public final class Beat {
-    public static final Beat EMPTY_BEAT = new Beat();// Read only
-    private final ByteArraySet notes = new ByteArraySet();
+    public static final Beat EMPTY = new Beat();
+    private final ByteList notes;
     private byte minNote = Byte.MAX_VALUE;
+    private boolean cow = true;
 
-    public static Beat ofNotes(Collection<Byte> notes) {
-        return new Beat().setNotes(notes);
+    public Beat() {
+        this.notes = new ByteArrayList();
     }
 
-    public static Beat ofCode(String codeOfBeat) {
-        return new Beat().loadCode(codeOfBeat);
+    Beat(ByteList notes) {
+        this.notes = new ByteArrayList(notes);
+        for (int i = 0; i < notes.size(); i++) {
+            byte note = notes.getByte(i);
+            if (note < minNote) minNote = note;
+        }
+    }
+
+    /**
+     * Copy constructor (cow -> false)
+     */
+    private Beat(Beat beat) {
+        this.notes = new ByteArrayList(beat.notes);
+        this.minNote = beat.minNote;
+        this.cow = false;
+    }
+
+    static Beat ofCode(String code, int start, int end) {
+        if (start >= end) return EMPTY;
+
+        Beat result = new Beat();
+        for (int i = start; i < end; i++) {
+            byte note = getNoteFromKey(code.charAt(i));
+            if (note != -1) {
+                result.notes.add(note);
+                if (note < result.minNote) result.minNote = note;
+            }
+        }
+        return result;
     }
 
     /**
@@ -57,91 +82,110 @@ public final class Beat {
         return note;
     }
 
-    public static boolean isAvailableNote(byte note) {
+    public static boolean isValidNote(byte note) {
         return note <= 24 && note >= 0;
     }
 
-    public Beat loadCode(String codeOfBeat) {
-        if (codeOfBeat.isEmpty()) {
-            return this;
+    public ByteList getAddPreviewNotes(byte noteToAdd) {
+        int size = notes.size();
+        ByteList preview = new ByteArrayList(size + 1);
+        boolean shouldAdd = true;
+        for (int i = 0; i < size; i++) {
+            byte note = notes.getByte(i);
+            preview.add(note);
+            if (note == noteToAdd) shouldAdd = false;
         }
-        ByteArrayList notes = new ByteArrayList(codeOfBeat.length());
-        for (char c : codeOfBeat.toCharArray()) {
-            byte note = getNoteFromKey(c);
-            if (note != -1) {
-                notes.add(note);
-            }
-        }
-        return setNotes(notes);
+        if (shouldAdd) preview.add(noteToAdd);
+        return preview;
     }
 
-    @Override
-    public String toString() {
-        return "Beat:" + notes;
+    public ByteList getRemovePreviewNotes(byte noteToRemove) {
+        int size = notes.size();
+        ByteList preview = new ByteArrayList(size);
+        for (int i = 0; i < size; i++) {
+            byte note = notes.getByte(i);
+            if (note != noteToRemove) preview.add(note);
+        }
+        return preview;
     }
 
     public boolean isEmpty() {
         return notes.isEmpty();
     }
 
-    public ByteArraySet getNotes() {
+    /**
+     * Read only!
+     */
+    public ByteList getNotes() {
         return notes;
-    }
-
-    private Beat setNotes(Collection<Byte> notes) {
-        this.notes.clear();
-        minNote = Byte.MAX_VALUE;
-        for (byte note : notes) {
-            if (note < minNote) {
-                minNote = note;
-            }
-            this.notes.add(note);
-        }
-        return this;
     }
 
     public byte getMinNote() {
         return notes.isEmpty() ? -1 : minNote;
     }
 
-    public boolean addNote(byte note) {
-        if (isAvailableNote(note) && notes.add(note)) {
-            if (note < minNote) {
-                minNote = note;
-            }
-            return true;
-        }
-        return false;
+    @Nullable
+    Beat withNoteAdded(byte note) {
+        if (this.notes.contains(note) || !isValidNote(note)) return null;
+
+        final Beat result = this.cow ? new Beat(this) : this;
+        result.notes.add(note);
+        if (note < result.minNote) result.minNote = note;
+        return result;
     }
 
-    public boolean removeNote(byte note) {
-        if (notes.remove(note)) {
-            if (note == minNote) {
-                minNote = Byte.MAX_VALUE;
-                for (byte n : notes) {
-                    if (n < minNote) {
-                        minNote = n;
-                    }
-                }
+    @Nullable
+    Beat withNoteRemoved(byte note) {
+        int index = this.notes.indexOf(note);
+        if (index == -1) return null;
+
+        final Beat result = this.cow ? new Beat(this) : this;
+        result.notes.removeByte(index);
+        if (note == minNote) {
+            result.minNote = Byte.MAX_VALUE;
+            for (int i = 0; i < result.notes.size(); i++) {
+                byte n = result.notes.getByte(i);
+                if (n < result.minNote) result.minNote = n;
             }
-            return true;
         }
-        return false;
+        return result;
+    }
+
+    Beat withBeatMerged(Beat other) {
+        ByteList otherNotes = other.getNotes();
+        int size = otherNotes.size();
+        if (size == 0) return this;
+
+        boolean cow = this.cow;
+        Beat result = this;
+        for (int i = 0; i < size; i++) {
+            byte note = otherNotes.getByte(i);
+            if (result.notes.contains(note)) continue;
+
+            if (cow) {
+                cow = false;
+                result = new Beat(this);
+            }
+
+            result.notes.add(note);
+            if (note < result.minNote) result.minNote = note;
+        }
+        return result;
+    }
+
+    public void makeCow() {
+        this.cow = true;// Moo~
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Beat beat)) return false;
+        return notes.equals(beat.notes);
     }
 
     @Override
     public int hashCode() {
         return notes.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof Beat beat) {
-            return notes.containsAll(beat.notes);
-        }
-        return false;
     }
 }

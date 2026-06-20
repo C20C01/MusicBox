@@ -3,22 +3,22 @@ package io.github.c20c01.cc_mb.inventory.menu.edit;
 import io.github.c20c01.cc_mb.client.GuiUtils;
 
 public class EditDataSender extends EditDataHandler {
-    private final int CONTAINER_ID;
+    private final int containerId;
 
     public EditDataSender(int containerId) {
-        this.CONTAINER_ID = containerId;
+        this.containerId = containerId;
     }
 
-    public void send(byte page, byte beat, byte note) {
-        boolean pageChanged = page != this.page;
+    public void send(byte pageNum, byte beatNum, byte note) {
+        boolean pageChanged = pageNum != this.pageNum;
         if (pageChanged) {
-            this.page = page;
-            GuiUtils.sendCodeToMenu(CONTAINER_ID, mark(page));
+            this.pageNum = pageNum;
+            GuiUtils.sendCodeToMenu(containerId, mark(pageNum));
         }
-        if (beat != this.beat || pageChanged) {
-            this.beat = beat;
-            GuiUtils.sendCodeToMenu(CONTAINER_ID, mark(beat));
+        if (beatNum != this.beatNum || pageChanged) {
+            this.beatNum = beatNum;
+            GuiUtils.sendCodeToMenu(containerId, mark(beatNum));
         }
-        GuiUtils.sendCodeToMenu(CONTAINER_ID, note);
+        GuiUtils.sendCodeToMenu(containerId, note);
     }
 }

@@ -9,7 +9,6 @@ import io.github.c20c01.cc_mb.player.MusicBoxPlayer;
 import io.github.c20c01.cc_mb.player.NoteGridTicker;
 import io.github.c20c01.cc_mb.player.Octave;
 import io.github.c20c01.cc_mb.player.SpeakerConfig;
-import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
@@ -90,22 +89,21 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
      * <p>
      * Otherwise, spawn the note grid item in front of the music box.
      */
-    public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState) {
+    public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid) {
         Direction direction = blockState.getValue(MusicBoxBlock.FACING);
         Container container = HopperBlockEntity.getContainerOrHandlerAt(level, blockPos.relative(direction.getOpposite()), direction).container();
-        ItemStack itemStack = removeItem();
         if (container != null && !(container instanceof WorldlyContainer)) {
             int size = container.getContainerSize();
             for (int slot = 0; slot < size; ++slot) {
                 if (container.getItem(slot).isEmpty()) {
-                    container.setItem(slot, itemStack);
+                    container.setItem(slot, noteGrid);
                     container.setChanged();
                     return;
                 }
             }
         }
         Position position = blockPos.getCenter().relative(direction, 0.7D);
-        DefaultDispenseItemBehavior.spawnItem(level, itemStack, 2, direction, position);
+        DefaultDispenseItemBehavior.spawnItem(level, noteGrid, 2, direction, position);
     }
 
     /**
@@ -185,29 +183,29 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     /**
-     * For creative mode only. Join the note grid data with the given item and save it to the note grid item.
+     * For creative mode only. Create a new note grid item with the data that
+     * is merged from the data in the music box and the data in the given item.
+     *
+     * @return the note grid item with merged data, or null if the given item has no data to merge
      */
-    public boolean joinData(ItemStack itemStack) {
-        NoteGridData newData = null;
-        if (itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) {
-            newData = NoteGridData.ofNoteGrid(itemStack);
-        } else if (itemStack.is(Items.WRITABLE_BOOK)) {
-            newData = NoteGridData.ofBook(itemStack);
+    @Nullable
+    public ItemStack createNoteGridMerge(ItemStack other) {
+        NoteGridData otherData = null;
+        if (other.is(MusicBox.NOTE_GRID_ITEM.get())) {
+            otherData = NoteGridData.ofNoteGrid(other);
+        } else if (other.is(Items.WRITABLE_BOOK)) {
+            otherData = NoteGridData.ofBook(other);
         }
-        if (newData == null) {
-            return false;
-        }
-        ItemStack noteGrid = removeItem();
-        if (itemStack.has(DataComponents.CUSTOM_NAME)) {
-            noteGrid.set(DataComponents.CUSTOM_NAME, itemStack.getHoverName());
-        }
-        NoteGridUtils.join(NoteGridData.ofNoteGrid(noteGrid), newData).saveToNoteGrid(noteGrid);
-        setItem(noteGrid);
-        return true;
+        if (otherData == null) return null;
+
+        ItemStack noteGrid = getItem().copy();
+        if (other.has(DataComponents.CUSTOM_NAME)) noteGrid.set(DataComponents.CUSTOM_NAME, other.getHoverName());
+        NoteGridData.ofNoteGrid(noteGrid).withDataMerged(otherData).saveToNoteGrid(noteGrid);
+        return noteGrid;
     }
 
     @Override
-    public void onPageChanged(byte pageNum) {
+    public void onPageChanged(int pageNum) {
         // no need to sync if the page change is caused by next beat
         if (getBlockState().getValue(MusicBoxBlock.POWERED)) syncPlayerData();
     }

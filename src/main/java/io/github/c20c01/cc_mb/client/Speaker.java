@@ -2,7 +2,7 @@ package io.github.c20c01.cc_mb.client;
 
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.player.SpeakerConfig;
-import it.unimi.dsi.fastutil.bytes.ByteArraySet;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -25,11 +25,12 @@ public class Speaker {
         }
     }
 
-    public static void playMind(SpeakerConfig config, ByteArraySet notes) {
+    public static void playMind(SpeakerConfig config, ByteList notes) {
         Identifier soundLocation = config.getSoundLocation();
         long seed = config.getSeed(RANDOM);
         SoundManager soundManager = Minecraft.getInstance().getSoundManager();
-        for (byte note : notes) {
+        for (int i = 0; i < notes.size(); i++) {
+            byte note = notes.getByte(i);
             soundManager.play(new MusicBoxSoundInstance(soundLocation, seed, 3.0F, PITCHES[note], 0.0D, 0.0D, 0.0D, true));
         }
     }
@@ -41,7 +42,9 @@ public class Speaker {
         long seed = config.getSeed(RANDOM);
         float pitchFactor = config.getPitchFactor();
         SoundManager soundManager = Minecraft.getInstance().getSoundManager();
-        for (byte note : beat.getNotes()) {
+        ByteList notes = beat.getNotes();
+        for (int i = 0; i < notes.size(); i++) {
+            byte note = notes.getByte(i);
             soundManager.play(new MusicBoxSoundInstance(soundLocation, seed, 3.0F, PITCHES[note] * pitchFactor, pos.x, pos.y, pos.z, false));
         }
         // Particle

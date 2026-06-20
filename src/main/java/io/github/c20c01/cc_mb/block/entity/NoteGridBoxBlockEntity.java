@@ -31,7 +31,7 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
         super(type, worldPosition, blockState);
     }
 
-    public abstract void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState);
+    public abstract void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid);
 
     public abstract boolean canTakeItem(Container target, int index, ItemStack itemStack);
 
@@ -87,31 +87,31 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
     }
 
     @Override
-    public byte getDataSize() {
+    public int getDataSize() {
         return data == null ? 0 : data.size();
     }
 
     @Override
-    public Beat getBeat(byte pageNum, byte beatNum) {
+    public Beat getBeat(int pageNum, int beatNum) {
         if (data == null || data.size() <= pageNum) {
-            return Beat.EMPTY_BEAT;
+            return Beat.EMPTY;
         }
-        return data.getPage(pageNum).readBeat(beatNum);
+        return data.getPage(pageNum).getBeat(beatNum);
     }
 
     @Override
-    public boolean onBeat(Beat beat, byte beatNumber) {
+    public boolean onBeat(Beat beat, int beatNumber) {
         setChanged();
         return true;
     }
 
     @Override
-    public void onPageChanged(byte pageNum) {
+    public void onPageChanged(int pageNum) {
         // do nothing by default
     }
 
     @Override
     public void onFinish() {
-        if (level instanceof ServerLevel) ejectNoteGrid(level, worldPosition, getBlockState());
+        if (level instanceof ServerLevel) ejectNoteGrid(level, worldPosition, getBlockState(), removeItem());
     }
 }

@@ -1,7 +1,6 @@
 package io.github.c20c01.cc_mb.inventory.menu;
 
 import io.github.c20c01.cc_mb.MusicBox;
-import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.inventory.SlotBuilder;
 import io.github.c20c01.cc_mb.inventory.menu.edit.EditDataReceiver;
@@ -20,19 +19,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class PerforationTableMenu extends AbstractContainerMenu {
     public static final byte CODE_SAVE_NOTE_GRID = -1;
     public static final byte CODE_CONNECT_NOTE_GRID = -2;
     public static final byte CODE_PUNCH_FAIL = -3;// player punched at the wrong moment
 
-    private final ContainerLevelAccess ACCESS;
-    private final Container CONTAINER = new SimpleContainer(3);
-    private final EditDataReceiver EDIT_DATA_RECEIVER;
-    private final Slot NOTE_GRID_SLOT;
-    private final Slot TOOL_SLOT;
-    private final Slot OTHER_GRID_SLOT;
-    private final Inventory INVENTORY;
+    private final ContainerLevelAccess access;
+    private final Container container = new SimpleContainer(3);
+    private final EditDataReceiver receiver;
+    private final Slot noteGridSlot;
+    private final Slot toolSlot;
+    private final Slot otherItemSlot;
+    private final Inventory inventory;
     private Runnable itemChangedCallback;
     private MenuMode mode = MenuMode.EMPTY;
     private NoteGridData data;
@@ -45,25 +45,25 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     public PerforationTableMenu(int id, Inventory inventory, final ContainerLevelAccess access) {
         super(MusicBox.PERFORATION_TABLE_MENU.get(), id);
-        this.ACCESS = access;
-        this.INVENTORY = inventory;
-        this.EDIT_DATA_RECEIVER = new EditDataReceiver();
+        this.access = access;
+        this.inventory = inventory;
+        this.receiver = new EditDataReceiver();
 
-        this.NOTE_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 0, 15, 22)
+        this.noteGridSlot = this.addSlot(new SlotBuilder(container, 0, 15, 22)
                 .accept(MusicBox.NOTE_GRID_ITEM.get())
                 .maxStackSize(1)
                 .onChanged(this::itemChanged)
                 .build()
         );
 
-        this.TOOL_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 1, 25, 42)
+        this.toolSlot = this.addSlot(new SlotBuilder(container, 1, 25, 42)
                 .accept(MusicBox.PAPER_PASTE_ITEM.get(), MusicBox.AWL_ITEM.get(), Items.SLIME_BALL, Items.SHEARS)
                 .maxStackSize(64)
                 .onChanged(this::itemChanged)
                 .build()
         );
 
-        this.OTHER_GRID_SLOT = this.addSlot(new SlotBuilder(CONTAINER, 2, 35, 22)
+        this.otherItemSlot = this.addSlot(new SlotBuilder(container, 2, 35, 22)
                 .accept(MusicBox.NOTE_GRID_ITEM.get(), Items.WRITABLE_BOOK)
                 .maxStackSize(1)
                 .onChanged(this::itemChanged)
@@ -87,13 +87,13 @@ public class PerforationTableMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(@Nonnull Player player) {
-        return stillValid(this.ACCESS, player, MusicBox.PERFORATION_TABLE_BLOCK.get());
+        return stillValid(this.access, player, MusicBox.PERFORATION_TABLE_BLOCK.get());
     }
 
     @Override
     public void removed(@Nonnull Player player) {
         super.removed(player);
-        this.ACCESS.execute((_, _) -> this.clearContainer(player, CONTAINER));
+        this.access.execute((_, _) -> this.clearContainer(player, container));
     }
 
     @Override
@@ -126,48 +126,52 @@ public class PerforationTableMenu extends AbstractContainerMenu {
             // handle flags
             switch (code) {
                 case CODE_SAVE_NOTE_GRID -> {
-                    if (EDIT_DATA_RECEIVER.dirty()) {
-                        data.saveToNoteGrid(NOTE_GRID_SLOT.getItem());
-                        EDIT_DATA_RECEIVER.reset();
+                    if (receiver.dirty()) {
+                        data.saveToNoteGrid(noteGridSlot.getItem());
+                        receiver.reset();
                         broadcastFullState();
                     }
                 }
                 case CODE_CONNECT_NOTE_GRID -> {
-                    NoteGridUtils.connect(data, helpData).saveToNoteGrid(NOTE_GRID_SLOT.getItem());
-                    ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1.0F, 1.0F));
-                    TOOL_SLOT.getItem().shrink(1);
-                    OTHER_GRID_SLOT.getItem().shrink(1);
+                    NoteGridUtils.connect(data, helpData).saveToNoteGrid(noteGridSlot.getItem());
+                    access.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SLIME_BLOCK_FALL, SoundSource.PLAYERS, 1.0F, 1.0F));
+                    toolSlot.getItem().shrink(1);
+                    otherItemSlot.getItem().shrink(1);
                 }
                 case CODE_PUNCH_FAIL -> hurtTool(16);
             }
         } else {
             // handle cut
             if (mode == MenuMode.CUT) {
-                NoteGridData[] res = NoteGridUtils.cut(data, (byte) code);
-                ItemStack otherGrid = NOTE_GRID_SLOT.getItem().copy();
-                res[0].saveToNoteGrid(NOTE_GRID_SLOT.getItem());
+                NoteGridData[] res = NoteGridUtils.cut(data, code + 1);// code == current page
+                ItemStack noteGrid = noteGridSlot.getItem();
+                ItemStack otherGrid = noteGrid.copy();
+                res[0].saveToNoteGrid(noteGrid);
                 res[1].saveToNoteGrid(otherGrid);
-                OTHER_GRID_SLOT.set(otherGrid);
-                ACCESS.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SHEEP_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F));
+                otherItemSlot.set(otherGrid);
+                access.execute((level, blockPos) -> level.playSound(null, blockPos, SoundEvents.SHEEP_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F));
                 hurtTool(1);
                 return true;
             }
             // handle edit
-            if (!EDIT_DATA_RECEIVER.receive((byte) code)) {
+            if (!receiver.receive((byte) code)) {
                 return true;
             }
-            Beat beat = EDIT_DATA_RECEIVER.getBeat(data);
+            byte page = receiver.getPageNum();
+            byte beat = receiver.getBeatNum();
             if (mode == MenuMode.PUNCH) {
-                if (beat.addNote((byte) code)) {
+                NoteGridData editedData = data.withNoteChanged(page, beat, (byte) code, true);
+                if (data != editedData) {
+                    data = editedData;
                     hurtTool(1);
-                    data.markDirty();
                 }
                 return true;
             }
             if (mode == MenuMode.FIX) {
-                if (beat.removeNote((byte) code)) {
-                    TOOL_SLOT.getItem().shrink(1);
-                    data.markDirty();
+                NoteGridData editedData = data.withNoteChanged(page, beat, (byte) code, false);
+                if (data != editedData) {
+                    data = editedData;
+                    toolSlot.getItem().shrink(1);
                 }
                 return true;
             }
@@ -176,8 +180,8 @@ public class PerforationTableMenu extends AbstractContainerMenu {
     }
 
     private void hurtTool(int damage) {
-        ACCESS.execute((level, blockPos) ->
-                TOOL_SLOT.getItem().hurtAndBreak(damage, (ServerLevel) level, INVENTORY.player,
+        access.execute((level, blockPos) ->
+                toolSlot.getItem().hurtAndBreak(damage, (ServerLevel) level, inventory.player,
                         _ -> level.playSound(null, blockPos, SoundEvents.ITEM_BREAK.value(), SoundSource.PLAYERS)
                 )
         );
@@ -193,25 +197,22 @@ public class PerforationTableMenu extends AbstractContainerMenu {
      * Update the mode of the table with the current items in the slots.
      */
     private void updateMode() {
-        final ItemStack NOTE_GRID = NOTE_GRID_SLOT.getItem();
-        final ItemStack OTHER_GRID = OTHER_GRID_SLOT.getItem();
-        final ItemStack TOOL = TOOL_SLOT.getItem();
-        mode = MenuMode.update(NOTE_GRID, OTHER_GRID, TOOL);
+        mode = MenuMode.update(noteGridSlot.getItem(), otherItemSlot.getItem(), toolSlot.getItem());
     }
 
     private void updateData() {
-        final ItemStack NOTE_GRID = NOTE_GRID_SLOT.getItem();
-        this.data = NOTE_GRID.isEmpty() ? null : NoteGridData.ofNoteGrid(NOTE_GRID);
-        final ItemStack OTHER_GRID = OTHER_GRID_SLOT.getItem();
-        if (OTHER_GRID.isEmpty()) {
+        ItemStack noteGrid = noteGridSlot.getItem();
+        this.data = noteGrid.isEmpty() ? null : NoteGridData.ofNoteGrid(noteGrid);
+        ItemStack otherItem = otherItemSlot.getItem();
+        if (otherItem.isEmpty()) {
             this.helpData = null;
-        } else if (OTHER_GRID.getItem() == Items.WRITABLE_BOOK) {
-            this.helpData = NoteGridData.ofBook(OTHER_GRID);
+        } else if (otherItem.getItem() == Items.WRITABLE_BOOK) {
+            this.helpData = NoteGridData.ofBook(otherItem);
         } else {
-            this.helpData = NoteGridData.ofNoteGrid(OTHER_GRID);
+            this.helpData = NoteGridData.ofNoteGrid(otherItem);
         }
         if (mode == MenuMode.CONNECT) {
-            this.displayData = NoteGridUtils.connect(data.deepCopy(), helpData);
+            this.displayData = NoteGridUtils.connect(data, helpData);
         }
     }
 
@@ -227,6 +228,7 @@ public class PerforationTableMenu extends AbstractContainerMenu {
         return displayData;
     }
 
+    @Nullable
     public NoteGridData getHelpData() {
         return helpData;
     }

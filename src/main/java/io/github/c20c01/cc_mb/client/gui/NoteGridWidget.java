@@ -1,9 +1,10 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.client.GuiUtils;
-import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.data.Page;
 import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
@@ -33,9 +35,9 @@ public class NoteGridWidget extends AbstractWidget {
     @Override
     protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
         switch (menu.getMode()) {
-            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics, menu.getData(), menu.getHelpData());
-            case CONNECT -> renderConnect(guiGraphics, menu.getDisplayData());
-            case CUT -> renderCut(guiGraphics, menu.getData());
+            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics, screen.currentPage, menu.getData(), menu.getHelpData());
+            case CONNECT -> renderConnect(guiGraphics, screen.currentPage, menu.getDisplayData());
+            case CUT -> renderCut(guiGraphics, screen.currentPage, screen.hasNextPage(), menu.getData());
         }
     }
 
@@ -43,38 +45,45 @@ public class NoteGridWidget extends AbstractWidget {
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PerforationTableScreen.GUI_BACKGROUND, getX(), getY(), 0, 168, WIDTH, HEIGHT, 256, 256);
     }
 
-    private void renderOneBeat(GuiGraphicsExtractor guiGraphics, NoteGridData data, byte page, byte beat, int color) {
-        Beat oneBeat = data.getPage(page).getBeat(beat);
-        int x = getX() + 2 + beat;
-        for (byte note : oneBeat.getNotes()) {
-            int y = getY() + 50 - note * 2;
+    private void renderOneBeat(GuiGraphicsExtractor guiGraphics, Page page, int beatNum, int color) {
+        int x = getX() + 2 + beatNum;
+        int baseY = getY() + 50;
+        ByteList notes = page.getBeat(beatNum).getNotes();
+        for (int i = 0; i < notes.size(); i++) {
+            int y = baseY - notes.getByte(i) * 2;
             guiGraphics.fill(x, y, x + 1, y + 1, color);
         }
     }
 
-    private void renderPunch(GuiGraphicsExtractor guiGraphics, NoteGridData data, NoteGridData helpData) {
+    private void renderPunch(GuiGraphicsExtractor guiGraphics, int pageNum, NoteGridData data, @Nullable NoteGridData helpData) {
         renderBg(guiGraphics);
-        for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, data, screen.currentPage, beat, GuiUtils.BLACK);
-            if (helpData != null && helpData.size() > screen.currentPage) {
-                renderOneBeat(guiGraphics, helpData, screen.currentPage, beat, GuiUtils.HELP_NOTE_COLOR);
+        Page page = data.getPage(pageNum);
+        for (int b = 0; b < Page.BEATS_SIZE; b++) {
+            renderOneBeat(guiGraphics, page, b, GuiUtils.BLACK);
+        }
+        if (helpData != null && helpData.size() > pageNum) {
+            Page helpPage = helpData.getPage(pageNum);
+            for (int b = 0; b < Page.BEATS_SIZE; b++) {
+                renderOneBeat(guiGraphics, helpPage, b, GuiUtils.HELP_NOTE_COLOR);
             }
         }
     }
 
-    private void renderConnect(GuiGraphicsExtractor guiGraphics, NoteGridData displayData) {
+    private void renderConnect(GuiGraphicsExtractor guiGraphics, int pageNum, NoteGridData displayData) {
         renderBg(guiGraphics);
-        for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, displayData, screen.currentPage, beat, GuiUtils.BLACK);
+        Page page = displayData.getPage(pageNum);
+        for (int b = 0; b < Page.BEATS_SIZE; b++) {
+            renderOneBeat(guiGraphics, page, b, GuiUtils.BLACK);
         }
     }
 
-    private void renderCut(GuiGraphicsExtractor guiGraphics, NoteGridData data) {
+    private void renderCut(GuiGraphicsExtractor guiGraphics, int pageNum, boolean hasNextPage, NoteGridData data) {
         renderBg(guiGraphics);
-        for (byte beat = 0; beat < 64; beat++) {
-            renderOneBeat(guiGraphics, data, screen.currentPage, beat, GuiUtils.BLACK);
+        Page page = data.getPage(pageNum);
+        for (int b = 0; b < Page.BEATS_SIZE; b++) {
+            renderOneBeat(guiGraphics, page, b, GuiUtils.BLACK);
         }
-        if (screen.hasNextPage()) {
+        if (hasNextPage) {
             guiGraphics.verticalLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
         }
     }

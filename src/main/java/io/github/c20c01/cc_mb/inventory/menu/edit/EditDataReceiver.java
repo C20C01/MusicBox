@@ -1,8 +1,5 @@
 package io.github.c20c01.cc_mb.inventory.menu.edit;
 
-import io.github.c20c01.cc_mb.data.Beat;
-import io.github.c20c01.cc_mb.data.NoteGridData;
-
 public class EditDataReceiver extends EditDataHandler {
     private final byte[] tempCode = new byte[2];// [page, beat] or [beat], mark is removed
     private byte tempCodeIndex = 0;
@@ -10,9 +7,9 @@ public class EditDataReceiver extends EditDataHandler {
     public boolean receive(byte code) {
         if (isNote(code)) {
             if (tempCodeIndex > 0) {
-                beat = tempCode[--tempCodeIndex];
+                beatNum = tempCode[--tempCodeIndex];
                 if (tempCodeIndex > 0) {
-                    page = tempCode[--tempCodeIndex];
+                    pageNum = tempCode[--tempCodeIndex];
                 }
             }
             return true;
@@ -25,7 +22,11 @@ public class EditDataReceiver extends EditDataHandler {
         return false;
     }
 
-    public Beat getBeat(NoteGridData data) {
-        return data.getPage(page).getBeat(beat);
+    public byte getPageNum() {
+        return pageNum;
+    }
+
+    public byte getBeatNum() {
+        return beatNum;
     }
 }

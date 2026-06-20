@@ -11,10 +11,10 @@ public interface NoteGridDataHolder {
 
     void setData(@Nullable NoteGridData data);
 
-    byte getDataSize();
+    int getDataSize();
 
     /**
      * @return the beat at the given page and beat number for updating the current beat.
      */
-    Beat getBeat(byte pageNum, byte beatNum);
+    Beat getBeat(int pageNum, int beatNum);
 }

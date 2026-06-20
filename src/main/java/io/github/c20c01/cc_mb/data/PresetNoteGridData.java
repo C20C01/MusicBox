@@ -14,9 +14,9 @@ public class PresetNoteGridData {
     private static void updateNoteGrids() {
         for (int size = 2; size <= 64; size *= 2) {
             Component name = Component.translatable(MusicBox.NOTE_GRID_ITEM.get().getDescriptionId()).append("(" + size + ")");
-            add(name, NoteGridCode.of(NoteGridData.ofPages(new Page[size])));
+            add(name, new NoteGridData(size));
         }
-        add(Component.literal("Little Star").withStyle(ChatFormatting.GOLD), new NoteGridCode(
+        add(Component.literal("Little Star").withStyle(ChatFormatting.GOLD), NoteGridData.ofBytes(
                 new byte[]{
                         -1, 7, -1, 7, -1, 14, -1, 14, -1, 16, -1, 16, -1, 14,
                         -2, 12, -1, 12, -1, 11, -1, 11, -1, 9, -1, 9, -1, 7,
@@ -28,10 +28,10 @@ public class PresetNoteGridData {
         ));
     }
 
-    private static void add(Component name, NoteGridCode code) {
+    private static void add(Component name, NoteGridData data) {
         ItemStack noteGrid = new ItemStack(MusicBox.NOTE_GRID_ITEM.get());
         noteGrid.set(DataComponents.ITEM_NAME, name);
-        noteGrid.set(MusicBox.NOTE_GRID_DATA.get(), code);
+        noteGrid.set(MusicBox.NOTE_GRID_DATA.get(), data);
         NOTE_GRIDS.add(noteGrid);
     }
 

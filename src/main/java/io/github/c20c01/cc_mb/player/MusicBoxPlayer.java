@@ -44,7 +44,7 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
     }
 
     @Override
-    public boolean onBeat(Beat beat, byte beatNumber) {
+    public boolean onBeat(Beat beat, int beatNumber) {
         listener.onBeat(beat, beatNumber); // always return true
 
         if (beat.isEmpty() || config.isSilent()) return true;
@@ -57,7 +57,7 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
     }
 
     @Override
-    public void onPageChanged(byte pageNum) {
+    public void onPageChanged(int pageNum) {
         listener.onPageChanged(pageNum);
     }
 

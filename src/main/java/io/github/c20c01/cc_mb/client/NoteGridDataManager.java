@@ -41,6 +41,13 @@ public class NoteGridDataManager {
         }
     }
 
+    /**
+     * Get the note grid data with the hash code, there are two cases:
+     * <li>If the data is in the cache, return it immediately.</li>
+     * <li>If the data is not in the cache, return null first, then wait for the server reply and return data again.</li>
+     *
+     * @param callback the callback to receive the data, may be called with null if the data is not in the cache.
+     */
     public void getNoteGridData(int hash, BlockPos blockPos, Consumer<NoteGridData> callback) {
         if (cache.containsKey(hash)) {
             // get from cache

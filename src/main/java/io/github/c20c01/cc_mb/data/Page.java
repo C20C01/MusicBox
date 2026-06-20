@@ -1,79 +1,105 @@
 package io.github.c20c01.cc_mb.data;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 public final class Page {
+    public static final Page EMPTY = new Page();
     public static final byte BEATS_SIZE = 64;
-    private final Beat[] beats = new Beat[BEATS_SIZE];
+    private final Beat[] beats;
+    private boolean cow = true;
 
-    public static Page ofBeats(Collection<Beat> beats) {
-        return new Page().loadBeats(beats);
+    public Page() {
+        beats = new Beat[BEATS_SIZE];
+        Arrays.fill(beats, Beat.EMPTY);
     }
 
-    public static Page ofCode(String codeOfPage) {
-        return new Page().loadCode(codeOfPage);
-    }
-
-    public Page loadBeats(Collection<Beat> beats) {
-        return setBeats(beats);
-    }
-
-    public Page loadCode(String codeOfPage) {
-        String[] codesOfBeat = codeOfPage.split("\\.");
-        ArrayList<Beat> beats = new ArrayList<>(codesOfBeat.length);
-        for (String codeOfBeat : codesOfBeat) {
-            beats.add(Beat.ofCode(codeOfBeat));
-        }
-        return setBeats(beats);
-    }
-
-    @Override
-    public String toString() {
-        return "Page:" + Arrays.toString(beats);
-    }
-
-    public Beat getBeat(byte index) {
-        if (beats[index] == null) {
-            beats[index] = new Beat();
-        }
-        return beats[index];
+    Page(List<Beat> beats) {
+        this.beats = new Beat[BEATS_SIZE];
+        int realSize = Math.min(beats.size(), BEATS_SIZE);
+        for (int i = 0; i < realSize; i++) this.beats[i] = beats.get(i);
+        Arrays.fill(this.beats, realSize, BEATS_SIZE, Beat.EMPTY);
     }
 
     /**
-     * Read only! If you want to modify the beat, use {@link #getBeat(byte)} instead.
+     * Copy constructor (cow -> false)
      */
-    public Beat readBeat(byte index) {
-        return beats[index] == null ? Beat.EMPTY_BEAT : beats[index];
+    private Page(Page page) {
+        this.beats = new Beat[BEATS_SIZE];
+        System.arraycopy(page.beats, 0, this.beats, 0, BEATS_SIZE);
+        this.cow = false;
     }
 
-    public boolean isEmptyBeat(byte index) {
-        return beats[index] == null || beats[index].isEmpty();
+    public static Page ofCode(String code) {
+        Page result = new Page();
+        if (code.isEmpty()) return result;
+
+        int index = 0, start = 0;
+        while (index < BEATS_SIZE) {
+            int dotPos = code.indexOf('.', start);
+            if (dotPos == -1) {
+                result.beats[index] = Beat.ofCode(code, start, code.length());
+                break;
+            } else {
+                result.beats[index] = Beat.ofCode(code, start, dotPos);
+                start = dotPos + 1;
+                index++;
+            }
+        }
+        return result;
     }
 
-    public Page setBeats(Beat[] beats) {
-        System.arraycopy(beats, 0, this.beats, 0, Math.min(beats.length, BEATS_SIZE));
+    /**
+     * Read only!
+     */
+    public Beat getBeat(int index) {
+        return beats[index];
+    }
+
+    Page withBeat(int index, Beat beat) {
+        if (this.beats[index] != beat) {
+            final Page result = this.cow ? new Page(this) : this;
+            result.beats[index] = beat;
+            return result;
+        }
         return this;
     }
 
-    public Page setBeats(Collection<Beat> beats) {
-        return setBeats(beats.toArray(new Beat[0]));
+    Page withPageMerged(Page other) {
+        boolean cow = this.cow;
+        Page result = this;
+        for (int i = 0; i < BEATS_SIZE; i++) {
+            Beat currentBeat = this.beats[i];
+            Beat resultBeat = currentBeat.withBeatMerged(other.beats[i]);
+            if (resultBeat == currentBeat) continue;
+
+            if (cow) {
+                cow = false;
+                result = new Page(this);
+            }
+
+            result.beats[i] = resultBeat;
+        }
+        return result;
+    }
+
+    public Page makeCow() {
+        if (!cow) {
+            for (int i = 0; i < BEATS_SIZE; i++) beats[i].makeCow();
+            cow = true;
+        }
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Page page)) return false;
+        return Arrays.equals(beats, page.beats);
     }
 
     @Override
     public int hashCode() {
         return Arrays.hashCode(beats);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof Page page) {
-            return Arrays.equals(beats, page.beats);
-        }
-        return false;
     }
 }

@@ -1,8 +1,7 @@
 package io.github.c20c01.cc_mb.util;
 
-import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.data.Page;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -14,51 +13,26 @@ public class NoteGridUtils {
         return data.size() + otherData.size() <= NoteGridData.MAX_SIZE;
     }
 
-    public static NoteGridData connect(NoteGridData data, @Nullable NoteGridData otherData) {
-        if (otherData == null) {
-            return data;
-        }
-        data.getPages().addAll(otherData.getPages());
-        return data;
+    public static NoteGridData connect(NoteGridData first, @Nullable NoteGridData second) {
+        if (second == null) return first;
+        return first.withDataAdded(second);
     }
 
-    public static boolean containsAll(NoteGridData main, NoteGridData help, byte page, byte beat) {
-        if (help.size() <= page) {
-            return true;
-        }
-        Beat mainBeat = main.getPage(page).getBeat(beat);
-        Beat helpBeat = help.getPage(page).getBeat(beat);
-        return mainBeat.getNotes().containsAll(helpBeat.getNotes());
+    public static boolean containsAll(NoteGridData main, NoteGridData help, int pageNum, int beatNum) {
+        if (help.size() <= pageNum) return true;
+        ByteList helpNotes = help.getPage(pageNum).getBeat(beatNum).getNotes();
+        if (helpNotes.isEmpty()) return true;
+        return main.getPage(pageNum).getBeat(beatNum).getNotes().containsAll(helpNotes);
     }
 
     /**
-     * Join the other data to the data.
+     * @param size the size of the first part, must be in [1, data.size())
+     * @return {data[0, size), data[size, end)}
      */
-    public static NoteGridData join(NoteGridData data, NoteGridData otherData) {
-        byte size = (byte) Math.min(data.size(), otherData.size());
-        for (byte page = 0; page < size; page++) {
-            for (byte beat = 0; beat < Page.BEATS_SIZE; beat++) {
-                if (otherData.getPage(page).isEmptyBeat(beat)) {
-                    continue;
-                }
-                for (byte note : otherData.getPage(page).getBeat(beat).getNotes()) {
-                    data.getPage(page).getBeat(beat).addNote(note);
-                }
-            }
-        }
-        return data;
-    }
-
-    /**
-     * Cut the data to two parts.
-     *
-     * @param page cut the end of which page
-     */
-    public static NoteGridData[] cut(NoteGridData data, byte page) {
-        page += 1;
-        NoteGridData[] res = new NoteGridData[2];
-        res[0] = new NoteGridData(data.getPages().subList(0, page));
-        res[1] = new NoteGridData(data.getPages().subList(page, data.size()));
-        return res;
+    public static NoteGridData[] cut(NoteGridData data, int size) {
+        NoteGridData[] result = new NoteGridData[2];
+        result[0] = data.subData(0, size);
+        result[1] = data.subData(size, data.size());
+        return result;
     }
 }

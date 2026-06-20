@@ -8,9 +8,9 @@ public interface NoteGridIteratorListener {
      * @param beatNumber the current beat number in the page, from 0 to 63.
      * @return whether the player should move to the next beat.
      */
-    boolean onBeat(Beat beat, byte beatNumber);
+    boolean onBeat(Beat beat, int beatNumber);
 
-    void onPageChanged(byte pageNum);
+    void onPageChanged(int pageNum);
 
     void onFinish();
 }
