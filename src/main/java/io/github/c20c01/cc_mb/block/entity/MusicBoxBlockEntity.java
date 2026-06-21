@@ -66,7 +66,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     @Override
-    public void loadAdditional(ValueInput input) {
+    protected void loadAdditional(ValueInput input) {
         player.loadAdditional(input);
         super.loadAdditional(input);
     }
@@ -113,7 +113,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
      */
     public void updateInstrumentFromBelow(Level level, BlockPos below) {
         if (level.getBlockEntity(below) instanceof SoundBoxBlockEntity soundBox) {
-            if (!level.isClientSide()) updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
+            updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
         } else {
             NoteBlockInstrument instrument = level.getBlockState(below).instrument();
             Holder<SoundEvent> soundEvent = instrument.worksAboveNoteBlock() ? NoteBlockInstrument.HARP.getSoundEvent() : instrument.getSoundEvent();
