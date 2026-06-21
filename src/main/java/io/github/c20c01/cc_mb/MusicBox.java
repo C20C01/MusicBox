@@ -2,8 +2,10 @@ package io.github.c20c01.cc_mb;
 
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.PerforationTableBlock;
+import io.github.c20c01.cc_mb.block.PuncherBoxBlock;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
+import io.github.c20c01.cc_mb.block.entity.PuncherBoxBlockEntity;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.PresetNoteGridData;
@@ -102,6 +104,10 @@ public class MusicBox {
     public static final DeferredItem<BlockItem> MUSIC_BOX_BLOCK_ITEM;
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MusicBoxBlockEntity>> MUSIC_BOX_BLOCK_ENTITY;
 
+    public static final DeferredBlock<PuncherBoxBlock> PUNCHER_BOX_BLOCK;
+    public static final DeferredItem<BlockItem> PUNCHER_BOX_BLOCK_ITEM;
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PuncherBoxBlockEntity>> PUNCHER_BOX_BLOCK_ENTITY;
+
     public static final DeferredBlock<PerforationTableBlock> PERFORATION_TABLE_BLOCK;
     public static final DeferredItem<BlockItem> PERFORATION_TABLE_BLOCK_ITEM;
 
@@ -127,6 +133,10 @@ public class MusicBox {
         MUSIC_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("music_box_block", MUSIC_BOX_BLOCK);
         MUSIC_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("music_box_block", () -> new BlockEntityType<>(MusicBoxBlockEntity::new, MUSIC_BOX_BLOCK.get()));
 
+        PUNCHER_BOX_BLOCK = BLOCKS.registerBlock("puncher_box_block", PuncherBoxBlock::new, p -> p.mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).strength(0.8F).ignitedByLava());
+        PUNCHER_BOX_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("puncher_box_block", PUNCHER_BOX_BLOCK);
+        PUNCHER_BOX_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register("puncher_box_block", () -> new BlockEntityType<>(PuncherBoxBlockEntity::new, PUNCHER_BOX_BLOCK.get()));
+
         PERFORATION_TABLE_BLOCK = BLOCKS.registerBlock("perforation_table_block", PerforationTableBlock::new, p -> p.mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava());
         PERFORATION_TABLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("perforation_table_block", PERFORATION_TABLE_BLOCK);
 
@@ -140,6 +150,7 @@ public class MusicBox {
                 .icon(MUSIC_BOX_BLOCK_ITEM::toStack)
                 .displayItems((_, output) -> {
                     output.accept(MUSIC_BOX_BLOCK_ITEM);
+                    output.accept(PUNCHER_BOX_BLOCK_ITEM);
                     output.accept(PERFORATION_TABLE_BLOCK_ITEM);
                     output.accept(SOUND_BOX_BLOCK_ITEM);
                     output.accept(SOUND_SHARD_ITEM);
