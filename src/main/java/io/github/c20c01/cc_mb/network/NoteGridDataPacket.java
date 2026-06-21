@@ -30,8 +30,11 @@ public class NoteGridDataPacket {
             if (level.isLoaded(targetPos)) {
                 return true;
             }
-            LogUtils.getLogger().warn("{} at {} requested data from unloaded block entity at {}.",
-                    player.getDisplayName(), player.blockPosition(), targetPos);
+            LogUtils.getLogger().warn("{}({}) at {} requested data from unloaded block entity at {}.",
+                    player.getPlainTextName(),
+                    player.getStringUUID(),
+                    player.blockPosition().toShortString(),
+                    targetPos.toShortString());
             return false;
         }
 
@@ -40,6 +43,12 @@ public class NoteGridDataPacket {
             NoteGridData data = level.getBlockEntity(blockPos, MusicBox.MUSIC_BOX_BLOCK_ENTITY.get()).map(MusicBoxBlockEntity::getData).orElse(null);
             if (data != null && data.hashCode() == hash) {
                 context.reply(new Reply(hash, data.toBytes()));
+            } else {
+                LogUtils.getLogger().warn("{}({}) at {} requested data with invalid hash from block entity at {}.",
+                        context.player().getPlainTextName(),
+                        context.player().getStringUUID(),
+                        context.player().blockPosition().toShortString(),
+                        blockPos.toShortString());
             }
         }
 
