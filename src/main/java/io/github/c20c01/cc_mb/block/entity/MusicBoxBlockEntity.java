@@ -9,10 +9,10 @@ import io.github.c20c01.cc_mb.player.MusicBoxPlayer;
 import io.github.c20c01.cc_mb.player.NoteGridTicker;
 import io.github.c20c01.cc_mb.player.Octave;
 import io.github.c20c01.cc_mb.player.SpeakerConfig;
+import io.github.c20c01.cc_mb.util.EjectUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.*;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -26,13 +26,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Container;
-import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -68,7 +66,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     protected void loadAdditional(ValueInput input) {
         player.loadAdditional(input);
-        super.loadAdditional(input);
+        super.loadAdditional(input);// -> setItem() -> syncPlayerData() <- need player data loaded before syncing
     }
 
     @Override
@@ -87,29 +85,10 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         return player.ticker.getMinNote();
     }
 
-    /**
-     * Eject the note grid item from the music box.
-     * <p>
-     * If there is a container(NOT a worldly container) at the back of the music box, put the note grid item into it.
-     * <p>
-     * Otherwise, spawn the note grid item in front of the music box.
-     */
     @Override
     public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid) {
-        Direction direction = blockState.getValue(MusicBoxBlock.FACING);
-        Container container = HopperBlockEntity.getContainerOrHandlerAt(level, blockPos.relative(direction.getOpposite()), direction).container();
-        if (container != null && !(container instanceof WorldlyContainer)) {
-            int size = container.getContainerSize();
-            for (int slot = 0; slot < size; ++slot) {
-                if (container.getItem(slot).isEmpty()) {
-                    container.setItem(slot, noteGrid);
-                    container.setChanged();
-                    return;
-                }
-            }
-        }
-        Position position = blockPos.getCenter().relative(direction, 0.7D);
-        DefaultDispenseItemBehavior.spawnItem(level, noteGrid, 2, direction, position);
+        Direction front = blockState.getValue(MusicBoxBlock.FACING);
+        EjectUtils.eject(level, blockPos, front.getOpposite(), front, noteGrid);
     }
 
     /**
@@ -240,7 +219,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     private void syncPlayerData() {
-//        LOGGER.debug("sync player data");
         syncToClient((registries) -> getUpdateTag(registries, output -> {
             output.putByte("type", (byte) 1);
             savePlayerData(output);
@@ -248,7 +226,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     private void syncSoundData() {
-//        LOGGER.debug("sync sound data");
         syncToClient((registries) -> getUpdateTag(registries, output -> {
             output.putByte("type", (byte) 2);
             player.saveSound(output);
@@ -256,7 +233,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     private void syncNextBeat() {
-//        LOGGER.debug("sync next beat");
         syncToClient((registries) -> getUpdateTag(registries, output -> {
             output.putByte("type", (byte) 3);
             player.saveSync(output);
@@ -286,7 +262,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
             TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
             tagWriter.accept(output);
             tag = output.buildResult();
-//            LOGGER.debug("tag size: {} Bytes", tag.sizeInBytes());
         }
         return tag;
     }

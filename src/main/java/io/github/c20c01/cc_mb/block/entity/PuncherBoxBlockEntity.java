@@ -5,10 +5,9 @@ import io.github.c20c01.cc_mb.block.PuncherBoxBlock;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.player.NoteGridIterator;
+import io.github.c20c01.cc_mb.util.EjectUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Position;
-import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -96,9 +95,7 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     @Override
     public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid) {
-        // TODO 能不能让它在一定条件下提前丢出？ & 补全与容器的交互
-        Position position = blockPos.getCenter().relative(Direction.UP, 0.7D);
-        DefaultDispenseItemBehavior.spawnItem(level, noteGrid, 2, Direction.UP, position);
+        EjectUtils.eject(level, blockPos, Direction.UP, Direction.UP, noteGrid);
     }
 
     @Override
