@@ -31,6 +31,11 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
         super(type, worldPosition, blockState);
     }
 
+    /**
+     * @return the minimum note in current beat.
+     */
+    public abstract byte getMinNote();
+
     public abstract void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid);
 
     public abstract boolean canTakeItem(Container target, int index, ItemStack itemStack);
@@ -43,7 +48,7 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
 
     @Override
     protected void saveAdditional(ValueOutput output) {
-        if (!noteGrid.isEmpty()) output.store("note_grid", ItemStack.CODEC, noteGrid);
+        if (!noteGrid.isEmpty()) output.store("note_grid", ItemStack.CODEC, getItem());
         super.saveAdditional(output);
     }
 
@@ -100,7 +105,7 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
     }
 
     @Override
-    public boolean onBeat(Beat beat, int beatNumber) {
+    public boolean onBeat(int pageNum, int beatNum, Beat beat) {
         setChanged();
         return true;
     }

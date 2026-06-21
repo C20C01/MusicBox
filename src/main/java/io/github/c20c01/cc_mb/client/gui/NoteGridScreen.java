@@ -119,7 +119,7 @@ public class NoteGridScreen extends Screen implements NoteGridIteratorListener {
         final int gridCenterX = width / 2;
         final int y = GRID_CENTER_Y + HALF_GRID_BACKGROUND_HEIGHT + 4;
         // 23 is the width of the button
-        forwardButton = this.addRenderableWidget(new PageButton(gridCenterX + HALF_GRID_BACKGROUND_WIDTH - 23, y, true, (_) -> this.pageForward(true), false));
+        forwardButton = this.addRenderableWidget(new PageButton(gridCenterX + HALF_GRID_BACKGROUND_WIDTH - 23, y, true, (_) -> this.pageForward(), false));
         backButton = this.addRenderableWidget(new PageButton(gridCenterX - HALF_GRID_BACKGROUND_WIDTH, y, false, (_) -> this.pageBack(), false));
         updatePageStuff(true);
     }
@@ -136,12 +136,12 @@ public class NoteGridScreen extends Screen implements NoteGridIteratorListener {
         this.updatePageStuff(true);
     }
 
-    protected void pageForward(boolean stopPlaying) {
+    protected void pageForward() {
         if (this.currentPage < this.getNumPages() - 1) {
             ++this.currentPage;
         }
 
-        this.updatePageStuff(stopPlaying);
+        this.updatePageStuff(true);
     }
 
     private void updatePageStuff(boolean stopPlaying) {
@@ -313,7 +313,7 @@ public class NoteGridScreen extends Screen implements NoteGridIteratorListener {
                 pageBack();
             } else {
                 // roll down: page forward
-                pageForward(true);
+                pageForward();
             }
         }
         return true;
@@ -510,15 +510,16 @@ public class NoteGridScreen extends Screen implements NoteGridIteratorListener {
     }
 
     @Override
-    public boolean onBeat(Beat beat, int beatNumber) {
-        this.beatNumber = beatNumber;
+    public boolean onBeat(int pageNum, int beatNum, Beat beat) {
+        this.beatNumber = beatNum;
         updatePauseState();
         return paused;
     }
 
     @Override
     public void onPageChanged(int pageNum) {
-        pageForward(false);
+        currentPage = pageNum;
+        updatePageStuff(false);
     }
 
     @Override

@@ -13,8 +13,5 @@ public interface NoteGridDataHolder {
 
     int getDataSize();
 
-    /**
-     * @return the beat at the given page and beat number for updating the current beat.
-     */
     Beat getBeat(int pageNum, int beatNum);
 }

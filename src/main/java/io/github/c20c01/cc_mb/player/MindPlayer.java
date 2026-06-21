@@ -69,8 +69,8 @@ public class MindPlayer implements NoteGridDataHolder, NoteGridIteratorListener 
     }
 
     @Override
-    public boolean onBeat(Beat beat, int beatNumber) {
-        boolean pause = listener.onBeat(beat, beatNumber);
+    public boolean onBeat(int pageNum, int beatNum, Beat beat) {
+        boolean pause = listener.onBeat(pageNum, beatNum, beat);
         if (pause) return false;
         if (beat.isEmpty()) return true;
         playNotes(beat.getNotes());

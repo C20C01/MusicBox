@@ -82,6 +82,11 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         return target.hasAnyMatching(ItemStack::isEmpty) && !getBlockState().getValue(MusicBoxBlock.POWERED);
     }
 
+    @Override
+    public byte getMinNote() {
+        return player.ticker.getMinNote();
+    }
+
     /**
      * Eject the note grid item from the music box.
      * <p>
@@ -89,6 +94,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
      * <p>
      * Otherwise, spawn the note grid item in front of the music box.
      */
+    @Override
     public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid) {
         Direction direction = blockState.getValue(MusicBoxBlock.FACING);
         Container container = HopperBlockEntity.getContainerOrHandlerAt(level, blockPos.relative(direction.getOpposite()), direction).container();
@@ -130,11 +136,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         }
     }
 
-    public int getSignal() {
-        byte minNote = player.getMinNote();
-        return minNote > 13 ? 15 : minNote + 2;
-    }
-
     public byte getTickPerBeat() {
         return player.ticker.getTickPerBeat();
     }
@@ -172,10 +173,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         }
     }
 
-    /**
-     * Check {@link io.github.c20c01.cc_mb.block.NoteGridBoxBlock#HAS_NOTE_GRID HAS_NOTE_GRID} and
-     * {@link MusicBoxBlock#POWERED POWERED} before calling this method.
-     */
     public void playNextBeat(Level level) {
         // sync before next beat to make sure the client play the same next beat as the server
         syncNextBeat();
@@ -184,12 +181,12 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     /**
      * For creative mode only. Create a new note grid item with the data that
-     * is merged from the data in the music box and the data in the given item.
+     * merged from the data in the given item to the data in the music box, and return it.
      *
      * @return the note grid item with merged data, or null if the given item has no data to merge
      */
     @Nullable
-    public ItemStack createNoteGridMerge(ItemStack other) {
+    public ItemStack createNoteGridMerged(ItemStack other) {
         NoteGridData otherData = null;
         if (other.is(MusicBox.NOTE_GRID_ITEM.get())) {
             otherData = NoteGridData.ofNoteGrid(other);

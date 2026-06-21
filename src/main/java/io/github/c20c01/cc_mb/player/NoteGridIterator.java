@@ -1,13 +1,14 @@
 package io.github.c20c01.cc_mb.player;
 
-
 import io.github.c20c01.cc_mb.data.Beat;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class NoteGridIterator {
     protected final NoteGridDataHolder dataHolder;
     protected final NoteGridIteratorListener listener;
-    protected byte beatNum;
     protected byte pageNum;
+    protected byte beatNum;
     protected Beat currentBeat = Beat.EMPTY;
 
     public NoteGridIterator(NoteGridDataHolder dataHolder, NoteGridIteratorListener listener) {
@@ -15,14 +16,10 @@ public class NoteGridIterator {
         this.listener = listener;
     }
 
-    /**
-     * @return whether the note grid has finished playing
-     */
-    protected boolean nextBeat() {
-        if (beatNum >= 64 && nextPage()) return true;
+    public void nextBeat() {
+        if (beatNum >= 64 && nextPage()) return;
         currentBeat = dataHolder.getBeat(pageNum, beatNum);
-        if (listener.onBeat(currentBeat, beatNum)) beatNum++;
-        return false;
+        if (listener.onBeat(pageNum, beatNum, currentBeat)) beatNum++;
     }
 
     private boolean nextPage() {
@@ -36,8 +33,23 @@ public class NoteGridIterator {
         return false;
     }
 
+    public byte getMinNote() {
+        return currentBeat.getMinNote();
+    }
+
     public void reset() {
         pageNum = 0;
         beatNum = 0;
+        currentBeat = Beat.EMPTY;
+    }
+
+    public void loadAdditional(ValueInput input) {
+        beatNum = input.getByteOr("beat", beatNum);
+        pageNum = input.getByteOr("page", pageNum);
+    }
+
+    public void saveAdditional(ValueOutput output) {
+        output.putByte("beat", beatNum);
+        output.putByte("page", pageNum);
     }
 }

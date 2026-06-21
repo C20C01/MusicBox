@@ -105,7 +105,7 @@ public class SoundShard extends Item {
                 // creative mode only: shift to change the sound seed.
                 Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
                 if (newSeed != null) {
-                    level.playSeededSound(player, player, info.get().soundEvent, player.getSoundSource(), 1.0F, 1.0F, newSeed);
+                    level.playSeededSound(player, player, info.get().soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
                 }
                 return InteractionResult.SUCCESS_SERVER;
             }
@@ -117,7 +117,7 @@ public class SoundShard extends Item {
         }
         var soundEvent = info.get().soundEvent;
         // play the sound event that saved in the sound shard
-        level.playSeededSound(player, player, soundEvent, player.getSoundSource(), 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.getRandom()::nextLong));
+        level.playSeededSound(player, player, soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.getRandom()::nextLong));
         if (!level.isClientSide()) {
             MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().location());
         }

@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -36,7 +37,7 @@ public record SoundShardUpdatePacket(int slot, Identifier sound) implements Cust
         if (soundShard.is(MusicBox.SOUND_SHARD_ITEM.get())) {
             Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(location));
             soundShard.set(MusicBox.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
-            player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, player.getSoundSource(), 1.0F, 1.0F);
+            player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
         }
     }
 

@@ -86,12 +86,7 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
 
     @Override
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos, Direction direction) {
-        if (blockState.getValue(HAS_NOTE_GRID)) {
-            BlockEntity blockentity = level.getBlockEntity(blockPos);
-            return blockentity instanceof MusicBoxBlockEntity be ? be.getSignal() : 0;
-        } else {
-            return 0;
-        }
+        return getOutputSignal(level, blockPos, blockState);
     }
 
     @Override
@@ -136,60 +131,48 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
         }
 
         if (itemStack.is(MusicBox.AWL_ITEM.get()) && !player.isSecondaryUseActive()) {
-            // modify tick per beat
-            if (level.isClientSide()) {
-                return InteractionResult.SUCCESS;
-            }
-            byte tickPerBeat = itemStack.getOrDefault(MusicBox.TICK_PER_BEAT, TickPerBeat.DEFAULT);
-            musicBox.setTickPerBeat(tickPerBeat);
-            level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS);
-            player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(musicBox.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA));
-            return InteractionResult.CONSUME;
+            return modifyTickPerBeat(level, blockPos, player, itemStack, musicBox);
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
             if (player.isSecondaryUseActive()) {
-                // take out note grid
-                if (level.isClientSide()) {
-                    return InteractionResult.SUCCESS;
-                }
-                player.getInventory().add(musicBox.removeItem());
-                return InteractionResult.CONSUME;
+                return takeOutNoteGrid(level, musicBox, player.getInventory());
             }
             if (!blockState.getValue(POWERED)) {
                 if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) {
-                    // creative only: creat note grid with book or note grid item
-                    if (level.isClientSide()) {
-                        return InteractionResult.SUCCESS;
-                    }
-                    ItemStack created = musicBox.createNoteGridMerge(itemStack);
-                    if (created != null) {
-                        musicBox.ejectNoteGrid(level, blockPos, blockState, created);
-                        level.playSound(null, blockPos, SoundEvents.ANVIL_USE, player.getSoundSource(), 1.0F, 1.0F);
-                        return InteractionResult.CONSUME;
-                    }
+                    return createNoteGridMerged(level, blockPos, blockState, itemStack, musicBox);
                 }
-                // play one beat
-                if (level.isClientSide()) {
-                    return InteractionResult.SUCCESS;
-                }
-                musicBox.playNextBeat(level);
-                return InteractionResult.CONSUME;
+                return playNextBeat(level, musicBox);
             }
         } else {
-            if (musicBox.canPlaceItem(itemStack)) {
-                // put in note grid
-                if (level.isClientSide()) {
-                    return InteractionResult.SUCCESS;
-                }
-                musicBox.setItem(itemStack.copy());
-                itemStack.shrink(1);// creative mode also need to shrink
-                level.playSound(null, blockPos, SoundEvents.BOOK_PUT, SoundSource.PLAYERS);
-                return InteractionResult.CONSUME;
-            }
+            return putInNoteGrid(level, blockPos, musicBox, itemStack);
         }
 
         return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
+    }
+
+    private InteractionResult modifyTickPerBeat(Level level, BlockPos blockPos, Player player, ItemStack awl, MusicBoxBlockEntity musicBox) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        musicBox.setTickPerBeat(awl.getOrDefault(MusicBox.TICK_PER_BEAT, TickPerBeat.DEFAULT));
+        level.playSound(null, blockPos, SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS);
+        player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_TICK_PER_BEAT).append(String.valueOf(musicBox.getTickPerBeat())).withStyle(ChatFormatting.DARK_AQUA));
+        return InteractionResult.CONSUME;
+    }
+
+    private InteractionResult createNoteGridMerged(Level level, BlockPos blockPos, BlockState blockState, ItemStack itemStack, MusicBoxBlockEntity musicBox) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        ItemStack created = musicBox.createNoteGridMerged(itemStack);
+        if (created != null) {
+            musicBox.ejectNoteGrid(level, blockPos, blockState, created);
+            level.playSound(null, blockPos, SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
+        return InteractionResult.CONSUME;
+    }
+
+    private InteractionResult playNextBeat(Level level, MusicBoxBlockEntity musicBox) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        musicBox.playNextBeat(level);
+        return InteractionResult.CONSUME;
     }
 
     @Override

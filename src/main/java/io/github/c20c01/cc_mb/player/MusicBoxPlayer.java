@@ -39,13 +39,9 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
         ticker.nextBeat();
     }
 
-    public byte getMinNote() {
-        return ticker.currentBeat.getMinNote();
-    }
-
     @Override
-    public boolean onBeat(Beat beat, int beatNumber) {
-        listener.onBeat(beat, beatNumber); // always return true
+    public boolean onBeat(int pageNum, int beatNum, Beat beat) {
+        listener.onBeat(pageNum, beatNum, beat); // always return true
 
         if (beat.isEmpty() || config.isSilent()) return true;
         level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, blockPos);
@@ -67,10 +63,7 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
     }
 
     public void loadAdditional(ValueInput input) {
-        ticker.setTickPerBeat(input.getByteOr("tick_per_beat", ticker.getTickPerBeat()));
-        ticker.tickSinceLastBeat = input.getByteOr("interval", ticker.tickSinceLastBeat);
-        ticker.beatNum = input.getByteOr("beat", ticker.beatNum);
-        ticker.pageNum = input.getByteOr("page", ticker.pageNum);
+        ticker.loadAdditional(input);
         config.setOctave(input.getByteOr("octave", config.getOctave()));
         loadSound(input);
     }
@@ -91,10 +84,7 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
     }
 
     public void saveAdditional(ValueOutput output) {
-        output.putByte("tick_per_beat", ticker.getTickPerBeat());
-        output.putByte("interval", ticker.tickSinceLastBeat);
-        output.putByte("beat", ticker.beatNum);
-        output.putByte("page", ticker.pageNum);
+        ticker.saveAdditional(output);
         output.putByte("octave", config.getOctave());
         saveSound(output);
     }
