@@ -1,6 +1,5 @@
 package io.github.c20c01.cc_mb.client.gui;
 
-import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
@@ -25,6 +24,8 @@ import net.minecraft.sounds.SoundEvents;
 import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
+
+// TODO 重构
 
 public class NoteGridScreen extends Screen implements NoteGridIteratorListener {
     private static final int PAPER_COLOR = 0xFFFDF7EA;

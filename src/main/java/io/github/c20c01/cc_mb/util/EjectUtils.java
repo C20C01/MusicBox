@@ -17,7 +17,7 @@ public class EjectUtils {
      * @param blockPos           the position where the item is ejected from.
      * @param containerDirection the direction to eject to the container, relative to the block position.
      * @param worldDirection     the direction to eject to the world, relative to the block position.
-     * @param itemStack          the item stack to be ejected.
+     * @param itemStack          the item stack to be ejected, should not be empty.
      */
     public static void eject(Level level, BlockPos blockPos, Direction containerDirection, Direction worldDirection, ItemStack itemStack) {
         if (!tryToContainer(level, blockPos, containerDirection, itemStack)) {
@@ -28,6 +28,7 @@ public class EjectUtils {
     /**
      * @param blockPos  the position where the item is ejected from.
      * @param direction the direction to eject to, relative to the block position.
+     * @param itemStack the item stack to be ejected, should not be empty.
      * @return true if the item is successfully ejected to the container, false otherwise.
      */
     public static boolean tryToContainer(Level level, BlockPos blockPos, Direction direction, ItemStack itemStack) {
@@ -48,6 +49,7 @@ public class EjectUtils {
     /**
      * @param blockPos  the position where the item is ejected from.
      * @param direction the direction to eject to, relative to the block position.
+     * @param itemStack the item stack to be ejected, should not be empty.
      */
     public static void toWorld(Level level, BlockPos blockPos, Direction direction, ItemStack itemStack) {
         Position position = blockPos.getCenter().relative(direction, 0.7D);

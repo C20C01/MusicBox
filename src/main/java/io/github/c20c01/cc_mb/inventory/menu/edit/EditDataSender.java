@@ -1,6 +1,6 @@
 package io.github.c20c01.cc_mb.inventory.menu.edit;
 
-import io.github.c20c01.cc_mb.client.GuiUtils;
+import io.github.c20c01.cc_mb.client.gui.GuiUtils;
 
 public class EditDataSender extends EditDataHandler {
     private final int containerId;

@@ -32,8 +32,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
@@ -42,7 +40,6 @@ import javax.annotation.Nullable;
 
 public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
-    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final MapCodec<MusicBoxBlock> CODEC = simpleCodec(MusicBoxBlock::new);
 
     public MusicBoxBlock(Properties properties) {
@@ -119,7 +116,7 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
             musicBox.cycleOctave(level, player);
             return;
         }
-        if (blockState.getValue(HAS_NOTE_GRID) && !blockState.getValue(MusicBoxBlock.POWERED)) {
+        if (blockState.getValue(HAS_NOTE_GRID) && !blockState.getValue(POWERED)) {
             musicBox.playNextBeat(level);
         }
     }

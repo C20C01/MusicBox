@@ -44,6 +44,8 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+// TODO 重构
+
 public class SoundShard extends Item {
     private static final int DEFAULT_COOL_DOWN = 55;
 
@@ -103,6 +105,9 @@ public class SoundShard extends Item {
         if (player.getAbilities().instabuild) {
             if (player.isSecondaryUseActive()) {
                 // creative mode only: shift to change the sound seed.
+                if (level.isClientSide()) {
+                    return InteractionResult.SUCCESS;
+                }
                 Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
                 if (newSeed != null) {
                     level.playSeededSound(player, player, info.get().soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);

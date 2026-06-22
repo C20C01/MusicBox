@@ -3,6 +3,7 @@ package io.github.c20c01.cc_mb.block.entity;
 import com.mojang.logging.LogUtils;
 import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.MusicBoxBlock;
+import io.github.c20c01.cc_mb.block.NoteGridBoxBlock;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.player.MusicBoxPlayer;
@@ -25,7 +26,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -73,11 +73,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     protected void saveAdditional(ValueOutput output) {
         player.saveAdditional(output);
         super.saveAdditional(output);
-    }
-
-    @Override
-    public boolean canTakeItem(Container target, int index, ItemStack itemStack) {
-        return target.hasAnyMatching(ItemStack::isEmpty) && !getBlockState().getValue(MusicBoxBlock.POWERED);
     }
 
     @Override
@@ -183,7 +178,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     public void onPageChanged(int pageNum) {
         // no need to sync if the page change is caused by next beat
-        if (getBlockState().getValue(MusicBoxBlock.POWERED)) syncPlayerData();
+        if (getBlockState().getValue(NoteGridBoxBlock.POWERED)) syncPlayerData();
     }
 
     @Override

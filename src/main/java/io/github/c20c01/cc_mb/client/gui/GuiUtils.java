@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.client;
+package io.github.c20c01.cc_mb.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;

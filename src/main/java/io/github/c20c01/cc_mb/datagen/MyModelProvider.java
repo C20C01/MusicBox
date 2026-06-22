@@ -1,7 +1,6 @@
 package io.github.c20c01.cc_mb.datagen;
 
 import io.github.c20c01.cc_mb.MusicBox;
-import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.NoteGridBoxBlock;
 import io.github.c20c01.cc_mb.block.SoundBoxBlock;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -56,7 +55,7 @@ public class MyModelProvider extends ModelProvider {
                         .createWithSuffix(block, loadedSuffix + poweredSuffix, blockModels.modelOutput));
         blockModels.blockStateOutput.accept(
                 MultiVariantGenerator.dispatch(block)
-                        .with(PropertyDispatch.initial(MusicBoxBlock.POWERED, NoteGridBoxBlock.HAS_NOTE_GRID)
+                        .with(PropertyDispatch.initial(NoteGridBoxBlock.POWERED, NoteGridBoxBlock.HAS_NOTE_GRID)
                                 .select(false, false, base)
                                 .select(true, false, powered)
                                 .select(false, true, loaded)

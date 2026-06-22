@@ -1,6 +1,5 @@
 package io.github.c20c01.cc_mb.client.gui;
 
-import io.github.c20c01.cc_mb.client.GuiUtils;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;

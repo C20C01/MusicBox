@@ -36,9 +36,12 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
      */
     public abstract byte getMinNote();
 
+    /**
+     * Eject the note grid item when finished.
+     *
+     * @param noteGrid should not be empty.
+     */
     public abstract void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid);
-
-    public abstract boolean canTakeItem(Container target, int index, ItemStack itemStack);
 
     @Override
     protected void loadAdditional(ValueInput input) {
@@ -82,6 +85,11 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
     }
 
     @Override
+    public boolean canTakeItem(Container target, int index, ItemStack itemStack) {
+        return target.hasAnyMatching(ItemStack::isEmpty) && !getBlockState().getValue(NoteGridBoxBlock.POWERED);
+    }
+
+    @Override
     @Nullable
     public NoteGridData getData() {
         return data;
@@ -117,6 +125,11 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
 
     @Override
     public void onFinish() {
-        if (level instanceof ServerLevel) ejectNoteGrid(level, worldPosition, getBlockState(), removeItem());
+        if (level instanceof ServerLevel) {
+            ItemStack noteGrid = removeItem();
+            if (!noteGrid.isEmpty()) {
+                ejectNoteGrid(level, worldPosition, getBlockState(), noteGrid);
+            }
+        }
     }
 }

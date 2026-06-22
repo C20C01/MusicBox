@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,8 +63,8 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
      * <li>1: jump to the next beat without punching</li>
      * <li>2-15: jump to the next beat and punch with the note of power-2</li>
      */
-    public void trigger(byte power) {
-        this.power = power;
+    public void trigger(int power) {
+        this.power = (byte) power;
         iterator.nextBeat();
     }
 
@@ -96,11 +95,5 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid) {
         EjectUtils.eject(level, blockPos, Direction.UP, Direction.UP, noteGrid);
-    }
-
-    @Override
-    public boolean canTakeItem(Container target, int index, ItemStack itemStack) {
-        // TODO 能不能设计些机制让它能被拿走？
-        return false;
     }
 }
