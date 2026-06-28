@@ -100,31 +100,18 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
     }
 
     @Override
-    public int getDataSize() {
-        return data == null ? 0 : data.size();
-    }
-
-    @Override
-    public Beat getBeat(int pageNum, int beatNum) {
-        if (data == null || data.size() <= pageNum) {
-            return Beat.EMPTY;
-        }
-        return data.getPage(pageNum).getBeat(beatNum);
-    }
-
-    @Override
     public boolean onBeat(int pageNum, int beatNum, Beat beat) {
         setChanged();
         return true;
     }
 
     @Override
-    public void onPageChanged(int pageNum) {
+    public void onPageChanged() {
         // do nothing by default
     }
 
     @Override
-    public void onFinish() {
+    public void onFinished() {
         if (level instanceof ServerLevel) {
             ItemStack noteGrid = removeItem();
             if (!noteGrid.isEmpty()) {

@@ -43,7 +43,7 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     public void setItem(ItemStack itemStack) {
         super.setItem(itemStack);
-        if (getData() == null) iterator.reset();
+        if (!hasData()) iterator.reset();
     }
 
     @Override
@@ -71,16 +71,8 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     public boolean onBeat(int pageNum, int beatNum, Beat beat) {
         if (power > 1) {
-            NoteGridData data = getData();
-            if (data != null) {
-                byte note = (byte) (power - 2);// [0, 13]
-                NoteGridData edited = data.withNoteChanged(pageNum, beatNum, note, true);
-                if (edited != null) {
-                    setData(edited);
-                    if (level != null) {
-                        level.playSound(null, worldPosition, SoundEvents.BOOK_PUT, SoundSource.BLOCKS);
-                    }
-                }
+            if (editNote(pageNum, beatNum, (byte) (power - 2), true) && level != null) {
+                level.playSound(null, worldPosition, SoundEvents.BOOK_PUT, SoundSource.BLOCKS);
             }
             power = 1;// not necessary, just for clarity
         }

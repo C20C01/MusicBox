@@ -50,7 +50,7 @@ public class PuncherBoxBlock extends Block implements EntityBlock, NoteGridBoxBl
         if (blockState.getValue(POWERED) == shouldBePowered) {
             // get s rise signal that only holds for one tick
             if (!shouldBePowered && !puncherBox.isEmpty()) {
-                puncherBox.onFinish();
+                puncherBox.onFinished();
             }
         } else {
             if (shouldBePowered && !puncherBox.isEmpty()) {

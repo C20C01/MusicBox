@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 public final class Beat {
     public static final Beat EMPTY = new Beat();
+    public static final byte NOTES_SIZE = 25;
     private final ByteList notes;
     private byte minNote = Byte.MAX_VALUE;
     private boolean cow = true;
@@ -83,7 +84,7 @@ public final class Beat {
     }
 
     public static boolean isValidNote(byte note) {
-        return note <= 24 && note >= 0;
+        return note < NOTES_SIZE && note >= 0;
     }
 
     public ByteList getAddPreviewNotes(byte noteToAdd) {

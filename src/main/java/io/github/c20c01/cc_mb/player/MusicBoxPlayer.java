@@ -11,10 +11,12 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public class MusicBoxPlayer implements NoteGridIteratorListener {
-    public final NoteGridTicker ticker;
-    public final SpeakerConfig config;
+import javax.annotation.Nullable;
+import java.util.Objects;
 
+public class MusicBoxPlayer implements NoteGridIteratorListener {
+    private final NoteGridTicker ticker;
+    private final SpeakerConfig config;
     private final NoteGridIteratorListener listener;
     private final BlockPos blockPos;
 
@@ -28,10 +30,8 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
     }
 
     public void tick(Level level) {
-        if (ticker.dataHolder.getData() != null) {
-            this.level = level;
-            ticker.tick();
-        }
+        this.level = level;
+        ticker.tick();
     }
 
     public void nextBeat(Level level) {
@@ -39,9 +39,52 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
         ticker.nextBeat();
     }
 
+    public void reset() {
+        ticker.reset();
+    }
+
+    public byte getMinNote() {
+        return ticker.getMinNote();
+    }
+
+    public byte getTickPerBeat() {
+        return ticker.tickPerBeat;
+    }
+
+    public boolean tryToSetTickPerBeat(byte tickPerBeat) {
+        if (ticker.tickPerBeat != tickPerBeat) {
+            ticker.setTickPerBeat(tickPerBeat);
+            return true;
+        }
+        return false;
+    }
+
+    public byte cycleOctave(boolean decrease) {
+        byte currentOctave = config.getOctave();
+        byte newOctave;
+        if (decrease) {
+            if (currentOctave <= Octave.MIN) newOctave = Octave.MAX;
+            else newOctave = (byte) (currentOctave - 1);
+        } else {
+            if (currentOctave >= Octave.MAX) newOctave = Octave.MIN;
+            else newOctave = (byte) (currentOctave + 1);
+        }
+        config.setOctave(newOctave);
+        return newOctave;
+    }
+
+    public boolean tryToUpdateInstrument(@Nullable Identifier soundLocation, @Nullable Long soundSeed) {
+        if (!Objects.equals(soundLocation, config.getSoundLocation()) || !Objects.equals(soundSeed, config.getSeed())) {
+            config.setSoundLocation(soundLocation);
+            config.setNullableSeed(soundSeed);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean onBeat(int pageNum, int beatNum, Beat beat) {
-        listener.onBeat(pageNum, beatNum, beat); // always return true
+        listener.onBeat(pageNum, beatNum, beat);// always return true
 
         if (beat.isEmpty() || config.isSilent()) return true;
         level.gameEvent(null, GameEvent.NOTE_BLOCK_PLAY, blockPos);
@@ -53,15 +96,16 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
     }
 
     @Override
-    public void onPageChanged(int pageNum) {
-        listener.onPageChanged(pageNum);
+    public void onPageChanged() {
+        listener.onPageChanged();
     }
 
     @Override
-    public void onFinish() {
-        listener.onFinish();
+    public void onFinished() {
+        listener.onFinished();
     }
 
+    // region serialization
     public void loadAdditional(ValueInput input) {
         ticker.loadAdditional(input);
         config.setOctave(input.getByteOr("octave", config.getOctave()));
@@ -96,11 +140,12 @@ public class MusicBoxPlayer implements NoteGridIteratorListener {
 
     public void saveSync(ValueOutput output) {
         output.store("byte", Codec.list(Codec.BYTE), ByteList.of(
-                ticker.getTickPerBeat(),
+                ticker.tickPerBeat,
                 ticker.tickSinceLastBeat,
                 ticker.beatNum,
                 ticker.pageNum,
                 config.getOctave()
         ));
     }
+    // endregion
 }

@@ -1,9 +1,11 @@
 package io.github.c20c01.cc_mb.client.gui;
 
 import io.github.c20c01.cc_mb.MusicBox;
+import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.inventory.menu.MenuChangedListener;
 import io.github.c20c01.cc_mb.inventory.menu.MenuMode;
 import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
-import net.minecraft.client.Minecraft;
+import io.github.c20c01.cc_mb.player.NoteGridDataHolder;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -12,120 +14,122 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> {
-    protected static final Identifier GUI_BACKGROUND = Identifier.fromNamespaceAndPath(MusicBox.ID, "textures/gui/perforation_table_screen.png");
-    protected NoteGridScreen noteGridScreen;
-    protected byte currentPage = 0;
-    private PageButton backButton;
-    private PageButton forwardButton;
-    private NoteGridWidget gridOnTableWidget;
+public class PerforationTableScreen extends AbstractContainerScreen<PerforationTableMenu> implements NoteGridDataHolder, MenuChangedListener, EditScreenCloseListener {
+    protected static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(MusicBox.ID, "textures/gui/perforation_table_screen.png");
+
+    protected PageButton forwardButton, backButton;
+    protected NoteGridWidget noteGridWidget;
+
+    @Nullable
+    protected NoteGridData mainData, helpData;
+    protected MenuMode mode = MenuMode.EMPTY;
+    protected int pageNum = 0;
+
+    private MenuModeChangedListener listener;
 
     public PerforationTableScreen(PerforationTableMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
-        menu.setItemChangedCallback(this::onItemChanged);
+        menu.setListener(this);
+    }
+
+    @Override
+    public void onMenuItemChanged(@Nullable NoteGridData mainData, @Nullable NoteGridData helpData, MenuMode mode) {
+        this.mainData = mainData;
+        this.helpData = helpData;
+        this.pageNum = mainData == null ? 0 : Math.min(pageNum, mainData.size() - 1);
+        boolean modeChanged = mode != this.mode;
+        this.mode = mode;
+        updateWidgets();
+        if (modeChanged && listener != null) listener.onMenuModeChanged(mode);
+    }
+
+    @Override
+    public void onEditScreenClose(NoteGridData mainData, int pageNum) {
+        this.mainData = mainData;
+        this.pageNum = pageNum;
+        setListener(null);
+        updateWidgets();
+    }
+
+    public void setListener(MenuModeChangedListener listener) {
+        this.listener = listener;
+    }
+
+    private void onClick() {
+        switch (mode) {
+            case PUNCH, CHECK, FIX -> NoteGridEditScreen.openWithPerforationTable(this);
+            case CONNECT -> GuiUtils.sendCodeToMenu(menu.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
+            case CUT -> {
+                if (pageNum < getDataSize() - 1) GuiUtils.sendCodeToMenu(menu.containerId, (byte) pageNum);
+            }
+        }
     }
 
     @Override
     protected void init() {
         super.init();
-        int top = this.topPos + 57;
-        this.backButton = this.addRenderableWidget(new PageButton(this.leftPos + 57, top, false, (_) -> pageBack(), true));
-        this.forwardButton = this.addRenderableWidget(new PageButton(this.leftPos + 145, top, true, (_) -> pageForward(), true));
-        this.gridOnTableWidget = this.addRenderableWidget(new NoteGridWidget(this.leftPos + 79, this.topPos + 15, this));
-        updateWidget();
+        final int pageButtonY = topPos + 57;
+
+        forwardButton = this.addRenderableWidget(new PageButton(leftPos + 145, pageButtonY, true, (_) -> pageForward(), true));
+        backButton = this.addRenderableWidget(new PageButton(leftPos + 57, pageButtonY, false, (_) -> pageBack(), true));
+        noteGridWidget = this.addRenderableWidget(new NoteGridWidget(leftPos + 79, topPos + 15, this::onClick));
+
+        updateWidgets();
     }
 
     @Override
-    public void extractRenderState(@Nonnull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
-        if (Minecraft.getInstance().screen == this) {
-            super.extractRenderState(guiGraphics, mouseX, mouseY, a);
-            this.extractTooltip(guiGraphics, mouseX, mouseY);
-        }
-    }
-
-    /**
-     * Called when the item in the {@link PerforationTableMenu} changes.
-     */
-    protected void onItemChanged() {
-        currentPage = 0;
-        updateWidget();
-        if (noteGridScreen != null && menu.getMode() != MenuMode.PUNCH && menu.getMode() != MenuMode.FIX) {
-            noteGridScreen.exitEditMode();
-        }
-    }
-
-    @Override
-    public void extractBackground(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
+    public void extractBackground(@Nonnull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
         super.extractBackground(guiGraphics, mouseX, mouseY, a);
-        int left = (this.width - this.imageWidth) / 2;
-        int up = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_BACKGROUND, left, up, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
     }
 
-    protected void openNoteGridScreen() {
-        noteGridScreen = new NoteGridScreen(this);
-        Minecraft.getInstance().pushGuiLayer(noteGridScreen);
+    private void updateWidgets() {
+        updatePageButtons();
+        noteGridWidget.update(mainData, helpData, mode, pageNum);
     }
 
-    private void pageBack() {
-        if (currentPage > 0) {
-            --currentPage;
-        }
-        if (menu.getMode() == MenuMode.CUT && currentPage == getPageSize() - 2) {
-            gridOnTableWidget.setTooltip(Tooltip.create(menu.getMode().getTip()));
-        }
-        updateWidget();
-    }
+    public void updatePageButtons() {
+        final int pageFromOne = pageNum + 1;
+        final int pageCount = getDataSize();
 
-    private void pageForward() {
-        if (currentPage < getPageSize() - 1) {
-            ++this.currentPage;
+        boolean frontVisible = pageNum < pageCount - 1;
+        forwardButton.visible = frontVisible;
+        if (frontVisible) {
+            forwardButton.setTooltip(Tooltip.create(Component.literal(pageFromOne + " → " + (pageFromOne + 1) + " / " + pageCount)));
         }
-        if (menu.getMode() == MenuMode.CUT && currentPage == getPageSize() - 1) {
-            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(MusicBox.TEXT_CANNOT_CUT)));
-        }
-        updateWidget();
-    }
 
-    private int getPageSize() {
-        switch (menu.getMode()) {
-            case PUNCH, CHECK, CUT -> {
-                return menu.getData() == null ? 0 : menu.getData().size();
-            }
-            case CONNECT -> {
-                return menu.getDisplayData() == null ? 0 : menu.getDisplayData().size();
-            }
-            default -> {
-                return 0;
-            }
+        boolean backVisible = pageNum > 0;
+        backButton.visible = backVisible;
+        if (backVisible) {
+            backButton.setTooltip(Tooltip.create(Component.literal((pageFromOne - 1) + " ← " + pageFromOne + " / " + pageCount)));
         }
     }
 
-    private void updateWidget() {
-        // page buttons
-        backButton.visible = currentPage > 0;
-        if (backButton.visible) {
-            backButton.setTooltip(Tooltip.create(Component.literal(currentPage + " ←")));
-        }
-        boolean hasNextPage = hasNextPage();
-        forwardButton.visible = hasNextPage;
-        if (hasNextPage) {
-            forwardButton.setTooltip(Tooltip.create(Component.literal("→ " + (currentPage + 2))));
-        }
-
-        // tooltip
-        if (menu.getMode() == MenuMode.CUT && !hasNextPage) {
-            gridOnTableWidget.setTooltip(Tooltip.create(Component.translatable(MusicBox.TEXT_CANNOT_CUT)));
-        } else {
-            gridOnTableWidget.setTooltip(Tooltip.create(menu.getMode().getTip()));
+    public void pageForward() {
+        if (pageNum < getDataSize() - 1) {
+            ++pageNum;
+            updateWidgets();
         }
     }
 
-    protected boolean hasNextPage() {
-        return currentPage < getPageSize() - 1;
+    public void pageBack() {
+        if (pageNum > 0) {
+            --pageNum;
+            updateWidgets();
+        }
+    }
+
+    @Override
+    public @Nullable NoteGridData getData() {
+        return mainData;
+    }
+
+    @Override
+    public void setData(@Nullable NoteGridData data) {
+        this.mainData = data;
     }
 }

@@ -15,6 +15,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.component.WritableBookContent;
@@ -61,6 +62,15 @@ public final class NoteGridData implements TooltipProvider {
         this.hashCode = data.hashCode;
         this.dirty = data.dirty;// will be dirty in other methods, so just copy it.
         this.cow = false;
+    }
+
+    @Nullable
+    public static NoteGridData ofItemStack(ItemStack itemStack) {
+        if (!itemStack.isEmpty()) {
+            if (itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) return ofNoteGrid(itemStack);
+            if (itemStack.is(Items.WRITABLE_BOOK)) return ofBook(itemStack);
+        }
+        return null;
     }
 
     public static NoteGridData ofBook(ItemStack book) {

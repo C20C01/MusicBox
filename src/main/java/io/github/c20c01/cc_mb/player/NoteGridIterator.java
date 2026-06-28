@@ -1,6 +1,7 @@
 package io.github.c20c01.cc_mb.player;
 
 import io.github.c20c01.cc_mb.data.Beat;
+import io.github.c20c01.cc_mb.data.Page;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -17,7 +18,7 @@ public class NoteGridIterator {
     }
 
     public void nextBeat() {
-        if (beatNum >= 64 && nextPage()) return;
+        if (beatNum >= Page.BEATS_SIZE && nextPage()) return;
         currentBeat = dataHolder.getBeat(pageNum, beatNum);
         if (listener.onBeat(pageNum, beatNum, currentBeat)) beatNum++;
     }
@@ -25,11 +26,11 @@ public class NoteGridIterator {
     private boolean nextPage() {
         beatNum = 0;
         if (++pageNum >= dataHolder.getDataSize()) {
-            listener.onFinish();
             reset();
+            listener.onFinished();
             return true;
         }
-        listener.onPageChanged(pageNum);
+        listener.onPageChanged();
         return false;
     }
 

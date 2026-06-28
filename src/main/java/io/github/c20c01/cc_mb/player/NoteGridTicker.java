@@ -11,10 +11,6 @@ public class NoteGridTicker extends NoteGridIterator {
         super(dataHolder, listener);
     }
 
-    public byte getTickPerBeat() {
-        return tickPerBeat;
-    }
-
     public void setTickPerBeat(int tickPerBeat) {
         this.tickPerBeat = TickPerBeat.clamp(tickPerBeat);
     }

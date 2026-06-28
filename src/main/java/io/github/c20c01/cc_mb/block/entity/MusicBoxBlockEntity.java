@@ -7,9 +7,6 @@ import io.github.c20c01.cc_mb.block.NoteGridBoxBlock;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.player.MusicBoxPlayer;
-import io.github.c20c01.cc_mb.player.NoteGridTicker;
-import io.github.c20c01.cc_mb.player.Octave;
-import io.github.c20c01.cc_mb.player.SpeakerConfig;
 import io.github.c20c01.cc_mb.util.EjectUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.*;
@@ -28,7 +25,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,7 +35,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -53,13 +48,13 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     public static void tick(Level level, BlockPos ignoredBlockPos, BlockState ignoredBlockState, MusicBoxBlockEntity musicBox) {
-        musicBox.player.tick(level);
+        if (musicBox.hasData()) musicBox.player.tick(level);
     }
 
     @Override
     public void setItem(ItemStack itemStack) {
         super.setItem(itemStack);
-        if (getData() == null) player.ticker.reset();
+        if (!hasData()) player.reset();
         syncPlayerData();
     }
 
@@ -77,7 +72,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     @Override
     public byte getMinNote() {
-        return player.ticker.getMinNote();
+        return player.getMinNote();
     }
 
     @Override
@@ -102,49 +97,22 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     private void updateInstrument(@Nullable Identifier soundLocation, @Nullable Long soundSeed) {
-        SpeakerConfig config = player.config;
-        if (!Objects.equals(soundLocation, config.getSoundLocation()) || !Objects.equals(soundSeed, config.getSeed())) {
-            config.setSoundLocation(soundLocation);
-            config.setNullableSeed(soundSeed);
-            syncSoundData();
-        }
+        if (player.tryToUpdateInstrument(soundLocation, soundSeed)) syncSoundData();
     }
 
     public byte getTickPerBeat() {
-        return player.ticker.getTickPerBeat();
+        return player.getTickPerBeat();
     }
 
     public void setTickPerBeat(byte tickPerBeat) {
-        NoteGridTicker ticker = player.ticker;
-        if (ticker.getTickPerBeat() != tickPerBeat) {
-            ticker.setTickPerBeat(tickPerBeat);
-            syncPlayerData();
-        }
+        if (player.tryToSetTickPerBeat(tickPerBeat)) syncPlayerData();
     }
 
     public void cycleOctave(Level level, Player player) {
-        int next;
-        if (player.isSecondaryUseActive()) {
-            // decrease octave
-            next = getOctave() > Octave.MIN ? getOctave() - 1 : Octave.MAX;
-        } else {
-            // increase octave
-            next = getOctave() < Octave.MAX ? getOctave() + 1 : Octave.MIN;
-        }
-        setOctave((byte) next);
+        byte newOctave = this.player.cycleOctave(player.isSecondaryUseActive());
+        syncPlayerData();
         level.playSound(null, worldPosition, SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS);
-        player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_OCTAVE).append(String.valueOf(next)).withStyle(ChatFormatting.DARK_AQUA));
-    }
-
-    public byte getOctave() {
-        return player.config.getOctave();
-    }
-
-    private void setOctave(byte octave) {
-        if (player.config.getOctave() != octave) {
-            player.config.setOctave(octave);
-            syncPlayerData();
-        }
+        player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_OCTAVE).append(String.valueOf(newOctave)).withStyle(ChatFormatting.DARK_AQUA));
     }
 
     public void playNextBeat(Level level) {
@@ -161,12 +129,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
      */
     @Nullable
     public ItemStack createNoteGridMerged(ItemStack other) {
-        NoteGridData otherData = null;
-        if (other.is(MusicBox.NOTE_GRID_ITEM.get())) {
-            otherData = NoteGridData.ofNoteGrid(other);
-        } else if (other.is(Items.WRITABLE_BOOK)) {
-            otherData = NoteGridData.ofBook(other);
-        }
+        NoteGridData otherData = NoteGridData.ofItemStack(other);
         if (otherData == null) return null;
 
         ItemStack noteGrid = getItem().copy();
@@ -176,7 +139,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     @Override
-    public void onPageChanged(int pageNum) {
+    public void onPageChanged() {
         // no need to sync if the page change is caused by next beat
         if (getBlockState().getValue(NoteGridBoxBlock.POWERED)) syncPlayerData();
     }
@@ -207,7 +170,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
                     NoteGridDataManager.getInstance().getNoteGridData(hash, getBlockPos(), this::setData);
                 },
                 () -> {
-                    player.ticker.reset();
+                    player.reset();
                     setData(null);
                 }
         );

@@ -11,10 +11,7 @@ public interface NoteGridIteratorListener {
      */
     boolean onBeat(int pageNum, int beatNum, Beat beat);
 
-    /**
-     * @param pageNum the new page number.
-     */
-    void onPageChanged(int pageNum);
+    void onPageChanged();
 
-    void onFinish();
+    void onFinished();
 }

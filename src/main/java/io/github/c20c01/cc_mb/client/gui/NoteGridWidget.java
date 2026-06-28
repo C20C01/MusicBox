@@ -1,11 +1,13 @@
 package io.github.c20c01.cc_mb.client.gui;
 
+import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
-import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
+import io.github.c20c01.cc_mb.inventory.menu.MenuMode;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -16,74 +18,86 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * The widget that displays the note grid, used in the {@link PerforationTableScreen screen}.
- * And the {@link #onClick(MouseButtonEvent, boolean) button} to trigger note grid handling.
+ * The widget that displays the note grid and trigger note grid handling, used in the {@link io.github.c20c01.cc_mb.client.gui.PerforationTableScreen PerforationTableScreen}.
  */
 public class NoteGridWidget extends AbstractWidget {
-    public static final int WIDTH = 68;
-    public static final int HEIGHT = 53;
-    private final PerforationTableScreen screen;
-    private final PerforationTableMenu menu;
+    private static final Component CANNOT_CUT = Component.translatable(MusicBox.TEXT_CANNOT_CUT);
+    private static final int WIDTH = 68;
+    private static final int HEIGHT = 53;
 
-    public NoteGridWidget(int x, int y, PerforationTableScreen screen) {
+    private final Runnable onClick;
+
+    @Nullable
+    private Page mainPage, helpPage;
+    private LineType lineType = LineType.NO_LINE;
+
+    public NoteGridWidget(int x, int y, Runnable onClick) {
         super(x, y, WIDTH, HEIGHT, Component.empty());
-        this.screen = screen;
-        this.menu = screen.getMenu();
+        this.onClick = onClick;
     }
 
-    @Override
-    protected void extractWidgetRenderState(@NonNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
-        switch (menu.getMode()) {
-            case PUNCH, CHECK, FIX -> renderPunch(guiGraphics, screen.currentPage, menu.getData(), menu.getHelpData());
-            case CONNECT -> renderConnect(guiGraphics, screen.currentPage, menu.getDisplayData());
-            case CUT -> renderCut(guiGraphics, screen.currentPage, screen.hasNextPage(), menu.getData());
-        }
-    }
-
-    private void renderBg(GuiGraphicsExtractor guiGraphics) {
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PerforationTableScreen.GUI_BACKGROUND, getX(), getY(), 0, 168, WIDTH, HEIGHT, 256, 256);
-    }
-
-    private void renderOneBeat(GuiGraphicsExtractor guiGraphics, Page page, int beatNum, int color) {
-        int x = getX() + 2 + beatNum;
-        int baseY = getY() + 50;
-        ByteList notes = page.getBeat(beatNum).getNotes();
-        for (int i = 0; i < notes.size(); i++) {
-            int y = baseY - notes.getByte(i) * 2;
-            guiGraphics.fill(x, y, x + 1, y + 1, color);
-        }
-    }
-
-    private void renderPunch(GuiGraphicsExtractor guiGraphics, int pageNum, NoteGridData data, @Nullable NoteGridData helpData) {
-        renderBg(guiGraphics);
-        Page page = data.getPage(pageNum);
-        for (int b = 0; b < Page.BEATS_SIZE; b++) {
-            renderOneBeat(guiGraphics, page, b, GuiUtils.BLACK);
-        }
-        if (helpData != null && helpData.size() > pageNum) {
-            Page helpPage = helpData.getPage(pageNum);
-            for (int b = 0; b < Page.BEATS_SIZE; b++) {
-                renderOneBeat(guiGraphics, helpPage, b, GuiUtils.HELP_NOTE_COLOR);
+    public void update(@Nullable NoteGridData mainData, @Nullable NoteGridData helpData, MenuMode mode, int pageNum) {
+        switch (mode) {
+            case PUNCH, CHECK, FIX -> {
+                assert mainData != null;
+                mainPage = mainData.getPage(pageNum);
+                helpPage = helpData != null && helpData.size() > pageNum ? helpData.getPage(pageNum) : null;
+                lineType = LineType.NO_LINE;
+                setTooltip(mode.message);
+            }
+            case CONNECT -> {
+                assert mainData != null && helpData != null;
+                mainPage = mainData.getPage(pageNum);
+                helpPage = null;
+                lineType = pageNum == mainData.size() - helpData.size() - 1 ? LineType.CONNECT_LINE : LineType.NO_LINE;
+                setTooltip(mode.message);
+            }
+            case CUT -> {
+                assert mainData != null;
+                mainPage = mainData.getPage(pageNum);
+                helpPage = null;
+                boolean notLastPage = pageNum < mainData.size() - 1;
+                lineType = notLastPage ? LineType.CUT_LINE : LineType.NO_LINE;
+                setTooltip(notLastPage ? mode.message : CANNOT_CUT);
+            }
+            default -> {
+                mainPage = null;
+                helpPage = null;
+                lineType = LineType.NO_LINE;
+                setTooltip(mode.message);
             }
         }
     }
 
-    private void renderConnect(GuiGraphicsExtractor guiGraphics, int pageNum, NoteGridData displayData) {
-        renderBg(guiGraphics);
-        Page page = displayData.getPage(pageNum);
-        for (int b = 0; b < Page.BEATS_SIZE; b++) {
-            renderOneBeat(guiGraphics, page, b, GuiUtils.BLACK);
+    private void setTooltip(Component message) {
+        setTooltip(Tooltip.create(message));
+    }
+
+    protected void renderNotes(GuiGraphicsExtractor graphics, ByteList notes, int noteLeft, int color) {
+        final int gridBottom = getY() + 50;
+        for (int i = 0; i < notes.size(); i++) {
+            final int noteTop = gridBottom - 2 * notes.getByte(i);
+            graphics.fill(noteLeft, noteTop, noteLeft + 1, noteTop + 1, color);
         }
     }
 
-    private void renderCut(GuiGraphicsExtractor guiGraphics, int pageNum, boolean hasNextPage, NoteGridData data) {
-        renderBg(guiGraphics);
-        Page page = data.getPage(pageNum);
-        for (int b = 0; b < Page.BEATS_SIZE; b++) {
-            renderOneBeat(guiGraphics, page, b, GuiUtils.BLACK);
+    @Override
+    protected void extractWidgetRenderState(@Nonnull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float a) {
+        if (mainPage == null) return;
+
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PerforationTableScreen.BACKGROUND, getX(), getY(), 0, 168, WIDTH, HEIGHT, 256, 256);
+
+        for (int x = 0; x < Page.BEATS_SIZE; x++) {
+            final int noteLeft = getX() + 2 + x;
+            if (helpPage != null) {
+                renderNotes(guiGraphics, helpPage.getBeat(x).getNotes(), noteLeft, GuiUtils.HELP_NOTE_COLOR);
+            }
+            renderNotes(guiGraphics, mainPage.getBeat(x).getNotes(), noteLeft, GuiUtils.BLACK);
         }
-        if (hasNextPage) {
-            guiGraphics.verticalLine(getX() + WIDTH - 1, getY() - 1, getY() + HEIGHT, 0xFFCC2001);
+
+        if (lineType != LineType.NO_LINE) {
+            final int cutLineRight = getX() + WIDTH;
+            guiGraphics.fill(cutLineRight - 1, getY(), cutLineRight, getY() + HEIGHT, lineType.color);
         }
     }
 
@@ -95,14 +109,18 @@ public class NoteGridWidget extends AbstractWidget {
     @Override
     public void onClick(@NonNull MouseButtonEvent event, boolean doubleClick) {
         super.onClick(event, doubleClick);
-        switch (menu.getMode()) {
-            case PUNCH, CHECK, FIX -> screen.openNoteGridScreen();
-            case CONNECT -> GuiUtils.sendCodeToMenu(menu.containerId, PerforationTableMenu.CODE_CONNECT_NOTE_GRID);
-            case CUT -> {
-                if (screen.hasNextPage()) {
-                    GuiUtils.sendCodeToMenu(menu.containerId, screen.currentPage);
-                }
-            }
+        onClick.run();
+    }
+
+    private enum LineType {
+        NO_LINE(0),
+        CUT_LINE(0xFFCC2001),
+        CONNECT_LINE(0xFF01CC20);
+
+        private final int color;
+
+        LineType(int color) {
+            this.color = color;
         }
     }
 }

@@ -60,9 +60,7 @@ public class Awl extends Item {
     @Override
     public boolean canDestroyBlock(ItemStack stack, BlockState state, Level level, BlockPos blockPos, LivingEntity entity) {
         if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity musicBox && entity instanceof Player player && player.getAbilities().instabuild) {
-            if (!level.isClientSide()) {
-                musicBox.cycleOctave(level, player);
-            }
+            if (!level.isClientSide()) musicBox.cycleOctave(level, player);
             return false;
         }
         return super.canDestroyBlock(stack, state, level, blockPos, entity);

@@ -136,7 +136,7 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
                 return takeOutNoteGrid(level, musicBox, player.getInventory());
             }
             if (!blockState.getValue(POWERED)) {
-                if (player.getAbilities().instabuild && itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(MusicBox.NOTE_GRID_ITEM.get())) {
+                if (player.getAbilities().instabuild && (itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(MusicBox.NOTE_GRID_ITEM.get()))) {
                     return createNoteGridMerged(level, blockPos, blockState, itemStack, musicBox);
                 }
                 return playNextBeat(level, musicBox);
