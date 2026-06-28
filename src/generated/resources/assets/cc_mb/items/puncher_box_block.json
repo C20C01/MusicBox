@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "cc_mb:block/puncher_box_block"
+  }
+}

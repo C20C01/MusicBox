@@ -54,6 +54,8 @@ public class MusicBox {
     public static final String TEXT_CHANGE_OCTAVE = "text." + ID + ".change_octave";
     public static final String TEXT_SHARD_WITHOUT_SOUND = "text." + ID + ".shard_without_sound";
     public static final String TEXT_PAGE_SIZE = "text." + ID + ".page_size";
+    public static final String TEXT_PAGE_AND_BEAT = "text." + ID + ".page_and_beat";
+    public static final String TEXT_NO_NOTE_GRID = "text." + ID + ".no_note_grid";
 
     // text-sound
     public static final String TEXT_SOUND_BASS = "text." + ID + ".bass";

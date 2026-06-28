@@ -1,6 +1,7 @@
 {
   "block.cc_mb.music_box_block": "Music Box",
   "block.cc_mb.perforation_table_block": "Perforation Table",
+  "block.cc_mb.puncher_box_block": "Puncher Box",
   "block.cc_mb.sound_box_block": "Sound Box",
   "item.cc_mb.awl": "Awl",
   "item.cc_mb.note_grid": "Note Grid",
@@ -27,6 +28,8 @@
   "text.cc_mb.harp": "Harp",
   "text.cc_mb.hat": "Hat",
   "text.cc_mb.iron_xylophone": "Iron Xylophone",
+  "text.cc_mb.no_note_grid": "No Note Grid inside",
+  "text.cc_mb.page_and_beat": "Page: %1$s, Beat: %2$s",
   "text.cc_mb.page_size": "Page size: %1$s",
   "text.cc_mb.pling": "Pling",
   "text.cc_mb.punch": "Punch the Note Grid with Awl",

@@ -48,7 +48,7 @@ public class PuncherBoxBlock extends Block implements EntityBlock, NoteGridBoxBl
         boolean shouldBePowered = power > 0;
 
         if (blockState.getValue(POWERED) == shouldBePowered) {
-            // get s rise signal that only holds for one tick
+            // get a signal that only holds for one tick
             if (!shouldBePowered && !puncherBox.isEmpty()) {
                 puncherBox.onFinished();
             }
@@ -56,7 +56,7 @@ public class PuncherBoxBlock extends Block implements EntityBlock, NoteGridBoxBl
             if (shouldBePowered && !puncherBox.isEmpty()) {
                 puncherBox.trigger(power);
             }
-            level.setBlock(blockPos, blockState.setValue(POWERED, shouldBePowered), Block.UPDATE_ALL);
+            level.setBlock(blockPos, puncherBox.getBlockState().setValue(POWERED, shouldBePowered), Block.UPDATE_CLIENTS);
         }
     }
 

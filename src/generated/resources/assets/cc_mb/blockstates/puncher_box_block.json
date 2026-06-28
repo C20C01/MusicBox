@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "has_note_grid=false": {
+      "model": "cc_mb:block/puncher_box_block"
+    },
+    "has_note_grid=true": {
+      "model": "cc_mb:block/puncher_box_block_loaded"
+    }
+  }
+}

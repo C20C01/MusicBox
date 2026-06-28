@@ -41,6 +41,12 @@ public class MyRecipeProvider extends RecipeProvider {
                 .pattern("PPP").pattern("PNP").pattern("PPP")
                 .unlockedBy("has_note_grid", has(MusicBox.NOTE_GRID_ITEM.get()))
                 .save(output);
+        shaped(RecipeCategory.MISC, MusicBox.PUNCHER_BOX_BLOCK_ITEM.get(), 1)
+                .define('A', MusicBox.AWL_ITEM.get())
+                .define('P', ItemTags.PLANKS)
+                .pattern("PPP").pattern("PAP").pattern("PPP")
+                .unlockedBy("has_note_grid", has(MusicBox.NOTE_GRID_ITEM.get()))
+                .save(output);
         shaped(RecipeCategory.MISC, MusicBox.PERFORATION_TABLE_BLOCK_ITEM.get(), 1)
                 .define('N', MusicBox.NOTE_GRID_ITEM.get())
                 .define('P', ItemTags.PLANKS)

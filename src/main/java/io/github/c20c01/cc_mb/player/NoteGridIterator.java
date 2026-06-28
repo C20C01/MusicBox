@@ -38,6 +38,14 @@ public class NoteGridIterator {
         return currentBeat.getMinNote();
     }
 
+    public byte getPageNum() {
+        return pageNum;
+    }
+
+    public byte getBeatNum() {
+        return beatNum;
+    }
+
     public void reset() {
         pageNum = 0;
         beatNum = 0;

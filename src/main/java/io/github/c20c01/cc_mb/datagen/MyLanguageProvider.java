@@ -38,6 +38,11 @@ public class MyLanguageProvider extends LanguageProvider {
             case ZH_CN -> "八音盒";
             default -> throw new IllegalStateException();
         });
+        this.add(MusicBox.PUNCHER_BOX_BLOCK.get(), switch (this.locale) {
+            case EN_US -> "Puncher Box";
+            case ZH_CN -> "打孔盒";
+            default -> throw new IllegalStateException();
+        });
         this.add(MusicBox.PERFORATION_TABLE_BLOCK.get(), switch (this.locale) {
             case EN_US -> "Perforation Table";
             case ZH_CN -> "打孔台";
@@ -125,6 +130,17 @@ public class MyLanguageProvider extends LanguageProvider {
             case ZH_CN -> "页数: %1$s";
             default -> throw new IllegalStateException();
         });
+        this.add(MusicBox.TEXT_PAGE_AND_BEAT, switch (this.locale) {
+            case EN_US -> "Page: %1$s, Beat: %2$s";
+            case ZH_CN -> "第 %1$s 页，第 %2$s 拍";
+            default -> throw new IllegalStateException();
+        });
+        this.add(MusicBox.TEXT_NO_NOTE_GRID, switch (this.locale) {
+            case EN_US -> "No Note Grid inside";
+            case ZH_CN -> "没有纸带";
+            default -> throw new IllegalStateException();
+        });
+
 
         this.add(MusicBox.TEXT_SOUND_BASS, switch (this.locale) {
             case EN_US -> "Bass";

@@ -63,6 +63,26 @@ public class MyModelProvider extends ModelProvider {
                         .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
     }
 
+    private static void createPuncherBoxBlock(BlockModelGenerators blockModels, Block block) {
+        final String loadedSuffix = "_loaded";
+
+        MultiVariant base = plainVariant(
+                TexturedModel.CUBE_TOP
+                        .updateTexture(m -> m.put(TextureSlot.SIDE, TextureMapping.getBlockTexture(MusicBox.PERFORATION_TABLE_BLOCK.get(), "_side")))
+                        .create(block, blockModels.modelOutput));
+        MultiVariant loaded = plainVariant(
+                TexturedModel.CUBE_TOP
+                        .updateTexture(m -> m
+                                .put(TextureSlot.SIDE, TextureMapping.getBlockTexture(MusicBox.PERFORATION_TABLE_BLOCK.get(), "_side"))
+                                .put(TextureSlot.TOP, TextureMapping.getBlockTexture(block, "_top" + loadedSuffix)))
+                        .createWithSuffix(block, loadedSuffix, blockModels.modelOutput));
+        blockModels.blockStateOutput.accept(
+                MultiVariantGenerator.dispatch(block)
+                        .with(PropertyDispatch.initial(NoteGridBoxBlock.HAS_NOTE_GRID)
+                                .select(false, base)
+                                .select(true, loaded)));
+    }
+
     private static void createSoundBoxBlock(BlockModelGenerators blockModels, Block block) {
         final String loadedSuffix = "_loaded";
 
@@ -86,6 +106,7 @@ public class MyModelProvider extends ModelProvider {
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         createMusicBoxBlock(blockModels, MusicBox.MUSIC_BOX_BLOCK.get());
+        createPuncherBoxBlock(blockModels, MusicBox.PUNCHER_BOX_BLOCK.get());
         createSoundBoxBlock(blockModels, MusicBox.SOUND_BOX_BLOCK.get());
         blockModels.createTrivialBlock(MusicBox.PERFORATION_TABLE_BLOCK.get(), TexturedModel.CUBE_TOP);
 

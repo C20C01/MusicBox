@@ -1,6 +1,7 @@
 {
   "block.cc_mb.music_box_block": "八音盒",
   "block.cc_mb.perforation_table_block": "打孔台",
+  "block.cc_mb.puncher_box_block": "打孔盒",
   "block.cc_mb.sound_box_block": "声响盒",
   "item.cc_mb.awl": "锥子",
   "item.cc_mb.note_grid": "纸带",
@@ -27,6 +28,8 @@
   "text.cc_mb.harp": "竖琴",
   "text.cc_mb.hat": "击鼓沿",
   "text.cc_mb.iron_xylophone": "铁木琴（颤音琴）",
+  "text.cc_mb.no_note_grid": "没有纸带",
+  "text.cc_mb.page_and_beat": "第 %1$s 页，第 %2$s 拍",
   "text.cc_mb.page_size": "页数: %1$s",
   "text.cc_mb.pling": "扣弦（电钢琴）",
   "text.cc_mb.punch": "使用锥子为纸带打孔",

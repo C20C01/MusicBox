@@ -2,6 +2,7 @@ package io.github.c20c01.cc_mb.item;
 
 import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.MusicBoxBlockEntity;
+import io.github.c20c01.cc_mb.block.entity.PuncherBoxBlockEntity;
 import io.github.c20c01.cc_mb.player.TickPerBeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class Awl extends Item {
@@ -40,13 +42,23 @@ public class Awl extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        // check tick per beat
         Level level = context.getLevel();
-        if (level.getBlockEntity(context.getClickedPos()) instanceof MusicBoxBlockEntity musicBox) {
+        BlockEntity blockEntity = level.getBlockEntity(context.getClickedPos());
+        // check tick per beat
+        if (blockEntity instanceof MusicBoxBlockEntity musicBox) {
             Player player = context.getPlayer();
             if (player != null && !level.isClientSide()) {
                 String tickPerBeat = String.valueOf(musicBox.getTickPerBeat());
                 player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_TICK_PER_BEAT).append(tickPerBeat).withStyle(ChatFormatting.DARK_GREEN));
+                return InteractionResult.CONSUME;
+            }
+            return InteractionResult.SUCCESS;
+        }
+        // check puncher box state
+        if (blockEntity instanceof PuncherBoxBlockEntity puncherBox) {
+            Player player = context.getPlayer();
+            if (player != null && !level.isClientSide()) {
+                player.sendOverlayMessage(puncherBox.getCurrentStateMessage());
                 return InteractionResult.CONSUME;
             }
             return InteractionResult.SUCCESS;

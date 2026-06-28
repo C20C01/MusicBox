@@ -6,8 +6,10 @@ import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.player.NoteGridIterator;
 import io.github.c20c01.cc_mb.util.EjectUtils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
@@ -66,6 +68,12 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
     public void trigger(int power) {
         this.power = (byte) power;
         iterator.nextBeat();
+    }
+
+    public Component getCurrentStateMessage() {
+        return hasData()
+                ? Component.translatable(MusicBox.TEXT_PAGE_AND_BEAT, iterator.getPageNum() + 1, iterator.getBeatNum()).withStyle(ChatFormatting.DARK_GREEN)
+                : Component.translatable(MusicBox.TEXT_NO_NOTE_GRID).withStyle(ChatFormatting.RED);
     }
 
     @Override

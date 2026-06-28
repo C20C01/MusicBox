@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_top",
+  "textures": {
+    "side": "cc_mb:block/perforation_table_block_side",
+    "top": "cc_mb:block/puncher_box_block_top_loaded"
+  }
+}
