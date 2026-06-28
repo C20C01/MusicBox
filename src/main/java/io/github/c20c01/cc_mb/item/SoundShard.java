@@ -15,6 +15,7 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
@@ -245,10 +246,9 @@ public class SoundShard extends Item {
 
         @Override
         public void addToTooltip(TooltipContext context, Consumer<Component> tooltipAdder, TooltipFlag flag, DataComponentGetter componentGetter) {
-            ChatFormatting color = soundSeed.isPresent() ? ChatFormatting.DARK_GREEN : ChatFormatting.GOLD;
-            // Display the sound event that saved in the sound shard.
-            // Green for the fixed seed, yellow for the random seed.
-            tooltipAdder.accept(Listener.getSoundEventTitle(soundEvent.value().location()).withStyle(color));
+            MutableComponent message = Listener.getSoundEventTitle(soundEvent.value().location());
+            if (soundSeed.isEmpty()) message.append(" ⚄");
+            tooltipAdder.accept(message.withStyle(ChatFormatting.DARK_GREEN));
         }
     }
 }
