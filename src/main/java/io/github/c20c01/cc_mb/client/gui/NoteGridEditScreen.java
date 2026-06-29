@@ -5,7 +5,7 @@ import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.data.Page;
 import io.github.c20c01.cc_mb.inventory.menu.MenuMode;
 import io.github.c20c01.cc_mb.inventory.menu.PerforationTableMenu;
-import io.github.c20c01.cc_mb.inventory.menu.edit.EditDataSender;
+import io.github.c20c01.cc_mb.network.sync.edit.EditDataSender;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import net.minecraft.client.Minecraft;

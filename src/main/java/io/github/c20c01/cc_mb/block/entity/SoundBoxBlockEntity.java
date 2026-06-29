@@ -45,7 +45,7 @@ public class SoundBoxBlockEntity extends SingleItemContainerBlockEntityImpl {
                 // Change seed may not change the blockState and will not trigger music box to update instrument.
                 // So we need to manually update instrument of music box above if exists.
                 if (level.getBlockEntity(blockPos.above()) instanceof MusicBoxBlockEntity musicBox) {
-                    musicBox.updateInstrumentFromBelow(level, blockPos);
+                    musicBox.updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
                 }
                 return true;
             }
@@ -56,8 +56,9 @@ public class SoundBoxBlockEntity extends SingleItemContainerBlockEntityImpl {
     public void playSound(Level level, BlockPos blockPos) {
         if (soundEvent != null) {
             Vec3 pos = blockPos.getCenter();
-            if (!level.isClientSide())
+            if (!level.isClientSide()) {
                 MobListenAndActHelper.nearbyMobsListen(level, blockPos, soundEvent.value().location());
+            }
             level.gameEvent(null, GameEvent.INSTRUMENT_PLAY, pos);
             level.playSeededSound(null, pos.x, pos.y, pos.z, soundEvent, SoundSource.BLOCKS, 3.0F, 1.0F, soundSeed == null ? level.getRandom().nextLong() : soundSeed);
         }

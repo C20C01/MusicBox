@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.inventory.menu.edit;
+package io.github.c20c01.cc_mb.network.sync.edit;
 
 public class EditDataReceiver extends EditDataHandler {
     private final byte[] tempCode = new byte[2];// [page, beat] or [beat], mark is removed

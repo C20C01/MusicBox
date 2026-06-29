@@ -6,45 +6,47 @@ import io.github.c20c01.cc_mb.block.MusicBoxBlock;
 import io.github.c20c01.cc_mb.block.NoteGridBoxBlock;
 import io.github.c20c01.cc_mb.client.NoteGridDataManager;
 import io.github.c20c01.cc_mb.data.NoteGridData;
+import io.github.c20c01.cc_mb.network.sync.BlockEntityDataSyncer;
+import io.github.c20c01.cc_mb.network.sync.BlockEntitySyncDataType;
 import io.github.c20c01.cc_mb.player.MusicBoxPlayer;
 import io.github.c20c01.cc_mb.util.EjectUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.List;
 
 public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
     private final MusicBoxPlayer player;
+    private final MusicBoxBlockEntityDataSyncer syncer;
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(MusicBox.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState);
         this.player = new MusicBoxPlayer(this, this, worldPosition);// use worldPosition because the blockPos is mutable.
+        this.syncer = new MusicBoxBlockEntityDataSyncer();
     }
 
     public static void tick(Level level, BlockPos ignoredBlockPos, BlockState ignoredBlockState, MusicBoxBlockEntity musicBox) {
@@ -55,13 +57,14 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     public void setItem(ItemStack itemStack) {
         if (itemStack.isEmpty()) player.reset();
         super.setItem(itemStack);
-        syncPlayerData();
+        syncer.sync(this, MusicBoxBlockEntityDataSyncer.PLAYER_DATA);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         player.loadAdditional(input);
-        super.loadAdditional(input);// -> setItem() -> syncPlayerData() <- need player data loaded before syncing
+        syncer.markDirty(MusicBoxBlockEntityDataSyncer.SOUND_DATA);
+        super.loadAdditional(input);// -> setItem -> sync <- make player data ready and mark sound data dirty first
     }
 
     @Override
@@ -86,10 +89,9 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     /**
      * Update the instrument of the music box according to the block below it.
-     *
-     * @param below the position below the music box
      */
-    public void updateInstrumentFromBelow(Level level, BlockPos below) {
+    public void updateInstrumentFromBelow(LevelReader level, BlockPos musicBoxPos) {
+        BlockPos below = musicBoxPos.below();
         if (level.getBlockEntity(below) instanceof SoundBoxBlockEntity soundBox) {
             updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
         } else {
@@ -99,8 +101,13 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         }
     }
 
-    private void updateInstrument(@Nullable Identifier soundLocation, @Nullable Long soundSeed) {
-        if (player.tryToUpdateInstrument(soundLocation, soundSeed)) syncSoundData();
+    /**
+     * Update the instrument of the music box according to the given sound location and seed.
+     */
+    public void updateInstrument(@Nullable Identifier soundLocation, @Nullable Long soundSeed) {
+        if (player.tryToUpdateInstrument(soundLocation, soundSeed)) {
+            syncer.sync(this, MusicBoxBlockEntityDataSyncer.SOUND_DATA);
+        }
     }
 
     public byte getTickPerBeat() {
@@ -108,19 +115,21 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     public void setTickPerBeat(byte tickPerBeat) {
-        if (player.tryToSetTickPerBeat(tickPerBeat)) syncPlayerData();
+        if (player.tryToSetTickPerBeat(tickPerBeat)) {
+            syncer.sync(this, MusicBoxBlockEntityDataSyncer.PLAYER_DATA);
+        }
     }
 
     public void cycleOctave(Level level, Player player) {
         byte newOctave = this.player.cycleOctave(player.isSecondaryUseActive());
-        syncPlayerData();
+        syncer.sync(this, MusicBoxBlockEntityDataSyncer.PLAYER_DATA);
         level.playSound(null, worldPosition, SoundEvents.SPYGLASS_USE, SoundSource.PLAYERS);
         player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_CHANGE_OCTAVE).append(String.valueOf(newOctave)).withStyle(ChatFormatting.DARK_AQUA));
     }
 
     public void playNextBeat(Level level) {
         // sync before next beat to make sure the client play the same next beat as the server
-        syncNextBeat();
+        syncer.sync(this, MusicBoxBlockEntityDataSyncer.NEXT_BEAT);
         player.nextBeat(level);
     }
 
@@ -144,7 +153,9 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     public void onPageChanged() {
         // no need to sync if the page change is caused by next beat
-        if (getBlockState().getValue(NoteGridBoxBlock.POWERED)) syncPlayerData();
+        if (getBlockState().getValue(NoteGridBoxBlock.POWERED)) {
+            syncer.sync(this, MusicBoxBlockEntityDataSyncer.PLAYER_DATA);
+        }
     }
 
     @Override
@@ -157,8 +168,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         }
     }
 
-    // region sync data from server to client
-    private void savePlayerData(TagValueOutput output) {
+    private void savePlayerData(ValueOutput output) {
         NoteGridData data = getData();
         if (data != null) {
             player.saveSync(output);
@@ -167,85 +177,83 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     private void loadPlayerData(ValueInput input) {
-        input.getInt("hash").ifPresentOrElse(
-                hash -> {
-                    player.loadSync(input);
-                    NoteGridDataManager.getInstance().getNoteGridData(hash, getBlockPos(), this::setData);
-                },
-                () -> {
-                    player.reset();
-                    setData(null);
-                }
-        );
-    }
-
-    private void syncPlayerData() {
-        syncToClient((registries) -> getUpdateTag(registries, output -> {
-            output.putByte("type", (byte) 1);
-            savePlayerData(output);
-        }));
-    }
-
-    private void syncSoundData() {
-        syncToClient((registries) -> getUpdateTag(registries, output -> {
-            output.putByte("type", (byte) 2);
-            player.saveSound(output);
-        }));
-    }
-
-    private void syncNextBeat() {
-        syncToClient((registries) -> getUpdateTag(registries, output -> {
-            output.putByte("type", (byte) 3);
-            player.saveSync(output);
-        }));
-    }
-
-    private void syncToClient(Function<RegistryAccess, CompoundTag> updateTagSaver) {
-        if (level instanceof ServerLevel serverLevel) {
-            Packet<?> packet = ClientboundBlockEntityDataPacket.create(this, (_, registries) -> updateTagSaver.apply(registries));
-            for (ServerPlayer player : serverLevel.getChunkSource().chunkMap.getPlayers(ChunkPos.containing(worldPosition), false)) {
-                player.connection.send(packet);
-            }
+        Integer hash = input.getInt("hash").orElse(null);
+        if (hash == null) {
+            player.reset();
+            setData(null);
+        } else {
+            player.loadSync(input);
+            NoteGridDataManager.getInstance().getNoteGridData(hash, getBlockPos(), this::setData);
         }
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return getUpdateTag(registries, output -> {
+        return BlockEntityDataSyncer.getUpdateTag(problemPath(), LOGGER, registries, output -> {
             savePlayerData(output);
             player.saveSound(output);
         });
     }
 
-    private CompoundTag getUpdateTag(HolderLookup.Provider registries, Consumer<TagValueOutput> tagWriter) {
-        CompoundTag tag;
-        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-            TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
-            tagWriter.accept(output);
-            tag = output.buildResult();
-        }
-        return tag;
+    @Override
+    public void handleUpdateTag(ValueInput input) {
+        loadPlayerData(input);
+        player.loadSound(input);
     }
 
     @Override
-    public void handleUpdateTag(ValueInput input) {
-        switch (input.getByteOr("type", (byte) 0)) {
-            case 1 -> loadPlayerData(input);
-            case 2 -> player.loadSound(input);
-            case 3 -> {
-                player.loadSync(input);
-                player.nextBeat(level);
-            }
-            default -> {
-                loadPlayerData(input);
-                player.loadSound(input);
-            }
-        }
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return syncer.getUpdatePacket(this, LOGGER);
     }
 
     @Override
     public void onDataPacket(Connection net, ValueInput input) {
-        handleUpdateTag(input);
+        syncer.handleUpdatePacket(this, input);
+    }
+
+    // region sync data from server to client
+    public static class MusicBoxBlockEntityDataSyncer extends BlockEntityDataSyncer<MusicBoxBlockEntity> {
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> PLAYER_DATA = new BlockEntitySyncDataType<>(0) {
+            @Override
+            public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
+                blockEntity.savePlayerData(output);
+            }
+
+            @Override
+            public void readData(MusicBoxBlockEntity blockEntity, ValueInput input) {
+                blockEntity.loadPlayerData(input);
+            }
+        };
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> SOUND_DATA = new BlockEntitySyncDataType<>(1) {
+            @Override
+            public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
+                blockEntity.player.saveSound(output);
+            }
+
+            @Override
+            public void readData(MusicBoxBlockEntity blockEntity, ValueInput input) {
+                blockEntity.player.loadSound(input);
+            }
+        };
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> NEXT_BEAT = new BlockEntitySyncDataType<>(2) {
+            @Override
+            public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
+                blockEntity.player.saveSync(output);
+            }
+
+            @Override
+            public void readData(MusicBoxBlockEntity blockEntity, ValueInput input) {
+                blockEntity.player.loadSync(input);
+                blockEntity.player.nextBeat(blockEntity.level);
+            }
+        };
+
+        public static final List<BlockEntitySyncDataType<MusicBoxBlockEntity>> ALL_TYPES = List.of(PLAYER_DATA, SOUND_DATA, NEXT_BEAT);
+
+        @Override
+        public List<BlockEntitySyncDataType<MusicBoxBlockEntity>> getAllTypes() {
+            return ALL_TYPES;
+        }
     }
     // endregion
 }

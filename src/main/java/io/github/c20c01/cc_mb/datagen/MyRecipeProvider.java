@@ -2,6 +2,7 @@ package io.github.c20c01.cc_mb.datagen;
 
 import io.github.c20c01.cc_mb.MusicBox;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -22,7 +23,7 @@ public class MyRecipeProvider extends RecipeProvider {
 
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent.Client event) {
-        var generator = event.getGenerator();
+        DataGenerator generator = event.getGenerator();
         generator.addProvider(true, new Runner(generator.getPackOutput(), event.getLookupProvider()));
     }
 

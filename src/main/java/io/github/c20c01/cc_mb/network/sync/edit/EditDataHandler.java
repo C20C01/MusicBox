@@ -1,4 +1,4 @@
-package io.github.c20c01.cc_mb.inventory.menu.edit;
+package io.github.c20c01.cc_mb.network.sync.edit;
 
 /**
  * The edit data is transmitted with several positive bytes.

@@ -3,7 +3,7 @@ package io.github.c20c01.cc_mb.inventory.menu;
 import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.data.NoteGridData;
 import io.github.c20c01.cc_mb.inventory.SlotBuilder;
-import io.github.c20c01.cc_mb.inventory.menu.edit.EditDataReceiver;
+import io.github.c20c01.cc_mb.network.sync.edit.EditDataReceiver;
 import io.github.c20c01.cc_mb.player.NoteGridDataHolder;
 import io.github.c20c01.cc_mb.util.NoteGridUtils;
 import net.minecraft.server.level.ServerLevel;

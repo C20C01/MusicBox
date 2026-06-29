@@ -2,7 +2,6 @@ package io.github.c20c01.cc_mb.block;
 
 import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.entity.SoundBoxBlockEntity;
-import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -27,8 +25,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-
-import javax.annotation.Nullable;
 
 public class SoundBoxBlock extends Block implements EntityBlock {
     public static final BooleanProperty HAS_SOUND_SHARD = BooleanProperty.create("has_sound_shard");
@@ -134,15 +130,5 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         }
 
         return super.useItemOn(itemStack, blockState, level, blockPos, player, hand, hitResult);
-    }
-
-    @Override
-    public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
-        super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
-        if (level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox) {
-            if (!soundBox.isEmpty()) {
-                BlockUtils.changeProperty(level, blockPos, blockState, HAS_SOUND_SHARD, true, UPDATE_CLIENTS);
-            }
-        }
     }
 }
