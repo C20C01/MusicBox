@@ -44,7 +44,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     public MusicBoxBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(MusicBox.MUSIC_BOX_BLOCK_ENTITY.get(), blockPos, blockState);
-        this.player = new MusicBoxPlayer(this, this, worldPosition);
+        this.player = new MusicBoxPlayer(this, this, worldPosition);// use worldPosition because the blockPos is mutable.
     }
 
     public static void tick(Level level, BlockPos ignoredBlockPos, BlockState ignoredBlockState, MusicBoxBlockEntity musicBox) {
@@ -54,7 +54,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     @Override
     public void setItem(ItemStack itemStack) {
         super.setItem(itemStack);
-        if (!hasData()) player.reset();
+        if (itemStack.isEmpty()) player.reset();
         syncPlayerData();
     }
 
@@ -77,8 +77,11 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     @Override
     public void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid) {
+        // back container -> front container -> front item drop
         Direction front = blockState.getValue(MusicBoxBlock.FACING);
-        EjectUtils.eject(level, blockPos, front.getOpposite(), front, noteGrid);
+        if (EjectUtils.tryToContainer(level, blockPos, front.getOpposite(), noteGrid)) return;
+        if (EjectUtils.tryToContainer(level, blockPos, front, noteGrid)) return;
+        EjectUtils.toWorld(level, blockPos, front, noteGrid);
     }
 
     /**
