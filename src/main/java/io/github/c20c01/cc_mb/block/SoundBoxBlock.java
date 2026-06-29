@@ -46,6 +46,31 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         return !level.getBlockState(blockPos.above()).is(MusicBox.MUSIC_BOX_BLOCK.get());
     }
 
+    private static void tryToPlaySound(Level level, BlockPos blockPos) {
+        if (!level.isClientSide() && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox) {
+            soundBox.playSound(level, blockPos);
+        }
+    }
+
+    private static InteractionResult tryToPlaySound(Level level, BlockPos blockPos, SoundBoxBlockEntity soundBox) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        soundBox.playSound(level, blockPos);
+        return InteractionResult.CONSUME;
+    }
+
+    private static InteractionResult tryToPutInSoundShard(Level level, BlockPos blockPos, Player player, SoundBoxBlockEntity soundBox, ItemStack soundShard) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        if (soundBox.canPlaceItem(soundShard)) {
+            soundBox.setItem(soundShard.copy());
+            soundBox.playSound(level, blockPos);
+            soundShard.shrink(1);// creative mode also need to shrink
+            return InteractionResult.CONSUME;
+        } else {
+            player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED));
+            return InteractionResult.SUCCESS;
+        }
+    }
+
     @Override
     public BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
         return new SoundBoxBlockEntity(blockPos, blockState);
@@ -61,19 +86,12 @@ public class SoundBoxBlock extends Block implements EntityBlock {
         return this.defaultBlockState().setValue(POWERED, context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
-    private void tryToPlaySound(Level level, BlockPos blockPos) {
-        if (!level.isClientSide() && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox) {
-            soundBox.playSound(level, blockPos);
-        }
-    }
-
     @Override
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
         if (state.getValue(HAS_SOUND_SHARD)
                 && neighbourState.getBlock() instanceof LightningRodBlock
                 && neighbourState.getValue(LightningRodBlock.POWERED)
-                && directionToNeighbour == neighbourState.getValue(DirectionalBlock.FACING)
-        ) {
+                && directionToNeighbour == neighbourState.getValue(DirectionalBlock.FACING)) {
             // Try to change sound seed when lightning rod that pointing this block is powered by lightning.
             if (SoundBoxBlockEntity.tryToChangeSoundSeed((Level) level, pos)) {
                 // Remove oxidation from copper blocks.
@@ -104,37 +122,14 @@ public class SoundBoxBlock extends Block implements EntityBlock {
 
         if (blockState.getValue(HAS_SOUND_SHARD)) {
             if (player.isSecondaryUseActive()) {
-                // take out sound shard
-                if (level.isClientSide()) {
-                    return InteractionResult.SUCCESS;
-                }
-                player.getInventory().add(soundBox.removeItem());
-                return InteractionResult.CONSUME;
+                return SingleItemContainerBlock.takeOutItem(level, soundBox, player.getInventory());
             }
             if (notUnderMusicBox(level, blockPos)) {
-                // play sound
-                if (level.isClientSide()) {
-                    return InteractionResult.SUCCESS;
-                }
-                tryToPlaySound(level, blockPos);
-                return InteractionResult.CONSUME;
+                return tryToPlaySound(level, blockPos, soundBox);
             }
         } else {
             if (itemStack.is(MusicBox.SOUND_SHARD_ITEM.get())) {
-                if (soundBox.canPlaceItem(itemStack)) {
-                    // put in sound shard
-                    if (level.isClientSide()) {
-                        return InteractionResult.SUCCESS;
-                    }
-                    soundBox.setItem(itemStack.copy());
-                    itemStack.shrink(1);// creative mode also need to shrink
-                    tryToPlaySound(level, blockPos);
-                    return InteractionResult.CONSUME;
-                } else {
-                    // show message
-                    player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_SHARD_WITHOUT_SOUND).withStyle(ChatFormatting.RED));
-                    return InteractionResult.SUCCESS;
-                }
+                return tryToPutInSoundShard(level, blockPos, player, soundBox, itemStack);
             }
         }
 

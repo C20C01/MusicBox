@@ -17,47 +17,31 @@ import javax.annotation.Nullable;
  */
 public class Listener implements SoundEventListener {
     private static final Listener LISTENER = new Listener();
-    private boolean listening = false;
-    private boolean shown = false;
-    private Identifier soundLocation = null;
+    private volatile boolean isListening = false;
+    private volatile Identifier soundLocation = null;
+    private volatile boolean popped = true;
 
     public static void start() {
-        LISTENER.soundLocation = null;
-        if (!LISTENER.listening) {
-            LISTENER.listening = true;
-            Minecraft.getInstance().getSoundManager().addListener(LISTENER);
-        }
+        LISTENER.doStart();
     }
 
-    @Nullable
-    public static Identifier getLocation() {
-        if (LISTENER.shown) {
-            return null;
-        } else {
-            LISTENER.shown = true;
-            return LISTENER.soundLocation;
-        }
+    public static Identifier pop() {
+        return LISTENER.doPop();
     }
 
-    @Nullable
     public static Identifier finish() {
-        Minecraft.getInstance().getSoundManager().removeListener(LISTENER);
-        if (LISTENER.listening) {
-            LISTENER.listening = false;
-            return LISTENER.soundLocation;
-        }
-        return null;
+        return LISTENER.doFinish();
     }
 
     public static MutableComponent getSoundEventTitle(Identifier location) {
-        var sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
+        WeighedSoundEvents sound = Minecraft.getInstance().getSoundManager().getSoundEvent(location);
         if (sound != null && sound.getSubtitle() != null) {
             return MutableComponent.create(sound.getSubtitle().getContents());
         }
         return Component.literal("? ? ?");
     }
 
-    private boolean isAudible(SoundInstance sound, float range) {
+    private static boolean isAudible(SoundInstance sound, float range) {
         if (Float.isInfinite(range)) {
             return true;
         } else {
@@ -66,11 +50,42 @@ public class Listener implements SoundEventListener {
         }
     }
 
+    private void doStart() {
+        soundLocation = null;
+        popped = true;
+        if (!isListening) {
+            Minecraft.getInstance().getSoundManager().addListener(this);
+            isListening = true;
+        }
+    }
+
+    @Nullable
+    private Identifier doPop() {
+        if (popped) {
+            return null;
+        } else {
+            popped = true;
+            return soundLocation;
+        }
+    }
+
+    @Nullable
+    private Identifier doFinish() {
+        Minecraft.getInstance().getSoundManager().removeListener(this);
+        Identifier lastSound = this.soundLocation;
+        isListening = false;
+        soundLocation = null;
+        popped = true;
+        return lastSound;
+    }
+
+    private void push(Identifier location) {
+        soundLocation = location;
+        popped = false;
+    }
+
     @Override
     public void onPlaySound(@NotNull SoundInstance soundInstance, @NotNull WeighedSoundEvents accessor, float range) {
-        if (isAudible(soundInstance, range)) {
-            shown = false;
-            soundLocation = soundInstance.getIdentifier();
-        }
+        if (isAudible(soundInstance, range)) push(soundInstance.getIdentifier());
     }
 }

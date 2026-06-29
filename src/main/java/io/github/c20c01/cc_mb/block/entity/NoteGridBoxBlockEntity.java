@@ -4,31 +4,24 @@ import io.github.c20c01.cc_mb.MusicBox;
 import io.github.c20c01.cc_mb.block.NoteGridBoxBlock;
 import io.github.c20c01.cc_mb.data.Beat;
 import io.github.c20c01.cc_mb.data.NoteGridData;
-import io.github.c20c01.cc_mb.inventory.SingleItemContainer;
 import io.github.c20c01.cc_mb.player.NoteGridDataHolder;
 import io.github.c20c01.cc_mb.player.NoteGridIteratorListener;
-import io.github.c20c01.cc_mb.util.BlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nullable;
 
-public abstract class NoteGridBoxBlockEntity extends BlockEntity implements SingleItemContainer.SingleItemContainerBlockEntity, NoteGridDataHolder, NoteGridIteratorListener {
-    private ItemStack noteGrid = ItemStack.EMPTY;
-
+public abstract class NoteGridBoxBlockEntity extends SingleItemContainerBlockEntityImpl implements NoteGridDataHolder, NoteGridIteratorListener {
     @Nullable
     private NoteGridData data;
 
     public NoteGridBoxBlockEntity(BlockEntityType<?> type, BlockPos worldPosition, BlockState blockState) {
-        super(type, worldPosition, blockState);
+        super(type, worldPosition, blockState, "note_grid", NoteGridBoxBlock.HAS_NOTE_GRID);
     }
 
     /**
@@ -44,44 +37,14 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
     public abstract void ejectNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack noteGrid);
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        input.read("note_grid", ItemStack.CODEC).ifPresent(this::setItem);
-        super.loadAdditional(input);
-    }
-
-    @Override
-    protected void saveAdditional(ValueOutput output) {
-        if (!noteGrid.isEmpty()) output.store("note_grid", ItemStack.CODEC, getItem());
-        super.saveAdditional(output);
-    }
-
-    @Override
-    public BlockEntity getContainerBlockEntity() {
-        return this;
-    }
-
-    @Override
-    public ItemStack getItem() {
-        return noteGrid;
-    }
-
-    @Override
     public void setItem(ItemStack itemStack) {
-        this.noteGrid = itemStack;
-        boolean hasNoteGrid = !itemStack.isEmpty();
-        this.data = hasNoteGrid ? NoteGridData.ofNoteGrid(itemStack) : null;
-        if (level != null) {
-            BlockUtils.changeProperty(level, worldPosition, getBlockState(), NoteGridBoxBlock.HAS_NOTE_GRID, hasNoteGrid);
-            setChanged(level, worldPosition, getBlockState());
-        }
+        this.data = itemStack.isEmpty() ? null : NoteGridData.ofNoteGrid(itemStack);
+        super.setItem(itemStack);
     }
 
+    @Override
     public boolean canPlaceItem(ItemStack itemStack) {
-        return noteGrid.isEmpty() && itemStack.is(MusicBox.NOTE_GRID_ITEM.get());
-    }
-
-    public boolean canPlaceItem(int slot, ItemStack itemStack) {
-        return slot == 0 && canPlaceItem(itemStack);
+        return isEmpty() && itemStack.is(MusicBox.NOTE_GRID_ITEM.get());
     }
 
     @Override
@@ -95,6 +58,7 @@ public abstract class NoteGridBoxBlockEntity extends BlockEntity implements Sing
         return data;
     }
 
+    @Override
     public void setData(@Nullable NoteGridData data) {
         this.data = data;
     }

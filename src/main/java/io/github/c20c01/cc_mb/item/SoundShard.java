@@ -45,8 +45,6 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-// TODO 重构
-
 public class SoundShard extends Item {
     private static final int DEFAULT_COOL_DOWN = 55;
 
@@ -83,11 +81,43 @@ public class SoundShard extends Item {
      * <p>
      * Efficiency level will affect the cooldown time.
      */
-    private void addCooldown(Level level, Player player, ItemStack soundShard) {
+    private static void addCooldown(Level level, Player player, ItemStack soundShard) {
         level.registryAccess().lookup(Registries.ENCHANTMENT).flatMap(registry -> registry.get(Enchantments.EFFICIENCY)).ifPresentOrElse(
                 enchantment -> player.getCooldowns().addCooldown(soundShard, DEFAULT_COOL_DOWN - 10 * Mth.clamp(soundShard.getEnchantmentLevel(enchantment), 0, 5)),
                 () -> player.getCooldowns().addCooldown(soundShard, DEFAULT_COOL_DOWN)
         );
+    }
+
+    private static InteractionResult stratListening(Level level, Player player, InteractionHand hand) {
+        if (level.isClientSide()) Listener.start();
+        player.startUsingItem(hand);
+        return InteractionResult.CONSUME;
+    }
+
+    private static InteractionResult changeSoundSeed(Level level, Player player, ItemStack soundShard, SoundShard.SoundInfo info) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
+        if (newSeed != null) {
+            level.playSeededSound(player, player, info.soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
+        }
+        return InteractionResult.SUCCESS_SERVER;
+    }
+
+    private static InteractionResult resetSoundShard(Level level, Player player, ItemStack soundShard) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        soundShard.remove(MusicBox.SOUND_INFO.get());
+        level.playSound(null, player.blockPosition(), SoundEvents.POWDER_SNOW_FALL, SoundSource.PLAYERS, 1.0F, 1.0F);
+        return InteractionResult.SUCCESS_SERVER;
+    }
+
+    private static InteractionResult playSound(Level level, Player player, SoundShard.SoundInfo info) {
+        level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
+        Holder<SoundEvent> soundEvent = info.soundEvent;
+        level.playSeededSound(player, player, soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, info.soundSeed.orElseGet(level.getRandom()::nextLong));
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+
+        MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().location());
+        return InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
@@ -96,45 +126,23 @@ public class SoundShard extends Item {
         addCooldown(level, player, soundShard);
         Optional<SoundInfo> info = SoundInfo.ofItemStack(soundShard);
         if (info.isEmpty() || info.get().soundEvent == null) {
-            // start listening to the sound event
-            if (level.isClientSide()) {
-                Listener.start();
-            }
-            player.startUsingItem(hand);
-            return InteractionResult.CONSUME;
+            return stratListening(level, player, hand);
         }
         if (player.getAbilities().instabuild) {
             if (player.isSecondaryUseActive()) {
-                // creative mode only: shift to change the sound seed.
-                if (level.isClientSide()) {
-                    return InteractionResult.SUCCESS;
-                }
-                Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
-                if (newSeed != null) {
-                    level.playSeededSound(player, player, info.get().soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
-                }
-                return InteractionResult.SUCCESS_SERVER;
+                return changeSoundSeed(level, player, soundShard, info.get());
             }
             if (hand == InteractionHand.OFF_HAND) {
-                // creative mode only: off-hand to reset the sound shard.
-                soundShard.remove(MusicBox.SOUND_INFO.get());
-                return InteractionResult.SUCCESS_SERVER;
+                return resetSoundShard(level, player, soundShard);
             }
         }
-        var soundEvent = info.get().soundEvent;
-        // play the sound event that saved in the sound shard
-        level.playSeededSound(player, player, soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, info.get().soundSeed.orElseGet(level.getRandom()::nextLong));
-        if (!level.isClientSide()) {
-            MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().location());
-        }
-        level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
-        return InteractionResult.SUCCESS_SERVER;
+        return playSound(level, player, info.get());
     }
 
     @Override
     public void onUseTick(Level level, LivingEntity livingEntity, ItemStack itemStack, int tick) {
         if (level.isClientSide() && livingEntity instanceof Player player) {
-            Identifier location = Listener.getLocation();
+            Identifier location = Listener.pop();
             if (location != null) {
                 // Display the sound event that the player is listening to.
                 player.sendOverlayMessage(Listener.getSoundEventTitle(location).withStyle(ChatFormatting.GOLD));

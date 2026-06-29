@@ -53,8 +53,8 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     @Override
     public void setItem(ItemStack itemStack) {
-        super.setItem(itemStack);
         if (itemStack.isEmpty()) player.reset();
+        super.setItem(itemStack);
         syncPlayerData();
     }
 

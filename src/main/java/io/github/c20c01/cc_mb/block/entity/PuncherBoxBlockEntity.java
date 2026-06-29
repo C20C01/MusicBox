@@ -44,8 +44,8 @@ public class PuncherBoxBlockEntity extends NoteGridBoxBlockEntity {
 
     @Override
     public void setItem(ItemStack itemStack) {
+        if (itemStack.isEmpty()) iterator.reset();
         super.setItem(itemStack);
-        if (!hasData()) iterator.reset();
     }
 
     @Override

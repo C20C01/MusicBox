@@ -81,7 +81,7 @@ public class PuncherBoxBlock extends Block implements EntityBlock, NoteGridBoxBl
 
     @Override
     public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos, Direction direction) {
-        return getOutputSignal(level, blockPos, blockState);
+        return NoteGridBoxBlock.getOutputSignal(level, blockPos, blockState);
     }
 
     @Override
@@ -106,10 +106,13 @@ public class PuncherBoxBlock extends Block implements EntityBlock, NoteGridBoxBl
         }
 
         if (blockState.getValue(HAS_NOTE_GRID)) {
-            if (player.isSecondaryUseActive()) return takeOutNoteGrid(level, puncherBox, player.getInventory());
-            return toNextBeat(level, blockPos, puncherBox);
+            if (player.isSecondaryUseActive()) {
+                return SingleItemContainerBlock.takeOutItem(level, puncherBox, player.getInventory());
+            } else {
+                return toNextBeat(level, blockPos, puncherBox);
+            }
         } else {
-            return putInNoteGrid(level, blockPos, puncherBox, itemStack);
+            return NoteGridBoxBlock.putInNoteGrid(level, blockPos, puncherBox, itemStack);
         }
     }
 
