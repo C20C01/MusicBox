@@ -112,7 +112,7 @@ public class MyModelProvider extends ModelProvider {
 
         itemModels.generateFlatItem(MusicBox.NOTE_GRID_ITEM.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(MusicBox.AWL_ITEM.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
-        itemModels.generateFlatItem(MusicBox.SOUND_SHARD_ITEM.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(MusicBox.SOUND_SHARD_ITEM.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModels.generateFlatItem(MusicBox.PAPER_PASTE_ITEM.get(), ModelTemplates.FLAT_ITEM);
     }
 }
