@@ -30,15 +30,14 @@ public record SoundShardUpdatePacket(int slot, Identifier sound) implements Cust
     }
 
     private static void saveSoundEvent(ServerPlayer player, int slot, Identifier location) {
-        if (!Inventory.isHotbarSlot(slot) && slot != Inventory.SLOT_OFFHAND) {
-            return;
-        }
+        if (!Inventory.isHotbarSlot(slot) && slot != Inventory.SLOT_OFFHAND) return;
+
         ItemStack soundShard = player.getInventory().getItem(slot);
-        if (soundShard.is(MusicBox.SOUND_SHARD_ITEM.get())) {
-            Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(location));
-            soundShard.set(MusicBox.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
-            player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
-        }
+        if (!soundShard.is(MusicBox.SOUND_SHARD_ITEM.get())) return;
+
+        Holder<SoundEvent> sound = Holder.direct(SoundEvent.createVariableRangeEvent(location));
+        soundShard.set(MusicBox.SOUND_INFO.get(), new SoundShard.SoundInfo(sound, Optional.empty()));
+        player.level().playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
     public static void handle(final SoundShardUpdatePacket packet, final IPayloadContext context) {

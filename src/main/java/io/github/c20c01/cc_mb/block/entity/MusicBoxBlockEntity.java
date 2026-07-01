@@ -88,21 +88,26 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     /**
-     * Update the instrument of the music box according to the block below it.
+     * Update the instrument of the music box and try to sync to client according to the block below the music box.
      */
     public void updateInstrumentFromBelow(LevelReader level, BlockPos musicBoxPos) {
+        Identifier soundLocation;
+        Long soundSeed;
         BlockPos below = musicBoxPos.below();
         if (level.getBlockEntity(below) instanceof SoundBoxBlockEntity soundBox) {
-            updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
+            soundLocation = soundBox.getSoundLocation();
+            soundSeed = soundBox.getSoundSeed();
         } else {
             NoteBlockInstrument instrument = level.getBlockState(below).instrument();
             Holder<SoundEvent> soundEvent = instrument.worksAboveNoteBlock() ? NoteBlockInstrument.HARP.getSoundEvent() : instrument.getSoundEvent();
-            updateInstrument(soundEvent.value().location(), null);
+            soundLocation = soundEvent.value().location();
+            soundSeed = null;
         }
+        updateInstrument(soundLocation, soundSeed);
     }
 
     /**
-     * Update the instrument of the music box according to the given sound location and seed.
+     * Update the instrument of the music box and try to sync to client.
      */
     public void updateInstrument(@Nullable Identifier soundLocation, @Nullable Long soundSeed) {
         if (player.tryToUpdateInstrument(soundLocation, soundSeed)) {
@@ -140,7 +145,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
      * @return the note grid item with merged data, or null if the given item has no data to merge
      */
     @Nullable
-    public ItemStack createNoteGridMerged(ItemStack other) {
+    public ItemStack createMergedNoteGrid(ItemStack other) {
         NoteGridData otherData = NoteGridData.ofItemStack(other);
         if (otherData == null) return null;
 
@@ -159,7 +164,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     @Override
-    // Client side only
     public void setRemoved() {
         super.setRemoved();
         if (level != null && level.isClientSide()) {
@@ -168,6 +172,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         }
     }
 
+    // region sync data from server to client
     private void savePlayerData(ValueOutput output) {
         NoteGridData data = getData();
         if (data != null) {
@@ -202,7 +207,8 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     @Override
-    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+    @Nullable
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
         return syncer.getUpdatePacket(this, LOGGER);
     }
 
@@ -211,7 +217,6 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         syncer.handleUpdatePacket(this, input);
     }
 
-    // region sync data from server to client
     public static class MusicBoxBlockEntityDataSyncer extends BlockEntityDataSyncer<MusicBoxBlockEntity> {
         public static final BlockEntitySyncDataType<MusicBoxBlockEntity> PLAYER_DATA = new BlockEntitySyncDataType<>(0) {
             @Override

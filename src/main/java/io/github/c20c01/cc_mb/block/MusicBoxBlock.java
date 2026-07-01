@@ -58,9 +58,9 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
         return InteractionResult.CONSUME;
     }
 
-    private static InteractionResult createNoteGridMerged(Level level, BlockPos blockPos, BlockState blockState, ItemStack itemStack, MusicBoxBlockEntity musicBox) {
+    private static InteractionResult createMergedNoteGrid(Level level, BlockPos blockPos, BlockState blockState, ItemStack itemStack, MusicBoxBlockEntity musicBox) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        ItemStack created = musicBox.createNoteGridMerged(itemStack);
+        ItemStack created = musicBox.createMergedNoteGrid(itemStack);
         if (created != null) {
             musicBox.ejectNoteGrid(level, blockPos, blockState, created);
             level.playSound(null, blockPos, SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -160,7 +160,7 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
             }
             if (!blockState.getValue(POWERED)) {
                 if (player.getAbilities().instabuild && (itemStack.is(Items.WRITABLE_BOOK) || itemStack.is(MusicBox.NOTE_GRID_ITEM.get()))) {
-                    return createNoteGridMerged(level, blockPos, blockState, itemStack, musicBox);
+                    return createMergedNoteGrid(level, blockPos, blockState, itemStack, musicBox);
                 } else {
                     return playNextBeat(level, musicBox);
                 }
