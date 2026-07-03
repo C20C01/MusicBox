@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -92,6 +93,14 @@ public class MusicBoxBlock extends BaseEntityBlock implements NoteGridBoxBlock {
             musicBox.updateInstrumentFromBelow(level, blockPos);
         }
         return super.updateShape(blockState, level, scheduledTickAccess, blockPos, direction, neighborPos, neighborState, random);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
+        super.setPlacedBy(level, blockPos, blockState, livingEntity, itemStack);
+        if (level.getBlockEntity(blockPos) instanceof MusicBoxBlockEntity musicBox) {
+            musicBox.updateInstrumentFromBelow(level, blockPos);
+        }
     }
 
     @Override
