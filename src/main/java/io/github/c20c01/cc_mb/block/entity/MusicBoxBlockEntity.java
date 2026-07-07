@@ -57,7 +57,7 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     public void setItem(ItemStack itemStack) {
         if (itemStack.isEmpty()) player.reset();
         super.setItem(itemStack);
-        syncer.sync(this, MusicBoxBlockEntityDataSyncer.PLAYER_DATA);
+        syncer.sync(this, MusicBoxBlockEntityDataSyncer.NOTE_GRID_DATA, MusicBoxBlockEntityDataSyncer.PLAYER_DATA);
     }
 
     @Override
@@ -133,9 +133,8 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     public void playNextBeat(Level level) {
-        // sync before next beat to make sure the client play the same next beat as the server
-        syncer.sync(this, MusicBoxBlockEntityDataSyncer.NEXT_BEAT);
         player.nextBeat(level);
+        syncer.sync(this, MusicBoxBlockEntityDataSyncer.NEXT_BEAT);
     }
 
     /**
@@ -163,47 +162,21 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
         }
     }
 
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (level != null && level.isClientSide()) {
-            NoteGridData data = getData();
-            if (data != null) NoteGridDataManager.getInstance().markRemovable(data.hashCode());
-        }
-    }
-
     // region sync data from server to client
-    private void savePlayerData(ValueOutput output) {
-        NoteGridData data = getData();
-        if (data != null) {
-            player.saveSync(output);
-            output.putInt("hash", data.hashCode());
-        }
-    }
-
-    private void loadPlayerData(ValueInput input) {
-        Integer hash = input.getInt("hash").orElse(null);
-        if (hash == null) {
-            player.reset();
-            setData(null);
-        } else {
-            player.loadSync(input);
-            NoteGridDataManager.getInstance().getNoteGridData(hash, getBlockPos(), this::setData);
-        }
-    }
-
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return BlockEntityDataSyncer.getUpdateTag(problemPath(), LOGGER, registries, output -> {
-            savePlayerData(output);
-            player.saveSound(output);
+            MusicBoxBlockEntityDataSyncer.NOTE_GRID_DATA.writeData(this, output);
+            MusicBoxBlockEntityDataSyncer.PLAYER_DATA.writeData(this, output);
+            MusicBoxBlockEntityDataSyncer.SOUND_DATA.writeData(this, output);
         });
     }
 
     @Override
     public void handleUpdateTag(ValueInput input) {
-        loadPlayerData(input);
-        player.loadSound(input);
+        MusicBoxBlockEntityDataSyncer.NOTE_GRID_DATA.readData(this, input);
+        MusicBoxBlockEntityDataSyncer.PLAYER_DATA.readData(this, input);
+        MusicBoxBlockEntityDataSyncer.SOUND_DATA.readData(this, input);
     }
 
     @Override
@@ -218,18 +191,37 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
     }
 
     public static class MusicBoxBlockEntityDataSyncer extends BlockEntityDataSyncer<MusicBoxBlockEntity> {
-        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> PLAYER_DATA = new BlockEntitySyncDataType<>(0) {
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> NOTE_GRID_DATA = new BlockEntitySyncDataType<>(0) {
             @Override
             public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
-                blockEntity.savePlayerData(output);
+                NoteGridData data = blockEntity.getData();
+                if (data != null) {
+                    output.putInt("hash", data.hashCode());
+                }
             }
 
             @Override
             public void readData(MusicBoxBlockEntity blockEntity, ValueInput input) {
-                blockEntity.loadPlayerData(input);
+                Integer hash = input.getInt("hash").orElse(null);
+                if (hash == null) {
+                    blockEntity.setData(null);
+                } else {
+                    NoteGridDataManager.getInstance().requestData(hash, blockEntity.getBlockPos(), blockEntity::setData);
+                }
             }
         };
-        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> SOUND_DATA = new BlockEntitySyncDataType<>(1) {
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> PLAYER_DATA = new BlockEntitySyncDataType<>(1) {
+            @Override
+            public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
+                blockEntity.player.saveSync(output);
+            }
+
+            @Override
+            public void readData(MusicBoxBlockEntity blockEntity, ValueInput input) {
+                blockEntity.player.loadSync(input);
+            }
+        };
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> SOUND_DATA = new BlockEntitySyncDataType<>(2) {
             @Override
             public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
                 blockEntity.player.saveSound(output);
@@ -240,20 +232,20 @@ public class MusicBoxBlockEntity extends NoteGridBoxBlockEntity {
                 blockEntity.player.loadSound(input);
             }
         };
-        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> NEXT_BEAT = new BlockEntitySyncDataType<>(2) {
+        public static final BlockEntitySyncDataType<MusicBoxBlockEntity> NEXT_BEAT = new BlockEntitySyncDataType<>(3) {
             @Override
             public void writeData(MusicBoxBlockEntity blockEntity, ValueOutput output) {
-                blockEntity.player.saveSync(output);
+                PLAYER_DATA.writeData(blockEntity, output);
             }
 
             @Override
             public void readData(MusicBoxBlockEntity blockEntity, ValueInput input) {
-                blockEntity.player.loadSync(input);
                 blockEntity.player.nextBeat(blockEntity.level);
+                PLAYER_DATA.readData(blockEntity, input);
             }
         };
 
-        public static final List<BlockEntitySyncDataType<MusicBoxBlockEntity>> ALL_TYPES = List.of(PLAYER_DATA, SOUND_DATA, NEXT_BEAT);
+        public static final List<BlockEntitySyncDataType<MusicBoxBlockEntity>> ALL_TYPES = List.of(NOTE_GRID_DATA, PLAYER_DATA, SOUND_DATA, NEXT_BEAT);
 
         @Override
         public List<BlockEntitySyncDataType<MusicBoxBlockEntity>> getAllTypes() {

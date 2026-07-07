@@ -34,8 +34,11 @@ public abstract class BlockEntityDataSyncer<T extends BlockEntity> {
      */
     public abstract List<BlockEntitySyncDataType<T>> getAllTypes();
 
-    public void markDirty(BlockEntitySyncDataType<T> type) {
-        dirtyMask |= type.bitMask;
+    @SafeVarargs
+    public final void markDirty(BlockEntitySyncDataType<T>... type) {
+        for (BlockEntitySyncDataType<T> t : type) {
+            dirtyMask |= t.bitMask;
+        }
     }
 
     public void flush(T blockEntity) {
@@ -45,7 +48,8 @@ public abstract class BlockEntityDataSyncer<T extends BlockEntity> {
         }
     }
 
-    public void sync(T blockEntity, BlockEntitySyncDataType<T> type) {
+    @SafeVarargs
+    public final void sync(T blockEntity, BlockEntitySyncDataType<T>... type) {
         markDirty(type);
         flush(blockEntity);
     }
