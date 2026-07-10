@@ -37,7 +37,7 @@ public class Awl extends Item {
         }
         awl.set(MusicBox.TICK_PER_BEAT.get(), (byte) next);
         player.sendOverlayMessage(Component.translatable(MusicBox.TEXT_TICK_PER_BEAT).append(String.valueOf(next)).withStyle(ChatFormatting.GOLD));
-        return InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS;
     }
 
     @Override

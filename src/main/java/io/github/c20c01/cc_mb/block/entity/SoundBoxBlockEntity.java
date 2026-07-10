@@ -38,15 +38,10 @@ public class SoundBoxBlockEntity extends SingleItemContainerBlockEntityImpl {
      */
     public static boolean tryToChangeSoundSeed(Level level, BlockPos blockPos) {
         if (!level.isClientSide() && level.getBlockEntity(blockPos) instanceof SoundBoxBlockEntity soundBox && soundBox.soundEvent != null) {
-            Long newSeed = SoundShard.tryToChangeSoundSeed(soundBox.getItem(), level.getRandom());
+            ItemStack soundShard = soundBox.getItem();
+            Long newSeed = SoundShard.tryToChangeSoundSeed(soundShard, level.getRandom());
             if (newSeed != null) {
-                soundBox.soundSeed = newSeed;
-                soundBox.setChanged();
-                // Change seed may not change the blockState and will not trigger music box to update instrument.
-                // So we need to manually update instrument of music box above if exists.
-                if (level.getBlockEntity(blockPos.above()) instanceof MusicBoxBlockEntity musicBox) {
-                    musicBox.updateInstrument(soundBox.getSoundLocation(), soundBox.getSoundSeed());
-                }
+                soundBox.setItem(soundShard);
                 return true;
             }
         }
@@ -75,7 +70,10 @@ public class SoundBoxBlockEntity extends SingleItemContainerBlockEntityImpl {
                 soundSeed = soundInfo.soundSeed().orElse(null);
             });
         }
-        super.setItem(itemStack);// -> change blockState -> update instrument <- need update Sound Shard first
+        if (level != null && level.getBlockEntity(worldPosition.above()) instanceof MusicBoxBlockEntity musicBox) {
+            musicBox.updateInstrument(getSoundLocation(), getSoundSeed());
+        }
+        super.setItem(itemStack);
     }
 
     @Override

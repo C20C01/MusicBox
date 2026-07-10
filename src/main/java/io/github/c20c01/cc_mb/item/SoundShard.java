@@ -99,7 +99,7 @@ public class SoundShard extends Item {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
         if (newSeed != null) {
-            level.playSeededSound(player, player, info.soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
+            level.playSeededSound(null, player, info.soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
         }
         return InteractionResult.SUCCESS_SERVER;
     }
