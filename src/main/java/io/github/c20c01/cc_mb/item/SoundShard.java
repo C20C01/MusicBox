@@ -96,18 +96,20 @@ public class SoundShard extends Item {
     }
 
     private static InteractionResult changeSoundSeed(Level level, Player player, ItemStack soundShard, SoundShard.SoundInfo info) {
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-        Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
-        if (newSeed != null) {
-            level.playSeededSound(null, player, info.soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
+        if (!level.isClientSide()) {
+            Long newSeed = tryToChangeSoundSeed(soundShard, level.getRandom());
+            if (newSeed != null) {
+                level.playSeededSound(null, player, info.soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, newSeed);
+            }
         }
         return InteractionResult.SUCCESS_SERVER;
     }
 
     private static InteractionResult resetSoundShard(Level level, Player player, ItemStack soundShard) {
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-        soundShard.remove(MusicBox.SOUND_INFO.get());
-        level.playSound(null, player.blockPosition(), SoundEvents.POWDER_SNOW_FALL, SoundSource.PLAYERS, 1.0F, 1.0F);
+        if (!level.isClientSide()) {
+            soundShard.remove(MusicBox.SOUND_INFO.get());
+            level.playSound(null, player.blockPosition(), SoundEvents.POWDER_SNOW_FALL, SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -115,10 +117,10 @@ public class SoundShard extends Item {
         level.gameEvent(player, GameEvent.INSTRUMENT_PLAY, player.position());
         Holder<SoundEvent> soundEvent = info.soundEvent;
         level.playSeededSound(player, player, soundEvent, SoundSource.PLAYERS, 1.0F, 1.0F, info.soundSeed.orElseGet(level.getRandom()::nextLong));
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-
-        MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().location());
-        return InteractionResult.SUCCESS_SERVER;
+        if (!level.isClientSide()) {
+            MobListenAndActHelper.nearbyMobsListen(level, player.blockPosition(), soundEvent.value().location());
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
